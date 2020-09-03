@@ -1,1384 +1,1166 @@
+function _slicedToArray2(arr, i) { return _arrayWithHoles2(arr) || _iterableToArrayLimit2(arr, i) || _unsupportedIterableToArray2(arr, i) || _nonIterableRest2(); }
+
+function _nonIterableRest2() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+
+function _iterableToArrayLimit2(arr, i) { if (typeof Symbol === "undefined" || !(Symbol.iterator in Object(arr))) return; var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"] != null) _i["return"](); } finally { if (_d) throw _e; } } return _arr; }
+
+function _arrayWithHoles2(arr) { if (Array.isArray(arr)) return arr; }
+
+function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
+
+function _createClass2(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
+
+function _get2(target, property, receiver) { if (typeof Reflect !== "undefined" && Reflect.get) { _get2 = Reflect.get; } else { _get2 = function _get(target, property, receiver) { var base = _superPropBase2(target, property); if (!base) return; var desc = Object.getOwnPropertyDescriptor(base, property); if (desc.get) { return desc.get.call(receiver); } return desc.value; }; } return _get2(target, property, receiver || target); }
+
+function _superPropBase2(object, property) { while (!Object.prototype.hasOwnProperty.call(object, property)) { object = _getPrototypeOf2(object); if (object === null) break; } return object; }
+
+function _inherits2(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }); if (superClass) _setPrototypeOf2(subClass, superClass); }
+
+function _setPrototypeOf2(o, p) { _setPrototypeOf2 = Object.setPrototypeOf || function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf2(o, p); }
+
+function _createSuper2(Derived) { var hasNativeReflectConstruct = _isNativeReflectConstruct2(); return function _createSuperInternal() { var Super = _getPrototypeOf2(Derived), result; if (hasNativeReflectConstruct) { var NewTarget = _getPrototypeOf2(this).constructor; result = Reflect.construct(Super, arguments, NewTarget); } else { result = Super.apply(this, arguments); } return _possibleConstructorReturn2(this, result); }; }
+
+function _possibleConstructorReturn2(self, call) { if (call && (_typeof2(call) === "object" || typeof call === "function")) { return call; } return _assertThisInitialized2(self); }
+
+function _assertThisInitialized2(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
+
+function _isNativeReflectConstruct2() { if (typeof Reflect === "undefined" || !Reflect.construct) return false; if (Reflect.construct.sham) return false; if (typeof Proxy === "function") return true; try { Date.prototype.toString.call(Reflect.construct(Date, [], function () {})); return true; } catch (e) { return false; } }
+
+function _getPrototypeOf2(o) { _getPrototypeOf2 = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf2(o); }
+
+function _createForOfIteratorHelper(o, allowArrayLike) { var it; if (typeof Symbol === "undefined" || o[Symbol.iterator] == null) { if (Array.isArray(o) || (it = _unsupportedIterableToArray2(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e4) { throw _e4; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = o[Symbol.iterator](); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e5) { didErr = true; err = _e5; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
+
+function _unsupportedIterableToArray2(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray2(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray2(o, minLen); }
+
+function _arrayLikeToArray2(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
+
+function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); keys.push.apply(keys, symbols); } return keys; }
+
+function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { ownKeys(Object(source), true).forEach(function (key) { _defineProperty2(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
+
+function _defineProperty2(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
+function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof2 = function _typeof2(obj) { return typeof obj; }; } else { _typeof2 = function _typeof2(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof2(obj); }
+
 /*
-  d3plus-geomap v0.7.0
+  d3plus-geomap v0.7.1
   A reusable geo map built on D3 and Topojson
   Copyright (c) 2020 D3plus - https://d3plus.org
   @license MIT
 */
-
 (function (factory) {
-	typeof define === 'function' && define.amd ? define(factory) :
-	factory();
-}((function () { 'use strict';
-
-	var commonjsGlobal = typeof globalThis !== 'undefined' ? globalThis : typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
-
-	function createCommonjsModule(fn, module) {
-		return module = { exports: {} }, fn(module, module.exports), module.exports;
-	}
-
-	var check = function (it) {
-	  return it && it.Math == Math && it;
-	};
-
-	// https://github.com/zloirock/core-js/issues/86#issuecomment-115759028
-	var global_1 =
-	  // eslint-disable-next-line no-undef
-	  check(typeof globalThis == 'object' && globalThis) ||
-	  check(typeof window == 'object' && window) ||
-	  check(typeof self == 'object' && self) ||
-	  check(typeof commonjsGlobal == 'object' && commonjsGlobal) ||
-	  // eslint-disable-next-line no-new-func
-	  Function('return this')();
-
-	var fails = function (exec) {
-	  try {
-	    return !!exec();
-	  } catch (error) {
-	    return true;
-	  }
-	};
-
-	// Thank's IE8 for his funny defineProperty
-	var descriptors = !fails(function () {
-	  return Object.defineProperty({}, 1, { get: function () { return 7; } })[1] != 7;
-	});
-
-	var nativePropertyIsEnumerable = {}.propertyIsEnumerable;
-	var getOwnPropertyDescriptor = Object.getOwnPropertyDescriptor;
-
-	// Nashorn ~ JDK8 bug
-	var NASHORN_BUG = getOwnPropertyDescriptor && !nativePropertyIsEnumerable.call({ 1: 2 }, 1);
-
-	// `Object.prototype.propertyIsEnumerable` method implementation
-	// https://tc39.github.io/ecma262/#sec-object.prototype.propertyisenumerable
-	var f = NASHORN_BUG ? function propertyIsEnumerable(V) {
-	  var descriptor = getOwnPropertyDescriptor(this, V);
-	  return !!descriptor && descriptor.enumerable;
-	} : nativePropertyIsEnumerable;
-
-	var objectPropertyIsEnumerable = {
-		f: f
-	};
-
-	var createPropertyDescriptor = function (bitmap, value) {
-	  return {
-	    enumerable: !(bitmap & 1),
-	    configurable: !(bitmap & 2),
-	    writable: !(bitmap & 4),
-	    value: value
-	  };
-	};
-
-	var toString = {}.toString;
-
-	var classofRaw = function (it) {
-	  return toString.call(it).slice(8, -1);
-	};
-
-	var split = ''.split;
-
-	// fallback for non-array-like ES3 and non-enumerable old V8 strings
-	var indexedObject = fails(function () {
-	  // throws an error in rhino, see https://github.com/mozilla/rhino/issues/346
-	  // eslint-disable-next-line no-prototype-builtins
-	  return !Object('z').propertyIsEnumerable(0);
-	}) ? function (it) {
-	  return classofRaw(it) == 'String' ? split.call(it, '') : Object(it);
-	} : Object;
-
-	// `RequireObjectCoercible` abstract operation
-	// https://tc39.github.io/ecma262/#sec-requireobjectcoercible
-	var requireObjectCoercible = function (it) {
-	  if (it == undefined) throw TypeError("Can't call method on " + it);
-	  return it;
-	};
-
-	// toObject with fallback for non-array-like ES3 strings
-
-
-
-	var toIndexedObject = function (it) {
-	  return indexedObject(requireObjectCoercible(it));
-	};
-
-	var isObject = function (it) {
-	  return typeof it === 'object' ? it !== null : typeof it === 'function';
-	};
-
-	// `ToPrimitive` abstract operation
-	// https://tc39.github.io/ecma262/#sec-toprimitive
-	// instead of the ES6 spec version, we didn't implement @@toPrimitive case
-	// and the second argument - flag - preferred type is a string
-	var toPrimitive = function (input, PREFERRED_STRING) {
-	  if (!isObject(input)) return input;
-	  var fn, val;
-	  if (PREFERRED_STRING && typeof (fn = input.toString) == 'function' && !isObject(val = fn.call(input))) return val;
-	  if (typeof (fn = input.valueOf) == 'function' && !isObject(val = fn.call(input))) return val;
-	  if (!PREFERRED_STRING && typeof (fn = input.toString) == 'function' && !isObject(val = fn.call(input))) return val;
-	  throw TypeError("Can't convert object to primitive value");
-	};
-
-	var hasOwnProperty = {}.hasOwnProperty;
-
-	var has = function (it, key) {
-	  return hasOwnProperty.call(it, key);
-	};
-
-	var document$1 = global_1.document;
-	// typeof document.createElement is 'object' in old IE
-	var EXISTS = isObject(document$1) && isObject(document$1.createElement);
-
-	var documentCreateElement = function (it) {
-	  return EXISTS ? document$1.createElement(it) : {};
-	};
-
-	// Thank's IE8 for his funny defineProperty
-	var ie8DomDefine = !descriptors && !fails(function () {
-	  return Object.defineProperty(documentCreateElement('div'), 'a', {
-	    get: function () { return 7; }
-	  }).a != 7;
-	});
-
-	var nativeGetOwnPropertyDescriptor = Object.getOwnPropertyDescriptor;
-
-	// `Object.getOwnPropertyDescriptor` method
-	// https://tc39.github.io/ecma262/#sec-object.getownpropertydescriptor
-	var f$1 = descriptors ? nativeGetOwnPropertyDescriptor : function getOwnPropertyDescriptor(O, P) {
-	  O = toIndexedObject(O);
-	  P = toPrimitive(P, true);
-	  if (ie8DomDefine) try {
-	    return nativeGetOwnPropertyDescriptor(O, P);
-	  } catch (error) { /* empty */ }
-	  if (has(O, P)) return createPropertyDescriptor(!objectPropertyIsEnumerable.f.call(O, P), O[P]);
-	};
-
-	var objectGetOwnPropertyDescriptor = {
-		f: f$1
-	};
-
-	var anObject = function (it) {
-	  if (!isObject(it)) {
-	    throw TypeError(String(it) + ' is not an object');
-	  } return it;
-	};
-
-	var nativeDefineProperty = Object.defineProperty;
-
-	// `Object.defineProperty` method
-	// https://tc39.github.io/ecma262/#sec-object.defineproperty
-	var f$2 = descriptors ? nativeDefineProperty : function defineProperty(O, P, Attributes) {
-	  anObject(O);
-	  P = toPrimitive(P, true);
-	  anObject(Attributes);
-	  if (ie8DomDefine) try {
-	    return nativeDefineProperty(O, P, Attributes);
-	  } catch (error) { /* empty */ }
-	  if ('get' in Attributes || 'set' in Attributes) throw TypeError('Accessors not supported');
-	  if ('value' in Attributes) O[P] = Attributes.value;
-	  return O;
-	};
-
-	var objectDefineProperty = {
-		f: f$2
-	};
-
-	var createNonEnumerableProperty = descriptors ? function (object, key, value) {
-	  return objectDefineProperty.f(object, key, createPropertyDescriptor(1, value));
-	} : function (object, key, value) {
-	  object[key] = value;
-	  return object;
-	};
-
-	var setGlobal = function (key, value) {
-	  try {
-	    createNonEnumerableProperty(global_1, key, value);
-	  } catch (error) {
-	    global_1[key] = value;
-	  } return value;
-	};
-
-	var SHARED = '__core-js_shared__';
-	var store = global_1[SHARED] || setGlobal(SHARED, {});
-
-	var sharedStore = store;
-
-	var functionToString = Function.toString;
-
-	// this helper broken in `3.4.1-3.4.4`, so we can't use `shared` helper
-	if (typeof sharedStore.inspectSource != 'function') {
-	  sharedStore.inspectSource = function (it) {
-	    return functionToString.call(it);
-	  };
-	}
-
-	var inspectSource = sharedStore.inspectSource;
-
-	var WeakMap = global_1.WeakMap;
-
-	var nativeWeakMap = typeof WeakMap === 'function' && /native code/.test(inspectSource(WeakMap));
-
-	var shared = createCommonjsModule(function (module) {
-	(module.exports = function (key, value) {
-	  return sharedStore[key] || (sharedStore[key] = value !== undefined ? value : {});
-	})('versions', []).push({
-	  version: '3.6.5',
-	  mode:  'global',
-	  copyright: '© 2020 Denis Pushkarev (zloirock.ru)'
-	});
-	});
-
-	var id = 0;
-	var postfix = Math.random();
-
-	var uid = function (key) {
-	  return 'Symbol(' + String(key === undefined ? '' : key) + ')_' + (++id + postfix).toString(36);
-	};
-
-	var keys = shared('keys');
-
-	var sharedKey = function (key) {
-	  return keys[key] || (keys[key] = uid(key));
-	};
-
-	var hiddenKeys = {};
-
-	var WeakMap$1 = global_1.WeakMap;
-	var set, get, has$1;
-
-	var enforce = function (it) {
-	  return has$1(it) ? get(it) : set(it, {});
-	};
-
-	var getterFor = function (TYPE) {
-	  return function (it) {
-	    var state;
-	    if (!isObject(it) || (state = get(it)).type !== TYPE) {
-	      throw TypeError('Incompatible receiver, ' + TYPE + ' required');
-	    } return state;
-	  };
-	};
-
-	if (nativeWeakMap) {
-	  var store$1 = new WeakMap$1();
-	  var wmget = store$1.get;
-	  var wmhas = store$1.has;
-	  var wmset = store$1.set;
-	  set = function (it, metadata) {
-	    wmset.call(store$1, it, metadata);
-	    return metadata;
-	  };
-	  get = function (it) {
-	    return wmget.call(store$1, it) || {};
-	  };
-	  has$1 = function (it) {
-	    return wmhas.call(store$1, it);
-	  };
-	} else {
-	  var STATE = sharedKey('state');
-	  hiddenKeys[STATE] = true;
-	  set = function (it, metadata) {
-	    createNonEnumerableProperty(it, STATE, metadata);
-	    return metadata;
-	  };
-	  get = function (it) {
-	    return has(it, STATE) ? it[STATE] : {};
-	  };
-	  has$1 = function (it) {
-	    return has(it, STATE);
-	  };
-	}
-
-	var internalState = {
-	  set: set,
-	  get: get,
-	  has: has$1,
-	  enforce: enforce,
-	  getterFor: getterFor
-	};
-
-	var redefine = createCommonjsModule(function (module) {
-	var getInternalState = internalState.get;
-	var enforceInternalState = internalState.enforce;
-	var TEMPLATE = String(String).split('String');
-
-	(module.exports = function (O, key, value, options) {
-	  var unsafe = options ? !!options.unsafe : false;
-	  var simple = options ? !!options.enumerable : false;
-	  var noTargetGet = options ? !!options.noTargetGet : false;
-	  if (typeof value == 'function') {
-	    if (typeof key == 'string' && !has(value, 'name')) createNonEnumerableProperty(value, 'name', key);
-	    enforceInternalState(value).source = TEMPLATE.join(typeof key == 'string' ? key : '');
-	  }
-	  if (O === global_1) {
-	    if (simple) O[key] = value;
-	    else setGlobal(key, value);
-	    return;
-	  } else if (!unsafe) {
-	    delete O[key];
-	  } else if (!noTargetGet && O[key]) {
-	    simple = true;
-	  }
-	  if (simple) O[key] = value;
-	  else createNonEnumerableProperty(O, key, value);
-	// add fake Function#toString for correct work wrapped methods / constructors with methods like LoDash isNative
-	})(Function.prototype, 'toString', function toString() {
-	  return typeof this == 'function' && getInternalState(this).source || inspectSource(this);
-	});
-	});
-
-	var path = global_1;
-
-	var aFunction = function (variable) {
-	  return typeof variable == 'function' ? variable : undefined;
-	};
-
-	var getBuiltIn = function (namespace, method) {
-	  return arguments.length < 2 ? aFunction(path[namespace]) || aFunction(global_1[namespace])
-	    : path[namespace] && path[namespace][method] || global_1[namespace] && global_1[namespace][method];
-	};
-
-	var ceil = Math.ceil;
-	var floor = Math.floor;
-
-	// `ToInteger` abstract operation
-	// https://tc39.github.io/ecma262/#sec-tointeger
-	var toInteger = function (argument) {
-	  return isNaN(argument = +argument) ? 0 : (argument > 0 ? floor : ceil)(argument);
-	};
-
-	var min = Math.min;
-
-	// `ToLength` abstract operation
-	// https://tc39.github.io/ecma262/#sec-tolength
-	var toLength = function (argument) {
-	  return argument > 0 ? min(toInteger(argument), 0x1FFFFFFFFFFFFF) : 0; // 2 ** 53 - 1 == 9007199254740991
-	};
-
-	var max = Math.max;
-	var min$1 = Math.min;
-
-	// Helper for a popular repeating case of the spec:
-	// Let integer be ? ToInteger(index).
-	// If integer < 0, let result be max((length + integer), 0); else let result be min(integer, length).
-	var toAbsoluteIndex = function (index, length) {
-	  var integer = toInteger(index);
-	  return integer < 0 ? max(integer + length, 0) : min$1(integer, length);
-	};
-
-	// `Array.prototype.{ indexOf, includes }` methods implementation
-	var createMethod = function (IS_INCLUDES) {
-	  return function ($this, el, fromIndex) {
-	    var O = toIndexedObject($this);
-	    var length = toLength(O.length);
-	    var index = toAbsoluteIndex(fromIndex, length);
-	    var value;
-	    // Array#includes uses SameValueZero equality algorithm
-	    // eslint-disable-next-line no-self-compare
-	    if (IS_INCLUDES && el != el) while (length > index) {
-	      value = O[index++];
-	      // eslint-disable-next-line no-self-compare
-	      if (value != value) return true;
-	    // Array#indexOf ignores holes, Array#includes - not
-	    } else for (;length > index; index++) {
-	      if ((IS_INCLUDES || index in O) && O[index] === el) return IS_INCLUDES || index || 0;
-	    } return !IS_INCLUDES && -1;
-	  };
-	};
-
-	var arrayIncludes = {
-	  // `Array.prototype.includes` method
-	  // https://tc39.github.io/ecma262/#sec-array.prototype.includes
-	  includes: createMethod(true),
-	  // `Array.prototype.indexOf` method
-	  // https://tc39.github.io/ecma262/#sec-array.prototype.indexof
-	  indexOf: createMethod(false)
-	};
-
-	var indexOf = arrayIncludes.indexOf;
-
-
-	var objectKeysInternal = function (object, names) {
-	  var O = toIndexedObject(object);
-	  var i = 0;
-	  var result = [];
-	  var key;
-	  for (key in O) !has(hiddenKeys, key) && has(O, key) && result.push(key);
-	  // Don't enum bug & hidden keys
-	  while (names.length > i) if (has(O, key = names[i++])) {
-	    ~indexOf(result, key) || result.push(key);
-	  }
-	  return result;
-	};
-
-	// IE8- don't enum bug keys
-	var enumBugKeys = [
-	  'constructor',
-	  'hasOwnProperty',
-	  'isPrototypeOf',
-	  'propertyIsEnumerable',
-	  'toLocaleString',
-	  'toString',
-	  'valueOf'
-	];
-
-	var hiddenKeys$1 = enumBugKeys.concat('length', 'prototype');
-
-	// `Object.getOwnPropertyNames` method
-	// https://tc39.github.io/ecma262/#sec-object.getownpropertynames
-	var f$3 = Object.getOwnPropertyNames || function getOwnPropertyNames(O) {
-	  return objectKeysInternal(O, hiddenKeys$1);
-	};
-
-	var objectGetOwnPropertyNames = {
-		f: f$3
-	};
-
-	var f$4 = Object.getOwnPropertySymbols;
-
-	var objectGetOwnPropertySymbols = {
-		f: f$4
-	};
-
-	// all object keys, includes non-enumerable and symbols
-	var ownKeys = getBuiltIn('Reflect', 'ownKeys') || function ownKeys(it) {
-	  var keys = objectGetOwnPropertyNames.f(anObject(it));
-	  var getOwnPropertySymbols = objectGetOwnPropertySymbols.f;
-	  return getOwnPropertySymbols ? keys.concat(getOwnPropertySymbols(it)) : keys;
-	};
-
-	var copyConstructorProperties = function (target, source) {
-	  var keys = ownKeys(source);
-	  var defineProperty = objectDefineProperty.f;
-	  var getOwnPropertyDescriptor = objectGetOwnPropertyDescriptor.f;
-	  for (var i = 0; i < keys.length; i++) {
-	    var key = keys[i];
-	    if (!has(target, key)) defineProperty(target, key, getOwnPropertyDescriptor(source, key));
-	  }
-	};
-
-	var replacement = /#|\.prototype\./;
-
-	var isForced = function (feature, detection) {
-	  var value = data[normalize(feature)];
-	  return value == POLYFILL ? true
-	    : value == NATIVE ? false
-	    : typeof detection == 'function' ? fails(detection)
-	    : !!detection;
-	};
-
-	var normalize = isForced.normalize = function (string) {
-	  return String(string).replace(replacement, '.').toLowerCase();
-	};
-
-	var data = isForced.data = {};
-	var NATIVE = isForced.NATIVE = 'N';
-	var POLYFILL = isForced.POLYFILL = 'P';
-
-	var isForced_1 = isForced;
-
-	var getOwnPropertyDescriptor$1 = objectGetOwnPropertyDescriptor.f;
-
-
-
-
-
-
-	/*
-	  options.target      - name of the target object
-	  options.global      - target is the global object
-	  options.stat        - export as static methods of target
-	  options.proto       - export as prototype methods of target
-	  options.real        - real prototype method for the `pure` version
-	  options.forced      - export even if the native feature is available
-	  options.bind        - bind methods to the target, required for the `pure` version
-	  options.wrap        - wrap constructors to preventing global pollution, required for the `pure` version
-	  options.unsafe      - use the simple assignment of property instead of delete + defineProperty
-	  options.sham        - add a flag to not completely full polyfills
-	  options.enumerable  - export as enumerable property
-	  options.noTargetGet - prevent calling a getter on target
-	*/
-	var _export = function (options, source) {
-	  var TARGET = options.target;
-	  var GLOBAL = options.global;
-	  var STATIC = options.stat;
-	  var FORCED, target, key, targetProperty, sourceProperty, descriptor;
-	  if (GLOBAL) {
-	    target = global_1;
-	  } else if (STATIC) {
-	    target = global_1[TARGET] || setGlobal(TARGET, {});
-	  } else {
-	    target = (global_1[TARGET] || {}).prototype;
-	  }
-	  if (target) for (key in source) {
-	    sourceProperty = source[key];
-	    if (options.noTargetGet) {
-	      descriptor = getOwnPropertyDescriptor$1(target, key);
-	      targetProperty = descriptor && descriptor.value;
-	    } else targetProperty = target[key];
-	    FORCED = isForced_1(GLOBAL ? key : TARGET + (STATIC ? '.' : '#') + key, options.forced);
-	    // contained in target
-	    if (!FORCED && targetProperty !== undefined) {
-	      if (typeof sourceProperty === typeof targetProperty) continue;
-	      copyConstructorProperties(sourceProperty, targetProperty);
-	    }
-	    // add a flag to not completely full polyfills
-	    if (options.sham || (targetProperty && targetProperty.sham)) {
-	      createNonEnumerableProperty(sourceProperty, 'sham', true);
-	    }
-	    // extend global
-	    redefine(target, key, sourceProperty, options);
-	  }
-	};
-
-	var aFunction$1 = function (it) {
-	  if (typeof it != 'function') {
-	    throw TypeError(String(it) + ' is not a function');
-	  } return it;
-	};
-
-	// optional / simple context binding
-	var functionBindContext = function (fn, that, length) {
-	  aFunction$1(fn);
-	  if (that === undefined) return fn;
-	  switch (length) {
-	    case 0: return function () {
-	      return fn.call(that);
-	    };
-	    case 1: return function (a) {
-	      return fn.call(that, a);
-	    };
-	    case 2: return function (a, b) {
-	      return fn.call(that, a, b);
-	    };
-	    case 3: return function (a, b, c) {
-	      return fn.call(that, a, b, c);
-	    };
-	  }
-	  return function (/* ...args */) {
-	    return fn.apply(that, arguments);
-	  };
-	};
-
-	// `ToObject` abstract operation
-	// https://tc39.github.io/ecma262/#sec-toobject
-	var toObject = function (argument) {
-	  return Object(requireObjectCoercible(argument));
-	};
-
-	// `IsArray` abstract operation
-	// https://tc39.github.io/ecma262/#sec-isarray
-	var isArray = Array.isArray || function isArray(arg) {
-	  return classofRaw(arg) == 'Array';
-	};
-
-	var nativeSymbol = !!Object.getOwnPropertySymbols && !fails(function () {
-	  // Chrome 38 Symbol has incorrect toString conversion
-	  // eslint-disable-next-line no-undef
-	  return !String(Symbol());
-	});
-
-	var useSymbolAsUid = nativeSymbol
-	  // eslint-disable-next-line no-undef
-	  && !Symbol.sham
-	  // eslint-disable-next-line no-undef
-	  && typeof Symbol.iterator == 'symbol';
-
-	var WellKnownSymbolsStore = shared('wks');
-	var Symbol$1 = global_1.Symbol;
-	var createWellKnownSymbol = useSymbolAsUid ? Symbol$1 : Symbol$1 && Symbol$1.withoutSetter || uid;
-
-	var wellKnownSymbol = function (name) {
-	  if (!has(WellKnownSymbolsStore, name)) {
-	    if (nativeSymbol && has(Symbol$1, name)) WellKnownSymbolsStore[name] = Symbol$1[name];
-	    else WellKnownSymbolsStore[name] = createWellKnownSymbol('Symbol.' + name);
-	  } return WellKnownSymbolsStore[name];
-	};
-
-	var SPECIES = wellKnownSymbol('species');
-
-	// `ArraySpeciesCreate` abstract operation
-	// https://tc39.github.io/ecma262/#sec-arrayspeciescreate
-	var arraySpeciesCreate = function (originalArray, length) {
-	  var C;
-	  if (isArray(originalArray)) {
-	    C = originalArray.constructor;
-	    // cross-realm fallback
-	    if (typeof C == 'function' && (C === Array || isArray(C.prototype))) C = undefined;
-	    else if (isObject(C)) {
-	      C = C[SPECIES];
-	      if (C === null) C = undefined;
-	    }
-	  } return new (C === undefined ? Array : C)(length === 0 ? 0 : length);
-	};
-
-	var push = [].push;
-
-	// `Array.prototype.{ forEach, map, filter, some, every, find, findIndex }` methods implementation
-	var createMethod$1 = function (TYPE) {
-	  var IS_MAP = TYPE == 1;
-	  var IS_FILTER = TYPE == 2;
-	  var IS_SOME = TYPE == 3;
-	  var IS_EVERY = TYPE == 4;
-	  var IS_FIND_INDEX = TYPE == 6;
-	  var NO_HOLES = TYPE == 5 || IS_FIND_INDEX;
-	  return function ($this, callbackfn, that, specificCreate) {
-	    var O = toObject($this);
-	    var self = indexedObject(O);
-	    var boundFunction = functionBindContext(callbackfn, that, 3);
-	    var length = toLength(self.length);
-	    var index = 0;
-	    var create = specificCreate || arraySpeciesCreate;
-	    var target = IS_MAP ? create($this, length) : IS_FILTER ? create($this, 0) : undefined;
-	    var value, result;
-	    for (;length > index; index++) if (NO_HOLES || index in self) {
-	      value = self[index];
-	      result = boundFunction(value, index, O);
-	      if (TYPE) {
-	        if (IS_MAP) target[index] = result; // map
-	        else if (result) switch (TYPE) {
-	          case 3: return true;              // some
-	          case 5: return value;             // find
-	          case 6: return index;             // findIndex
-	          case 2: push.call(target, value); // filter
-	        } else if (IS_EVERY) return false;  // every
-	      }
-	    }
-	    return IS_FIND_INDEX ? -1 : IS_SOME || IS_EVERY ? IS_EVERY : target;
-	  };
-	};
-
-	var arrayIteration = {
-	  // `Array.prototype.forEach` method
-	  // https://tc39.github.io/ecma262/#sec-array.prototype.foreach
-	  forEach: createMethod$1(0),
-	  // `Array.prototype.map` method
-	  // https://tc39.github.io/ecma262/#sec-array.prototype.map
-	  map: createMethod$1(1),
-	  // `Array.prototype.filter` method
-	  // https://tc39.github.io/ecma262/#sec-array.prototype.filter
-	  filter: createMethod$1(2),
-	  // `Array.prototype.some` method
-	  // https://tc39.github.io/ecma262/#sec-array.prototype.some
-	  some: createMethod$1(3),
-	  // `Array.prototype.every` method
-	  // https://tc39.github.io/ecma262/#sec-array.prototype.every
-	  every: createMethod$1(4),
-	  // `Array.prototype.find` method
-	  // https://tc39.github.io/ecma262/#sec-array.prototype.find
-	  find: createMethod$1(5),
-	  // `Array.prototype.findIndex` method
-	  // https://tc39.github.io/ecma262/#sec-array.prototype.findIndex
-	  findIndex: createMethod$1(6)
-	};
-
-	// `Object.keys` method
-	// https://tc39.github.io/ecma262/#sec-object.keys
-	var objectKeys = Object.keys || function keys(O) {
-	  return objectKeysInternal(O, enumBugKeys);
-	};
-
-	// `Object.defineProperties` method
-	// https://tc39.github.io/ecma262/#sec-object.defineproperties
-	var objectDefineProperties = descriptors ? Object.defineProperties : function defineProperties(O, Properties) {
-	  anObject(O);
-	  var keys = objectKeys(Properties);
-	  var length = keys.length;
-	  var index = 0;
-	  var key;
-	  while (length > index) objectDefineProperty.f(O, key = keys[index++], Properties[key]);
-	  return O;
-	};
-
-	var html = getBuiltIn('document', 'documentElement');
-
-	var GT = '>';
-	var LT = '<';
-	var PROTOTYPE = 'prototype';
-	var SCRIPT = 'script';
-	var IE_PROTO = sharedKey('IE_PROTO');
-
-	var EmptyConstructor = function () { /* empty */ };
-
-	var scriptTag = function (content) {
-	  return LT + SCRIPT + GT + content + LT + '/' + SCRIPT + GT;
-	};
-
-	// Create object with fake `null` prototype: use ActiveX Object with cleared prototype
-	var NullProtoObjectViaActiveX = function (activeXDocument) {
-	  activeXDocument.write(scriptTag(''));
-	  activeXDocument.close();
-	  var temp = activeXDocument.parentWindow.Object;
-	  activeXDocument = null; // avoid memory leak
-	  return temp;
-	};
-
-	// Create object with fake `null` prototype: use iframe Object with cleared prototype
-	var NullProtoObjectViaIFrame = function () {
-	  // Thrash, waste and sodomy: IE GC bug
-	  var iframe = documentCreateElement('iframe');
-	  var JS = 'java' + SCRIPT + ':';
-	  var iframeDocument;
-	  iframe.style.display = 'none';
-	  html.appendChild(iframe);
-	  // https://github.com/zloirock/core-js/issues/475
-	  iframe.src = String(JS);
-	  iframeDocument = iframe.contentWindow.document;
-	  iframeDocument.open();
-	  iframeDocument.write(scriptTag('document.F=Object'));
-	  iframeDocument.close();
-	  return iframeDocument.F;
-	};
-
-	// Check for document.domain and active x support
-	// No need to use active x approach when document.domain is not set
-	// see https://github.com/es-shims/es5-shim/issues/150
-	// variation of https://github.com/kitcambridge/es5-shim/commit/4f738ac066346
-	// avoid IE GC bug
-	var activeXDocument;
-	var NullProtoObject = function () {
-	  try {
-	    /* global ActiveXObject */
-	    activeXDocument = document.domain && new ActiveXObject('htmlfile');
-	  } catch (error) { /* ignore */ }
-	  NullProtoObject = activeXDocument ? NullProtoObjectViaActiveX(activeXDocument) : NullProtoObjectViaIFrame();
-	  var length = enumBugKeys.length;
-	  while (length--) delete NullProtoObject[PROTOTYPE][enumBugKeys[length]];
-	  return NullProtoObject();
-	};
-
-	hiddenKeys[IE_PROTO] = true;
-
-	// `Object.create` method
-	// https://tc39.github.io/ecma262/#sec-object.create
-	var objectCreate = Object.create || function create(O, Properties) {
-	  var result;
-	  if (O !== null) {
-	    EmptyConstructor[PROTOTYPE] = anObject(O);
-	    result = new EmptyConstructor();
-	    EmptyConstructor[PROTOTYPE] = null;
-	    // add "__proto__" for Object.getPrototypeOf polyfill
-	    result[IE_PROTO] = O;
-	  } else result = NullProtoObject();
-	  return Properties === undefined ? result : objectDefineProperties(result, Properties);
-	};
-
-	var UNSCOPABLES = wellKnownSymbol('unscopables');
-	var ArrayPrototype = Array.prototype;
-
-	// Array.prototype[@@unscopables]
-	// https://tc39.github.io/ecma262/#sec-array.prototype-@@unscopables
-	if (ArrayPrototype[UNSCOPABLES] == undefined) {
-	  objectDefineProperty.f(ArrayPrototype, UNSCOPABLES, {
-	    configurable: true,
-	    value: objectCreate(null)
-	  });
-	}
-
-	// add a key to Array.prototype[@@unscopables]
-	var addToUnscopables = function (key) {
-	  ArrayPrototype[UNSCOPABLES][key] = true;
-	};
-
-	var defineProperty = Object.defineProperty;
-	var cache = {};
-
-	var thrower = function (it) { throw it; };
-
-	var arrayMethodUsesToLength = function (METHOD_NAME, options) {
-	  if (has(cache, METHOD_NAME)) return cache[METHOD_NAME];
-	  if (!options) options = {};
-	  var method = [][METHOD_NAME];
-	  var ACCESSORS = has(options, 'ACCESSORS') ? options.ACCESSORS : false;
-	  var argument0 = has(options, 0) ? options[0] : thrower;
-	  var argument1 = has(options, 1) ? options[1] : undefined;
-
-	  return cache[METHOD_NAME] = !!method && !fails(function () {
-	    if (ACCESSORS && !descriptors) return true;
-	    var O = { length: -1 };
-
-	    if (ACCESSORS) defineProperty(O, 1, { enumerable: true, get: thrower });
-	    else O[1] = 1;
-
-	    method.call(O, argument0, argument1);
-	  });
-	};
-
-	var $find = arrayIteration.find;
-
-
-
-	var FIND = 'find';
-	var SKIPS_HOLES = true;
-
-	var USES_TO_LENGTH = arrayMethodUsesToLength(FIND);
-
-	// Shouldn't skip holes
-	if (FIND in []) Array(1)[FIND](function () { SKIPS_HOLES = false; });
-
-	// `Array.prototype.find` method
-	// https://tc39.github.io/ecma262/#sec-array.prototype.find
-	_export({ target: 'Array', proto: true, forced: SKIPS_HOLES || !USES_TO_LENGTH }, {
-	  find: function find(callbackfn /* , that = undefined */) {
-	    return $find(this, callbackfn, arguments.length > 1 ? arguments[1] : undefined);
-	  }
-	});
-
-	// https://tc39.github.io/ecma262/#sec-array.prototype-@@unscopables
-	addToUnscopables(FIND);
-
-	var $includes = arrayIncludes.includes;
-
-
-
-	var USES_TO_LENGTH$1 = arrayMethodUsesToLength('indexOf', { ACCESSORS: true, 1: 0 });
-
-	// `Array.prototype.includes` method
-	// https://tc39.github.io/ecma262/#sec-array.prototype.includes
-	_export({ target: 'Array', proto: true, forced: !USES_TO_LENGTH$1 }, {
-	  includes: function includes(el /* , fromIndex = 0 */) {
-	    return $includes(this, el, arguments.length > 1 ? arguments[1] : undefined);
-	  }
-	});
-
-	// https://tc39.github.io/ecma262/#sec-array.prototype-@@unscopables
-	addToUnscopables('includes');
-
-	var nativeAssign = Object.assign;
-	var defineProperty$1 = Object.defineProperty;
-
-	// `Object.assign` method
-	// https://tc39.github.io/ecma262/#sec-object.assign
-	var objectAssign = !nativeAssign || fails(function () {
-	  // should have correct order of operations (Edge bug)
-	  if (descriptors && nativeAssign({ b: 1 }, nativeAssign(defineProperty$1({}, 'a', {
-	    enumerable: true,
-	    get: function () {
-	      defineProperty$1(this, 'b', {
-	        value: 3,
-	        enumerable: false
-	      });
-	    }
-	  }), { b: 2 })).b !== 1) return true;
-	  // should work with symbols and should have deterministic property order (V8 bug)
-	  var A = {};
-	  var B = {};
-	  // eslint-disable-next-line no-undef
-	  var symbol = Symbol();
-	  var alphabet = 'abcdefghijklmnopqrst';
-	  A[symbol] = 7;
-	  alphabet.split('').forEach(function (chr) { B[chr] = chr; });
-	  return nativeAssign({}, A)[symbol] != 7 || objectKeys(nativeAssign({}, B)).join('') != alphabet;
-	}) ? function assign(target, source) { // eslint-disable-line no-unused-vars
-	  var T = toObject(target);
-	  var argumentsLength = arguments.length;
-	  var index = 1;
-	  var getOwnPropertySymbols = objectGetOwnPropertySymbols.f;
-	  var propertyIsEnumerable = objectPropertyIsEnumerable.f;
-	  while (argumentsLength > index) {
-	    var S = indexedObject(arguments[index++]);
-	    var keys = getOwnPropertySymbols ? objectKeys(S).concat(getOwnPropertySymbols(S)) : objectKeys(S);
-	    var length = keys.length;
-	    var j = 0;
-	    var key;
-	    while (length > j) {
-	      key = keys[j++];
-	      if (!descriptors || propertyIsEnumerable.call(S, key)) T[key] = S[key];
-	    }
-	  } return T;
-	} : nativeAssign;
-
-	// `Object.assign` method
-	// https://tc39.github.io/ecma262/#sec-object.assign
-	_export({ target: 'Object', stat: true, forced: Object.assign !== objectAssign }, {
-	  assign: objectAssign
-	});
-
-	var MATCH = wellKnownSymbol('match');
-
-	// `IsRegExp` abstract operation
-	// https://tc39.github.io/ecma262/#sec-isregexp
-	var isRegexp = function (it) {
-	  var isRegExp;
-	  return isObject(it) && ((isRegExp = it[MATCH]) !== undefined ? !!isRegExp : classofRaw(it) == 'RegExp');
-	};
-
-	var notARegexp = function (it) {
-	  if (isRegexp(it)) {
-	    throw TypeError("The method doesn't accept regular expressions");
-	  } return it;
-	};
-
-	var MATCH$1 = wellKnownSymbol('match');
-
-	var correctIsRegexpLogic = function (METHOD_NAME) {
-	  var regexp = /./;
-	  try {
-	    '/./'[METHOD_NAME](regexp);
-	  } catch (e) {
-	    try {
-	      regexp[MATCH$1] = false;
-	      return '/./'[METHOD_NAME](regexp);
-	    } catch (f) { /* empty */ }
-	  } return false;
-	};
-
-	// `String.prototype.includes` method
-	// https://tc39.github.io/ecma262/#sec-string.prototype.includes
-	_export({ target: 'String', proto: true, forced: !correctIsRegexpLogic('includes') }, {
-	  includes: function includes(searchString /* , position = 0 */) {
-	    return !!~String(requireObjectCoercible(this))
-	      .indexOf(notARegexp(searchString), arguments.length > 1 ? arguments[1] : undefined);
-	  }
-	});
-
-	var getOwnPropertyDescriptor$2 = objectGetOwnPropertyDescriptor.f;
-
-
-
-
-
-
-	var nativeStartsWith = ''.startsWith;
-	var min$2 = Math.min;
-
-	var CORRECT_IS_REGEXP_LOGIC = correctIsRegexpLogic('startsWith');
-	// https://github.com/zloirock/core-js/pull/702
-	var MDN_POLYFILL_BUG =  !CORRECT_IS_REGEXP_LOGIC && !!function () {
-	  var descriptor = getOwnPropertyDescriptor$2(String.prototype, 'startsWith');
-	  return descriptor && !descriptor.writable;
-	}();
-
-	// `String.prototype.startsWith` method
-	// https://tc39.github.io/ecma262/#sec-string.prototype.startswith
-	_export({ target: 'String', proto: true, forced: !MDN_POLYFILL_BUG && !CORRECT_IS_REGEXP_LOGIC }, {
-	  startsWith: function startsWith(searchString /* , position = 0 */) {
-	    var that = String(requireObjectCoercible(this));
-	    notARegexp(searchString);
-	    var index = toLength(min$2(arguments.length > 1 ? arguments[1] : undefined, that.length));
-	    var search = String(searchString);
-	    return nativeStartsWith
-	      ? nativeStartsWith.call(that, search, index)
-	      : that.slice(index, index + search.length) === search;
-	  }
-	});
-
-	if (typeof window !== "undefined") {
-	  (function () {
-	    try {
-	      if (typeof SVGElement === 'undefined' || Boolean(SVGElement.prototype.innerHTML)) {
-	        return;
-	      }
-	    } catch (e) {
-	        return;
-	    }
-
-	    function serializeNode (node) {
-	      switch (node.nodeType) {
-	        case 1:
-	          return serializeElementNode(node);
-	        case 3:
-	          return serializeTextNode(node);
-	        case 8:
-	          return serializeCommentNode(node);
-	      }
-	    }
-
-	    function serializeTextNode (node) {
-	        return node.textContent.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-	    }
-
-	    function serializeCommentNode (node) {
-	        return '<!--' + node.nodeValue + '-->'
-	    }
-
-	    function serializeElementNode (node) {
-	        var output = '';
-
-	        output += '<' + node.tagName;
-
-	        if (node.hasAttributes()) {
-	            [].forEach.call(node.attributes, function(attrNode) {
-	                output += ' ' + attrNode.name + '="' + attrNode.value + '"';
-	            });
-	        }
-
-	        output += '>';
-
-	        if (node.hasChildNodes()) {
-	            [].forEach.call(node.childNodes, function(childNode) {
-	                output += serializeNode(childNode);
-	            });
-	        }
-
-	        output += '</' + node.tagName + '>';
-
-	        return output;
-	    }
-
-	    Object.defineProperty(SVGElement.prototype, 'innerHTML', {
-	      get: function () {
-	        var output = '';
-
-	        [].forEach.call(this.childNodes, function(childNode) {
-	            output += serializeNode(childNode);
-	        });
-
-	        return output;
-	      },
-	      set: function (markup) {
-	        while (this.firstChild) {
-	          this.removeChild(this.firstChild);
-	        }
-
-	        try {
-	          var dXML = new DOMParser();
-	          dXML.async = false;
-
-	          var sXML = '<svg xmlns=\'http://www.w3.org/2000/svg\' xmlns:xlink=\'http://www.w3.org/1999/xlink\'>' + markup + '</svg>';
-	          var svgDocElement = dXML.parseFromString(sXML, 'text/xml').documentElement;
-
-	          [].forEach.call(svgDocElement.childNodes, function(childNode) {
-	              this.appendChild(this.ownerDocument.importNode(childNode, true));
-	          }.bind(this));
-	        } catch (e) {
-	            throw new Error('Error parsing markup string');
-	        }
-	      }
-	    });
-
-	    Object.defineProperty(SVGElement.prototype, 'innerSVG', {
-	      get: function () {
-	        return this.innerHTML;
-	      },
-	      set: function (markup) {
-	        this.innerHTML = markup;
-	      }
-	    });
-
-	  })();
-	}
-
-})));
+  typeof define === 'function' && define.amd ? define(factory) : factory();
+})(function () {
+  'use strict';
+
+  var commonjsGlobal = typeof globalThis !== 'undefined' ? globalThis : typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
+
+  function createCommonjsModule(fn, basedir, module) {
+    return module = {
+      path: basedir,
+      exports: {},
+      require: function require(path, base) {
+        return commonjsRequire(path, base === undefined || base === null ? module.path : base);
+      }
+    }, fn(module, module.exports), module.exports;
+  }
+
+  function commonjsRequire() {
+    throw new Error('Dynamic requires are not currently supported by @rollup/plugin-commonjs');
+  }
+
+  var check = function check(it) {
+    return it && it.Math == Math && it;
+  }; // https://github.com/zloirock/core-js/issues/86#issuecomment-115759028
+
+
+  var global_1 = // eslint-disable-next-line no-undef
+  check((typeof globalThis === "undefined" ? "undefined" : _typeof2(globalThis)) == 'object' && globalThis) || check((typeof window === "undefined" ? "undefined" : _typeof2(window)) == 'object' && window) || check((typeof self === "undefined" ? "undefined" : _typeof2(self)) == 'object' && self) || check(_typeof2(commonjsGlobal) == 'object' && commonjsGlobal) || // eslint-disable-next-line no-new-func
+  Function('return this')();
+
+  var fails = function fails(exec) {
+    try {
+      return !!exec();
+    } catch (error) {
+      return true;
+    }
+  }; // Thank's IE8 for his funny defineProperty
+
+
+  var descriptors = !fails(function () {
+    return Object.defineProperty({}, 1, {
+      get: function get() {
+        return 7;
+      }
+    })[1] != 7;
+  });
+  var nativePropertyIsEnumerable = {}.propertyIsEnumerable;
+  var getOwnPropertyDescriptor = Object.getOwnPropertyDescriptor; // Nashorn ~ JDK8 bug
+
+  var NASHORN_BUG = getOwnPropertyDescriptor && !nativePropertyIsEnumerable.call({
+    1: 2
+  }, 1); // `Object.prototype.propertyIsEnumerable` method implementation
+  // https://tc39.github.io/ecma262/#sec-object.prototype.propertyisenumerable
+
+  var f = NASHORN_BUG ? function propertyIsEnumerable(V) {
+    var descriptor = getOwnPropertyDescriptor(this, V);
+    return !!descriptor && descriptor.enumerable;
+  } : nativePropertyIsEnumerable;
+  var objectPropertyIsEnumerable = {
+    f: f
+  };
+
+  var createPropertyDescriptor = function createPropertyDescriptor(bitmap, value) {
+    return {
+      enumerable: !(bitmap & 1),
+      configurable: !(bitmap & 2),
+      writable: !(bitmap & 4),
+      value: value
+    };
+  };
+
+  var toString = {}.toString;
+
+  var classofRaw = function classofRaw(it) {
+    return toString.call(it).slice(8, -1);
+  };
+
+  var split = ''.split; // fallback for non-array-like ES3 and non-enumerable old V8 strings
+
+  var indexedObject = fails(function () {
+    // throws an error in rhino, see https://github.com/mozilla/rhino/issues/346
+    // eslint-disable-next-line no-prototype-builtins
+    return !Object('z').propertyIsEnumerable(0);
+  }) ? function (it) {
+    return classofRaw(it) == 'String' ? split.call(it, '') : Object(it);
+  } : Object; // `RequireObjectCoercible` abstract operation
+  // https://tc39.github.io/ecma262/#sec-requireobjectcoercible
+
+  var requireObjectCoercible = function requireObjectCoercible(it) {
+    if (it == undefined) throw TypeError("Can't call method on " + it);
+    return it;
+  }; // toObject with fallback for non-array-like ES3 strings
+
+
+  var toIndexedObject = function toIndexedObject(it) {
+    return indexedObject(requireObjectCoercible(it));
+  };
+
+  var isObject = function isObject(it) {
+    return _typeof2(it) === 'object' ? it !== null : typeof it === 'function';
+  }; // `ToPrimitive` abstract operation
+  // https://tc39.github.io/ecma262/#sec-toprimitive
+  // instead of the ES6 spec version, we didn't implement @@toPrimitive case
+  // and the second argument - flag - preferred type is a string
+
+
+  var toPrimitive = function toPrimitive(input, PREFERRED_STRING) {
+    if (!isObject(input)) return input;
+    var fn, val;
+    if (PREFERRED_STRING && typeof (fn = input.toString) == 'function' && !isObject(val = fn.call(input))) return val;
+    if (typeof (fn = input.valueOf) == 'function' && !isObject(val = fn.call(input))) return val;
+    if (!PREFERRED_STRING && typeof (fn = input.toString) == 'function' && !isObject(val = fn.call(input))) return val;
+    throw TypeError("Can't convert object to primitive value");
+  };
+
+  var hasOwnProperty = {}.hasOwnProperty;
+
+  var has = function has(it, key) {
+    return hasOwnProperty.call(it, key);
+  };
+
+  var document$1 = global_1.document; // typeof document.createElement is 'object' in old IE
+
+  var EXISTS = isObject(document$1) && isObject(document$1.createElement);
+
+  var documentCreateElement = function documentCreateElement(it) {
+    return EXISTS ? document$1.createElement(it) : {};
+  }; // Thank's IE8 for his funny defineProperty
+
+
+  var ie8DomDefine = !descriptors && !fails(function () {
+    return Object.defineProperty(documentCreateElement('div'), 'a', {
+      get: function get() {
+        return 7;
+      }
+    }).a != 7;
+  });
+  var nativeGetOwnPropertyDescriptor = Object.getOwnPropertyDescriptor; // `Object.getOwnPropertyDescriptor` method
+  // https://tc39.github.io/ecma262/#sec-object.getownpropertydescriptor
+
+  var f$1 = descriptors ? nativeGetOwnPropertyDescriptor : function getOwnPropertyDescriptor(O, P) {
+    O = toIndexedObject(O);
+    P = toPrimitive(P, true);
+    if (ie8DomDefine) try {
+      return nativeGetOwnPropertyDescriptor(O, P);
+    } catch (error) {
+      /* empty */
+    }
+    if (has(O, P)) return createPropertyDescriptor(!objectPropertyIsEnumerable.f.call(O, P), O[P]);
+  };
+  var objectGetOwnPropertyDescriptor = {
+    f: f$1
+  };
+
+  var anObject = function anObject(it) {
+    if (!isObject(it)) {
+      throw TypeError(String(it) + ' is not an object');
+    }
+
+    return it;
+  };
+
+  var nativeDefineProperty = Object.defineProperty; // `Object.defineProperty` method
+  // https://tc39.github.io/ecma262/#sec-object.defineproperty
+
+  var f$2 = descriptors ? nativeDefineProperty : function defineProperty(O, P, Attributes) {
+    anObject(O);
+    P = toPrimitive(P, true);
+    anObject(Attributes);
+    if (ie8DomDefine) try {
+      return nativeDefineProperty(O, P, Attributes);
+    } catch (error) {
+      /* empty */
+    }
+    if ('get' in Attributes || 'set' in Attributes) throw TypeError('Accessors not supported');
+    if ('value' in Attributes) O[P] = Attributes.value;
+    return O;
+  };
+  var objectDefineProperty = {
+    f: f$2
+  };
+  var createNonEnumerableProperty = descriptors ? function (object, key, value) {
+    return objectDefineProperty.f(object, key, createPropertyDescriptor(1, value));
+  } : function (object, key, value) {
+    object[key] = value;
+    return object;
+  };
+
+  var setGlobal = function setGlobal(key, value) {
+    try {
+      createNonEnumerableProperty(global_1, key, value);
+    } catch (error) {
+      global_1[key] = value;
+    }
+
+    return value;
+  };
+
+  var SHARED = '__core-js_shared__';
+  var store = global_1[SHARED] || setGlobal(SHARED, {});
+  var sharedStore = store;
+  var functionToString = Function.toString; // this helper broken in `3.4.1-3.4.4`, so we can't use `shared` helper
+
+  if (typeof sharedStore.inspectSource != 'function') {
+    sharedStore.inspectSource = function (it) {
+      return functionToString.call(it);
+    };
+  }
+
+  var inspectSource = sharedStore.inspectSource;
+  var WeakMap = global_1.WeakMap;
+  var nativeWeakMap = typeof WeakMap === 'function' && /native code/.test(inspectSource(WeakMap));
+  var shared = createCommonjsModule(function (module) {
+    (module.exports = function (key, value) {
+      return sharedStore[key] || (sharedStore[key] = value !== undefined ? value : {});
+    })('versions', []).push({
+      version: '3.6.5',
+      mode: 'global',
+      copyright: '© 2020 Denis Pushkarev (zloirock.ru)'
+    });
+  });
+  var id = 0;
+  var postfix = Math.random();
+
+  var uid = function uid(key) {
+    return 'Symbol(' + String(key === undefined ? '' : key) + ')_' + (++id + postfix).toString(36);
+  };
+
+  var keys = shared('keys');
+
+  var sharedKey = function sharedKey(key) {
+    return keys[key] || (keys[key] = uid(key));
+  };
+
+  var hiddenKeys = {};
+  var WeakMap$1 = global_1.WeakMap;
+  var set, get, has$1;
+
+  var enforce = function enforce(it) {
+    return has$1(it) ? get(it) : set(it, {});
+  };
+
+  var getterFor = function getterFor(TYPE) {
+    return function (it) {
+      var state;
+
+      if (!isObject(it) || (state = get(it)).type !== TYPE) {
+        throw TypeError('Incompatible receiver, ' + TYPE + ' required');
+      }
+
+      return state;
+    };
+  };
+
+  if (nativeWeakMap) {
+    var store$1 = new WeakMap$1();
+    var wmget = store$1.get;
+    var wmhas = store$1.has;
+    var wmset = store$1.set;
+
+    set = function set(it, metadata) {
+      wmset.call(store$1, it, metadata);
+      return metadata;
+    };
+
+    get = function get(it) {
+      return wmget.call(store$1, it) || {};
+    };
+
+    has$1 = function has$1(it) {
+      return wmhas.call(store$1, it);
+    };
+  } else {
+    var STATE = sharedKey('state');
+    hiddenKeys[STATE] = true;
+
+    set = function set(it, metadata) {
+      createNonEnumerableProperty(it, STATE, metadata);
+      return metadata;
+    };
+
+    get = function get(it) {
+      return has(it, STATE) ? it[STATE] : {};
+    };
+
+    has$1 = function has$1(it) {
+      return has(it, STATE);
+    };
+  }
+
+  var internalState = {
+    set: set,
+    get: get,
+    has: has$1,
+    enforce: enforce,
+    getterFor: getterFor
+  };
+  var redefine = createCommonjsModule(function (module) {
+    var getInternalState = internalState.get;
+    var enforceInternalState = internalState.enforce;
+    var TEMPLATE = String(String).split('String');
+    (module.exports = function (O, key, value, options) {
+      var unsafe = options ? !!options.unsafe : false;
+      var simple = options ? !!options.enumerable : false;
+      var noTargetGet = options ? !!options.noTargetGet : false;
+
+      if (typeof value == 'function') {
+        if (typeof key == 'string' && !has(value, 'name')) createNonEnumerableProperty(value, 'name', key);
+        enforceInternalState(value).source = TEMPLATE.join(typeof key == 'string' ? key : '');
+      }
+
+      if (O === global_1) {
+        if (simple) O[key] = value;else setGlobal(key, value);
+        return;
+      } else if (!unsafe) {
+        delete O[key];
+      } else if (!noTargetGet && O[key]) {
+        simple = true;
+      }
+
+      if (simple) O[key] = value;else createNonEnumerableProperty(O, key, value); // add fake Function#toString for correct work wrapped methods / constructors with methods like LoDash isNative
+    })(Function.prototype, 'toString', function toString() {
+      return typeof this == 'function' && getInternalState(this).source || inspectSource(this);
+    });
+  });
+  var path = global_1;
+
+  var aFunction = function aFunction(variable) {
+    return typeof variable == 'function' ? variable : undefined;
+  };
+
+  var getBuiltIn = function getBuiltIn(namespace, method) {
+    return arguments.length < 2 ? aFunction(path[namespace]) || aFunction(global_1[namespace]) : path[namespace] && path[namespace][method] || global_1[namespace] && global_1[namespace][method];
+  };
+
+  var ceil = Math.ceil;
+  var floor = Math.floor; // `ToInteger` abstract operation
+  // https://tc39.github.io/ecma262/#sec-tointeger
+
+  var toInteger = function toInteger(argument) {
+    return isNaN(argument = +argument) ? 0 : (argument > 0 ? floor : ceil)(argument);
+  };
+
+  var min = Math.min; // `ToLength` abstract operation
+  // https://tc39.github.io/ecma262/#sec-tolength
+
+  var toLength = function toLength(argument) {
+    return argument > 0 ? min(toInteger(argument), 0x1FFFFFFFFFFFFF) : 0; // 2 ** 53 - 1 == 9007199254740991
+  };
+
+  var max = Math.max;
+  var min$1 = Math.min; // Helper for a popular repeating case of the spec:
+  // Let integer be ? ToInteger(index).
+  // If integer < 0, let result be max((length + integer), 0); else let result be min(integer, length).
+
+  var toAbsoluteIndex = function toAbsoluteIndex(index, length) {
+    var integer = toInteger(index);
+    return integer < 0 ? max(integer + length, 0) : min$1(integer, length);
+  }; // `Array.prototype.{ indexOf, includes }` methods implementation
+
+
+  var createMethod = function createMethod(IS_INCLUDES) {
+    return function ($this, el, fromIndex) {
+      var O = toIndexedObject($this);
+      var length = toLength(O.length);
+      var index = toAbsoluteIndex(fromIndex, length);
+      var value; // Array#includes uses SameValueZero equality algorithm
+      // eslint-disable-next-line no-self-compare
+
+      if (IS_INCLUDES && el != el) while (length > index) {
+        value = O[index++]; // eslint-disable-next-line no-self-compare
+
+        if (value != value) return true; // Array#indexOf ignores holes, Array#includes - not
+      } else for (; length > index; index++) {
+        if ((IS_INCLUDES || index in O) && O[index] === el) return IS_INCLUDES || index || 0;
+      }
+      return !IS_INCLUDES && -1;
+    };
+  };
+
+  var arrayIncludes = {
+    // `Array.prototype.includes` method
+    // https://tc39.github.io/ecma262/#sec-array.prototype.includes
+    includes: createMethod(true),
+    // `Array.prototype.indexOf` method
+    // https://tc39.github.io/ecma262/#sec-array.prototype.indexof
+    indexOf: createMethod(false)
+  };
+  var indexOf = arrayIncludes.indexOf;
+
+  var objectKeysInternal = function objectKeysInternal(object, names) {
+    var O = toIndexedObject(object);
+    var i = 0;
+    var result = [];
+    var key;
+
+    for (key in O) {
+      !has(hiddenKeys, key) && has(O, key) && result.push(key);
+    } // Don't enum bug & hidden keys
+
+
+    while (names.length > i) {
+      if (has(O, key = names[i++])) {
+        ~indexOf(result, key) || result.push(key);
+      }
+    }
+
+    return result;
+  }; // IE8- don't enum bug keys
+
+
+  var enumBugKeys = ['constructor', 'hasOwnProperty', 'isPrototypeOf', 'propertyIsEnumerable', 'toLocaleString', 'toString', 'valueOf'];
+  var hiddenKeys$1 = enumBugKeys.concat('length', 'prototype'); // `Object.getOwnPropertyNames` method
+  // https://tc39.github.io/ecma262/#sec-object.getownpropertynames
+
+  var f$3 = Object.getOwnPropertyNames || function getOwnPropertyNames(O) {
+    return objectKeysInternal(O, hiddenKeys$1);
+  };
+
+  var objectGetOwnPropertyNames = {
+    f: f$3
+  };
+  var f$4 = Object.getOwnPropertySymbols;
+  var objectGetOwnPropertySymbols = {
+    f: f$4
+  }; // all object keys, includes non-enumerable and symbols
+
+  var ownKeys = getBuiltIn('Reflect', 'ownKeys') || function ownKeys(it) {
+    var keys = objectGetOwnPropertyNames.f(anObject(it));
+    var getOwnPropertySymbols = objectGetOwnPropertySymbols.f;
+    return getOwnPropertySymbols ? keys.concat(getOwnPropertySymbols(it)) : keys;
+  };
+
+  var copyConstructorProperties = function copyConstructorProperties(target, source) {
+    var keys = ownKeys(source);
+    var defineProperty = objectDefineProperty.f;
+    var getOwnPropertyDescriptor = objectGetOwnPropertyDescriptor.f;
+
+    for (var i = 0; i < keys.length; i++) {
+      var key = keys[i];
+      if (!has(target, key)) defineProperty(target, key, getOwnPropertyDescriptor(source, key));
+    }
+  };
+
+  var replacement = /#|\.prototype\./;
+
+  var isForced = function isForced(feature, detection) {
+    var value = data[normalize(feature)];
+    return value == POLYFILL ? true : value == NATIVE ? false : typeof detection == 'function' ? fails(detection) : !!detection;
+  };
+
+  var normalize = isForced.normalize = function (string) {
+    return String(string).replace(replacement, '.').toLowerCase();
+  };
+
+  var data = isForced.data = {};
+  var NATIVE = isForced.NATIVE = 'N';
+  var POLYFILL = isForced.POLYFILL = 'P';
+  var isForced_1 = isForced;
+  var getOwnPropertyDescriptor$1 = objectGetOwnPropertyDescriptor.f;
+  /*
+    options.target      - name of the target object
+    options.global      - target is the global object
+    options.stat        - export as static methods of target
+    options.proto       - export as prototype methods of target
+    options.real        - real prototype method for the `pure` version
+    options.forced      - export even if the native feature is available
+    options.bind        - bind methods to the target, required for the `pure` version
+    options.wrap        - wrap constructors to preventing global pollution, required for the `pure` version
+    options.unsafe      - use the simple assignment of property instead of delete + defineProperty
+    options.sham        - add a flag to not completely full polyfills
+    options.enumerable  - export as enumerable property
+    options.noTargetGet - prevent calling a getter on target
+  */
+
+  var _export = function _export(options, source) {
+    var TARGET = options.target;
+    var GLOBAL = options.global;
+    var STATIC = options.stat;
+    var FORCED, target, key, targetProperty, sourceProperty, descriptor;
+
+    if (GLOBAL) {
+      target = global_1;
+    } else if (STATIC) {
+      target = global_1[TARGET] || setGlobal(TARGET, {});
+    } else {
+      target = (global_1[TARGET] || {}).prototype;
+    }
+
+    if (target) for (key in source) {
+      sourceProperty = source[key];
+
+      if (options.noTargetGet) {
+        descriptor = getOwnPropertyDescriptor$1(target, key);
+        targetProperty = descriptor && descriptor.value;
+      } else targetProperty = target[key];
+
+      FORCED = isForced_1(GLOBAL ? key : TARGET + (STATIC ? '.' : '#') + key, options.forced); // contained in target
+
+      if (!FORCED && targetProperty !== undefined) {
+        if (_typeof2(sourceProperty) === _typeof2(targetProperty)) continue;
+        copyConstructorProperties(sourceProperty, targetProperty);
+      } // add a flag to not completely full polyfills
+
+
+      if (options.sham || targetProperty && targetProperty.sham) {
+        createNonEnumerableProperty(sourceProperty, 'sham', true);
+      } // extend global
+
+
+      redefine(target, key, sourceProperty, options);
+    }
+  };
+
+  var aFunction$1 = function aFunction$1(it) {
+    if (typeof it != 'function') {
+      throw TypeError(String(it) + ' is not a function');
+    }
+
+    return it;
+  }; // optional / simple context binding
+
+
+  var functionBindContext = function functionBindContext(fn, that, length) {
+    aFunction$1(fn);
+    if (that === undefined) return fn;
+
+    switch (length) {
+      case 0:
+        return function () {
+          return fn.call(that);
+        };
+
+      case 1:
+        return function (a) {
+          return fn.call(that, a);
+        };
+
+      case 2:
+        return function (a, b) {
+          return fn.call(that, a, b);
+        };
+
+      case 3:
+        return function (a, b, c) {
+          return fn.call(that, a, b, c);
+        };
+    }
+
+    return function ()
+    /* ...args */
+    {
+      return fn.apply(that, arguments);
+    };
+  }; // `ToObject` abstract operation
+  // https://tc39.github.io/ecma262/#sec-toobject
+
+
+  var toObject = function toObject(argument) {
+    return Object(requireObjectCoercible(argument));
+  }; // `IsArray` abstract operation
+  // https://tc39.github.io/ecma262/#sec-isarray
+
+
+  var isArray = Array.isArray || function isArray(arg) {
+    return classofRaw(arg) == 'Array';
+  };
+
+  var nativeSymbol = !!Object.getOwnPropertySymbols && !fails(function () {
+    // Chrome 38 Symbol has incorrect toString conversion
+    // eslint-disable-next-line no-undef
+    return !String(Symbol());
+  });
+  var useSymbolAsUid = nativeSymbol // eslint-disable-next-line no-undef
+  && !Symbol.sham // eslint-disable-next-line no-undef
+  && _typeof2(Symbol.iterator) == 'symbol';
+  var WellKnownSymbolsStore = shared('wks');
+  var Symbol$1 = global_1.Symbol;
+  var createWellKnownSymbol = useSymbolAsUid ? Symbol$1 : Symbol$1 && Symbol$1.withoutSetter || uid;
+
+  var wellKnownSymbol = function wellKnownSymbol(name) {
+    if (!has(WellKnownSymbolsStore, name)) {
+      if (nativeSymbol && has(Symbol$1, name)) WellKnownSymbolsStore[name] = Symbol$1[name];else WellKnownSymbolsStore[name] = createWellKnownSymbol('Symbol.' + name);
+    }
+
+    return WellKnownSymbolsStore[name];
+  };
+
+  var SPECIES = wellKnownSymbol('species'); // `ArraySpeciesCreate` abstract operation
+  // https://tc39.github.io/ecma262/#sec-arrayspeciescreate
+
+  var arraySpeciesCreate = function arraySpeciesCreate(originalArray, length) {
+    var C;
+
+    if (isArray(originalArray)) {
+      C = originalArray.constructor; // cross-realm fallback
+
+      if (typeof C == 'function' && (C === Array || isArray(C.prototype))) C = undefined;else if (isObject(C)) {
+        C = C[SPECIES];
+        if (C === null) C = undefined;
+      }
+    }
+
+    return new (C === undefined ? Array : C)(length === 0 ? 0 : length);
+  };
+
+  var push = [].push; // `Array.prototype.{ forEach, map, filter, some, every, find, findIndex }` methods implementation
+
+  var createMethod$1 = function createMethod$1(TYPE) {
+    var IS_MAP = TYPE == 1;
+    var IS_FILTER = TYPE == 2;
+    var IS_SOME = TYPE == 3;
+    var IS_EVERY = TYPE == 4;
+    var IS_FIND_INDEX = TYPE == 6;
+    var NO_HOLES = TYPE == 5 || IS_FIND_INDEX;
+    return function ($this, callbackfn, that, specificCreate) {
+      var O = toObject($this);
+      var self = indexedObject(O);
+      var boundFunction = functionBindContext(callbackfn, that, 3);
+      var length = toLength(self.length);
+      var index = 0;
+      var create = specificCreate || arraySpeciesCreate;
+      var target = IS_MAP ? create($this, length) : IS_FILTER ? create($this, 0) : undefined;
+      var value, result;
+
+      for (; length > index; index++) {
+        if (NO_HOLES || index in self) {
+          value = self[index];
+          result = boundFunction(value, index, O);
+
+          if (TYPE) {
+            if (IS_MAP) target[index] = result; // map
+            else if (result) switch (TYPE) {
+                case 3:
+                  return true;
+                // some
+
+                case 5:
+                  return value;
+                // find
+
+                case 6:
+                  return index;
+                // findIndex
+
+                case 2:
+                  push.call(target, value);
+                // filter
+              } else if (IS_EVERY) return false; // every
+          }
+        }
+      }
+
+      return IS_FIND_INDEX ? -1 : IS_SOME || IS_EVERY ? IS_EVERY : target;
+    };
+  };
+
+  var arrayIteration = {
+    // `Array.prototype.forEach` method
+    // https://tc39.github.io/ecma262/#sec-array.prototype.foreach
+    forEach: createMethod$1(0),
+    // `Array.prototype.map` method
+    // https://tc39.github.io/ecma262/#sec-array.prototype.map
+    map: createMethod$1(1),
+    // `Array.prototype.filter` method
+    // https://tc39.github.io/ecma262/#sec-array.prototype.filter
+    filter: createMethod$1(2),
+    // `Array.prototype.some` method
+    // https://tc39.github.io/ecma262/#sec-array.prototype.some
+    some: createMethod$1(3),
+    // `Array.prototype.every` method
+    // https://tc39.github.io/ecma262/#sec-array.prototype.every
+    every: createMethod$1(4),
+    // `Array.prototype.find` method
+    // https://tc39.github.io/ecma262/#sec-array.prototype.find
+    find: createMethod$1(5),
+    // `Array.prototype.findIndex` method
+    // https://tc39.github.io/ecma262/#sec-array.prototype.findIndex
+    findIndex: createMethod$1(6)
+  }; // `Object.keys` method
+  // https://tc39.github.io/ecma262/#sec-object.keys
+
+  var objectKeys = Object.keys || function keys(O) {
+    return objectKeysInternal(O, enumBugKeys);
+  }; // `Object.defineProperties` method
+  // https://tc39.github.io/ecma262/#sec-object.defineproperties
+
+
+  var objectDefineProperties = descriptors ? Object.defineProperties : function defineProperties(O, Properties) {
+    anObject(O);
+    var keys = objectKeys(Properties);
+    var length = keys.length;
+    var index = 0;
+    var key;
+
+    while (length > index) {
+      objectDefineProperty.f(O, key = keys[index++], Properties[key]);
+    }
+
+    return O;
+  };
+  var html = getBuiltIn('document', 'documentElement');
+  var GT = '>';
+  var LT = '<';
+  var PROTOTYPE = 'prototype';
+  var SCRIPT = 'script';
+  var IE_PROTO = sharedKey('IE_PROTO');
+
+  var EmptyConstructor = function EmptyConstructor() {
+    /* empty */
+  };
+
+  var scriptTag = function scriptTag(content) {
+    return LT + SCRIPT + GT + content + LT + '/' + SCRIPT + GT;
+  }; // Create object with fake `null` prototype: use ActiveX Object with cleared prototype
+
+
+  var NullProtoObjectViaActiveX = function NullProtoObjectViaActiveX(activeXDocument) {
+    activeXDocument.write(scriptTag(''));
+    activeXDocument.close();
+    var temp = activeXDocument.parentWindow.Object;
+    activeXDocument = null; // avoid memory leak
+
+    return temp;
+  }; // Create object with fake `null` prototype: use iframe Object with cleared prototype
+
+
+  var NullProtoObjectViaIFrame = function NullProtoObjectViaIFrame() {
+    // Thrash, waste and sodomy: IE GC bug
+    var iframe = documentCreateElement('iframe');
+    var JS = 'java' + SCRIPT + ':';
+    var iframeDocument;
+    iframe.style.display = 'none';
+    html.appendChild(iframe); // https://github.com/zloirock/core-js/issues/475
+
+    iframe.src = String(JS);
+    iframeDocument = iframe.contentWindow.document;
+    iframeDocument.open();
+    iframeDocument.write(scriptTag('document.F=Object'));
+    iframeDocument.close();
+    return iframeDocument.F;
+  }; // Check for document.domain and active x support
+  // No need to use active x approach when document.domain is not set
+  // see https://github.com/es-shims/es5-shim/issues/150
+  // variation of https://github.com/kitcambridge/es5-shim/commit/4f738ac066346
+  // avoid IE GC bug
+
+
+  var activeXDocument;
+
+  var _NullProtoObject = function NullProtoObject() {
+    try {
+      /* global ActiveXObject */
+      activeXDocument = document.domain && new ActiveXObject('htmlfile');
+    } catch (error) {
+      /* ignore */
+    }
+
+    _NullProtoObject = activeXDocument ? NullProtoObjectViaActiveX(activeXDocument) : NullProtoObjectViaIFrame();
+    var length = enumBugKeys.length;
+
+    while (length--) {
+      delete _NullProtoObject[PROTOTYPE][enumBugKeys[length]];
+    }
+
+    return _NullProtoObject();
+  };
+
+  hiddenKeys[IE_PROTO] = true; // `Object.create` method
+  // https://tc39.github.io/ecma262/#sec-object.create
+
+  var objectCreate = Object.create || function create(O, Properties) {
+    var result;
+
+    if (O !== null) {
+      EmptyConstructor[PROTOTYPE] = anObject(O);
+      result = new EmptyConstructor();
+      EmptyConstructor[PROTOTYPE] = null; // add "__proto__" for Object.getPrototypeOf polyfill
+
+      result[IE_PROTO] = O;
+    } else result = _NullProtoObject();
+
+    return Properties === undefined ? result : objectDefineProperties(result, Properties);
+  };
+
+  var UNSCOPABLES = wellKnownSymbol('unscopables');
+  var ArrayPrototype = Array.prototype; // Array.prototype[@@unscopables]
+  // https://tc39.github.io/ecma262/#sec-array.prototype-@@unscopables
+
+  if (ArrayPrototype[UNSCOPABLES] == undefined) {
+    objectDefineProperty.f(ArrayPrototype, UNSCOPABLES, {
+      configurable: true,
+      value: objectCreate(null)
+    });
+  } // add a key to Array.prototype[@@unscopables]
+
+
+  var addToUnscopables = function addToUnscopables(key) {
+    ArrayPrototype[UNSCOPABLES][key] = true;
+  };
+
+  var defineProperty = Object.defineProperty;
+  var cache = {};
+
+  var thrower = function thrower(it) {
+    throw it;
+  };
+
+  var arrayMethodUsesToLength = function arrayMethodUsesToLength(METHOD_NAME, options) {
+    if (has(cache, METHOD_NAME)) return cache[METHOD_NAME];
+    if (!options) options = {};
+    var method = [][METHOD_NAME];
+    var ACCESSORS = has(options, 'ACCESSORS') ? options.ACCESSORS : false;
+    var argument0 = has(options, 0) ? options[0] : thrower;
+    var argument1 = has(options, 1) ? options[1] : undefined;
+    return cache[METHOD_NAME] = !!method && !fails(function () {
+      if (ACCESSORS && !descriptors) return true;
+      var O = {
+        length: -1
+      };
+      if (ACCESSORS) defineProperty(O, 1, {
+        enumerable: true,
+        get: thrower
+      });else O[1] = 1;
+      method.call(O, argument0, argument1);
+    });
+  };
+
+  var $find = arrayIteration.find;
+  var FIND = 'find';
+  var SKIPS_HOLES = true;
+  var USES_TO_LENGTH = arrayMethodUsesToLength(FIND); // Shouldn't skip holes
+
+  if (FIND in []) Array(1)[FIND](function () {
+    SKIPS_HOLES = false;
+  }); // `Array.prototype.find` method
+  // https://tc39.github.io/ecma262/#sec-array.prototype.find
+
+  _export({
+    target: 'Array',
+    proto: true,
+    forced: SKIPS_HOLES || !USES_TO_LENGTH
+  }, {
+    find: function find(callbackfn
+    /* , that = undefined */
+    ) {
+      return $find(this, callbackfn, arguments.length > 1 ? arguments[1] : undefined);
+    }
+  }); // https://tc39.github.io/ecma262/#sec-array.prototype-@@unscopables
+
+
+  addToUnscopables(FIND);
+  var $includes = arrayIncludes.includes;
+  var USES_TO_LENGTH$1 = arrayMethodUsesToLength('indexOf', {
+    ACCESSORS: true,
+    1: 0
+  }); // `Array.prototype.includes` method
+  // https://tc39.github.io/ecma262/#sec-array.prototype.includes
+
+  _export({
+    target: 'Array',
+    proto: true,
+    forced: !USES_TO_LENGTH$1
+  }, {
+    includes: function includes(el
+    /* , fromIndex = 0 */
+    ) {
+      return $includes(this, el, arguments.length > 1 ? arguments[1] : undefined);
+    }
+  }); // https://tc39.github.io/ecma262/#sec-array.prototype-@@unscopables
+
+
+  addToUnscopables('includes');
+  var nativeAssign = Object.assign;
+  var defineProperty$1 = Object.defineProperty; // `Object.assign` method
+  // https://tc39.github.io/ecma262/#sec-object.assign
+
+  var objectAssign = !nativeAssign || fails(function () {
+    // should have correct order of operations (Edge bug)
+    if (descriptors && nativeAssign({
+      b: 1
+    }, nativeAssign(defineProperty$1({}, 'a', {
+      enumerable: true,
+      get: function get() {
+        defineProperty$1(this, 'b', {
+          value: 3,
+          enumerable: false
+        });
+      }
+    }), {
+      b: 2
+    })).b !== 1) return true; // should work with symbols and should have deterministic property order (V8 bug)
+
+    var A = {};
+    var B = {}; // eslint-disable-next-line no-undef
+
+    var symbol = Symbol();
+    var alphabet = 'abcdefghijklmnopqrst';
+    A[symbol] = 7;
+    alphabet.split('').forEach(function (chr) {
+      B[chr] = chr;
+    });
+    return nativeAssign({}, A)[symbol] != 7 || objectKeys(nativeAssign({}, B)).join('') != alphabet;
+  }) ? function assign(target, source) {
+    // eslint-disable-line no-unused-vars
+    var T = toObject(target);
+    var argumentsLength = arguments.length;
+    var index = 1;
+    var getOwnPropertySymbols = objectGetOwnPropertySymbols.f;
+    var propertyIsEnumerable = objectPropertyIsEnumerable.f;
+
+    while (argumentsLength > index) {
+      var S = indexedObject(arguments[index++]);
+      var keys = getOwnPropertySymbols ? objectKeys(S).concat(getOwnPropertySymbols(S)) : objectKeys(S);
+      var length = keys.length;
+      var j = 0;
+      var key;
+
+      while (length > j) {
+        key = keys[j++];
+        if (!descriptors || propertyIsEnumerable.call(S, key)) T[key] = S[key];
+      }
+    }
+
+    return T;
+  } : nativeAssign; // `Object.assign` method
+  // https://tc39.github.io/ecma262/#sec-object.assign
+
+  _export({
+    target: 'Object',
+    stat: true,
+    forced: Object.assign !== objectAssign
+  }, {
+    assign: objectAssign
+  });
+
+  var MATCH = wellKnownSymbol('match'); // `IsRegExp` abstract operation
+  // https://tc39.github.io/ecma262/#sec-isregexp
+
+  var isRegexp = function isRegexp(it) {
+    var isRegExp;
+    return isObject(it) && ((isRegExp = it[MATCH]) !== undefined ? !!isRegExp : classofRaw(it) == 'RegExp');
+  };
+
+  var notARegexp = function notARegexp(it) {
+    if (isRegexp(it)) {
+      throw TypeError("The method doesn't accept regular expressions");
+    }
+
+    return it;
+  };
+
+  var MATCH$1 = wellKnownSymbol('match');
+
+  var correctIsRegexpLogic = function correctIsRegexpLogic(METHOD_NAME) {
+    var regexp = /./;
+
+    try {
+      '/./'[METHOD_NAME](regexp);
+    } catch (e) {
+      try {
+        regexp[MATCH$1] = false;
+        return '/./'[METHOD_NAME](regexp);
+      } catch (f) {
+        /* empty */
+      }
+    }
+
+    return false;
+  }; // `String.prototype.includes` method
+  // https://tc39.github.io/ecma262/#sec-string.prototype.includes
+
+
+  _export({
+    target: 'String',
+    proto: true,
+    forced: !correctIsRegexpLogic('includes')
+  }, {
+    includes: function includes(searchString
+    /* , position = 0 */
+    ) {
+      return !!~String(requireObjectCoercible(this)).indexOf(notARegexp(searchString), arguments.length > 1 ? arguments[1] : undefined);
+    }
+  });
+
+  var getOwnPropertyDescriptor$2 = objectGetOwnPropertyDescriptor.f;
+  var nativeStartsWith = ''.startsWith;
+  var min$2 = Math.min;
+  var CORRECT_IS_REGEXP_LOGIC = correctIsRegexpLogic('startsWith'); // https://github.com/zloirock/core-js/pull/702
+
+  var MDN_POLYFILL_BUG = !CORRECT_IS_REGEXP_LOGIC && !!function () {
+    var descriptor = getOwnPropertyDescriptor$2(String.prototype, 'startsWith');
+    return descriptor && !descriptor.writable;
+  }(); // `String.prototype.startsWith` method
+  // https://tc39.github.io/ecma262/#sec-string.prototype.startswith
+
+  _export({
+    target: 'String',
+    proto: true,
+    forced: !MDN_POLYFILL_BUG && !CORRECT_IS_REGEXP_LOGIC
+  }, {
+    startsWith: function startsWith(searchString
+    /* , position = 0 */
+    ) {
+      var that = String(requireObjectCoercible(this));
+      notARegexp(searchString);
+      var index = toLength(min$2(arguments.length > 1 ? arguments[1] : undefined, that.length));
+      var search = String(searchString);
+      return nativeStartsWith ? nativeStartsWith.call(that, search, index) : that.slice(index, index + search.length) === search;
+    }
+  });
+
+  if (typeof window !== "undefined") {
+    (function () {
+      try {
+        if (typeof SVGElement === 'undefined' || Boolean(SVGElement.prototype.innerHTML)) {
+          return;
+        }
+      } catch (e) {
+        return;
+      }
+
+      function serializeNode(node) {
+        switch (node.nodeType) {
+          case 1:
+            return serializeElementNode(node);
+
+          case 3:
+            return serializeTextNode(node);
+
+          case 8:
+            return serializeCommentNode(node);
+        }
+      }
+
+      function serializeTextNode(node) {
+        return node.textContent.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      }
+
+      function serializeCommentNode(node) {
+        return '<!--' + node.nodeValue + '-->';
+      }
+
+      function serializeElementNode(node) {
+        var output = '';
+        output += '<' + node.tagName;
+
+        if (node.hasAttributes()) {
+          [].forEach.call(node.attributes, function (attrNode) {
+            output += ' ' + attrNode.name + '="' + attrNode.value + '"';
+          });
+        }
+
+        output += '>';
+
+        if (node.hasChildNodes()) {
+          [].forEach.call(node.childNodes, function (childNode) {
+            output += serializeNode(childNode);
+          });
+        }
+
+        output += '</' + node.tagName + '>';
+        return output;
+      }
+
+      Object.defineProperty(SVGElement.prototype, 'innerHTML', {
+        get: function get() {
+          var output = '';
+          [].forEach.call(this.childNodes, function (childNode) {
+            output += serializeNode(childNode);
+          });
+          return output;
+        },
+        set: function set(markup) {
+          while (this.firstChild) {
+            this.removeChild(this.firstChild);
+          }
+
+          try {
+            var dXML = new DOMParser();
+            dXML.async = false;
+            var sXML = '<svg xmlns=\'http://www.w3.org/2000/svg\' xmlns:xlink=\'http://www.w3.org/1999/xlink\'>' + markup + '</svg>';
+            var svgDocElement = dXML.parseFromString(sXML, 'text/xml').documentElement;
+            [].forEach.call(svgDocElement.childNodes, function (childNode) {
+              this.appendChild(this.ownerDocument.importNode(childNode, true));
+            }.bind(this));
+          } catch (e) {
+            throw new Error('Error parsing markup string');
+          }
+        }
+      });
+      Object.defineProperty(SVGElement.prototype, 'innerSVG', {
+        get: function get() {
+          return this.innerHTML;
+        },
+        set: function set(markup) {
+          this.innerHTML = markup;
+        }
+      });
+    })();
+  }
+});
 
 (function (global, factory) {
-  typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
-  typeof define === 'function' && define.amd ? define('d3plus-geomap', ['exports'], factory) :
-  (global = global || self, factory(global.d3plus = {}));
-}(this, (function (exports) {
-  function _typeof(obj) {
-    "@babel/helpers - typeof";
-
-    if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") {
-      _typeof = function (obj) {
-        return typeof obj;
-      };
-    } else {
-      _typeof = function (obj) {
-        return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
-      };
-    }
-
-    return _typeof(obj);
-  }
-
-  function _classCallCheck(instance, Constructor) {
-    if (!(instance instanceof Constructor)) {
-      throw new TypeError("Cannot call a class as a function");
-    }
-  }
-
-  function _defineProperties(target, props) {
-    for (var i = 0; i < props.length; i++) {
-      var descriptor = props[i];
-      descriptor.enumerable = descriptor.enumerable || false;
-      descriptor.configurable = true;
-      if ("value" in descriptor) descriptor.writable = true;
-      Object.defineProperty(target, descriptor.key, descriptor);
-    }
-  }
-
-  function _createClass(Constructor, protoProps, staticProps) {
-    if (protoProps) _defineProperties(Constructor.prototype, protoProps);
-    if (staticProps) _defineProperties(Constructor, staticProps);
-    return Constructor;
-  }
-
-  function _defineProperty(obj, key, value) {
-    if (key in obj) {
-      Object.defineProperty(obj, key, {
-        value: value,
-        enumerable: true,
-        configurable: true,
-        writable: true
-      });
-    } else {
-      obj[key] = value;
-    }
-
-    return obj;
-  }
-
-  function ownKeys(object, enumerableOnly) {
-    var keys = Object.keys(object);
-
-    if (Object.getOwnPropertySymbols) {
-      var symbols = Object.getOwnPropertySymbols(object);
-      if (enumerableOnly) symbols = symbols.filter(function (sym) {
-        return Object.getOwnPropertyDescriptor(object, sym).enumerable;
-      });
-      keys.push.apply(keys, symbols);
-    }
-
-    return keys;
-  }
-
-  function _objectSpread2(target) {
-    for (var i = 1; i < arguments.length; i++) {
-      var source = arguments[i] != null ? arguments[i] : {};
-
-      if (i % 2) {
-        ownKeys(Object(source), true).forEach(function (key) {
-          _defineProperty(target, key, source[key]);
-        });
-      } else if (Object.getOwnPropertyDescriptors) {
-        Object.defineProperties(target, Object.getOwnPropertyDescriptors(source));
-      } else {
-        ownKeys(Object(source)).forEach(function (key) {
-          Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key));
-        });
-      }
-    }
-
-    return target;
-  }
-
-  function _inherits(subClass, superClass) {
-    if (typeof superClass !== "function" && superClass !== null) {
-      throw new TypeError("Super expression must either be null or a function");
-    }
-
-    subClass.prototype = Object.create(superClass && superClass.prototype, {
-      constructor: {
-        value: subClass,
-        writable: true,
-        configurable: true
-      }
-    });
-    if (superClass) _setPrototypeOf(subClass, superClass);
-  }
-
-  function _getPrototypeOf(o) {
-    _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) {
-      return o.__proto__ || Object.getPrototypeOf(o);
-    };
-    return _getPrototypeOf(o);
-  }
-
-  function _setPrototypeOf(o, p) {
-    _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) {
-      o.__proto__ = p;
-      return o;
-    };
-
-    return _setPrototypeOf(o, p);
-  }
-
-  function _isNativeReflectConstruct() {
-    if (typeof Reflect === "undefined" || !Reflect.construct) return false;
-    if (Reflect.construct.sham) return false;
-    if (typeof Proxy === "function") return true;
-
-    try {
-      Date.prototype.toString.call(Reflect.construct(Date, [], function () {}));
-      return true;
-    } catch (e) {
-      return false;
-    }
-  }
-
-  function _assertThisInitialized(self) {
-    if (self === void 0) {
-      throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
-    }
-
-    return self;
-  }
-
-  function _possibleConstructorReturn(self, call) {
-    if (call && (typeof call === "object" || typeof call === "function")) {
-      return call;
-    }
-
-    return _assertThisInitialized(self);
-  }
-
-  function _createSuper(Derived) {
-    var hasNativeReflectConstruct = _isNativeReflectConstruct();
-
-    return function _createSuperInternal() {
-      var Super = _getPrototypeOf(Derived),
-          result;
-
-      if (hasNativeReflectConstruct) {
-        var NewTarget = _getPrototypeOf(this).constructor;
-
-        result = Reflect.construct(Super, arguments, NewTarget);
-      } else {
-        result = Super.apply(this, arguments);
-      }
-
-      return _possibleConstructorReturn(this, result);
-    };
-  }
-
-  function _superPropBase(object, property) {
-    while (!Object.prototype.hasOwnProperty.call(object, property)) {
-      object = _getPrototypeOf(object);
-      if (object === null) break;
-    }
-
-    return object;
-  }
-
-  function _get(target, property, receiver) {
-    if (typeof Reflect !== "undefined" && Reflect.get) {
-      _get = Reflect.get;
-    } else {
-      _get = function _get(target, property, receiver) {
-        var base = _superPropBase(target, property);
-
-        if (!base) return;
-        var desc = Object.getOwnPropertyDescriptor(base, property);
-
-        if (desc.get) {
-          return desc.get.call(receiver);
-        }
-
-        return desc.value;
-      };
-    }
-
-    return _get(target, property, receiver || target);
-  }
-
-  function _slicedToArray(arr, i) {
-    return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _unsupportedIterableToArray(arr, i) || _nonIterableRest();
-  }
-
-  function _arrayWithHoles(arr) {
-    if (Array.isArray(arr)) return arr;
-  }
-
-  function _iterableToArrayLimit(arr, i) {
-    if (typeof Symbol === "undefined" || !(Symbol.iterator in Object(arr))) return;
-    var _arr = [];
-    var _n = true;
-    var _d = false;
-    var _e = undefined;
-
-    try {
-      for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) {
-        _arr.push(_s.value);
-
-        if (i && _arr.length === i) break;
-      }
-    } catch (err) {
-      _d = true;
-      _e = err;
-    } finally {
-      try {
-        if (!_n && _i["return"] != null) _i["return"]();
-      } finally {
-        if (_d) throw _e;
-      }
-    }
-
-    return _arr;
-  }
-
-  function _unsupportedIterableToArray(o, minLen) {
-    if (!o) return;
-    if (typeof o === "string") return _arrayLikeToArray(o, minLen);
-    var n = Object.prototype.toString.call(o).slice(8, -1);
-    if (n === "Object" && o.constructor) n = o.constructor.name;
-    if (n === "Map" || n === "Set") return Array.from(o);
-    if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen);
-  }
-
-  function _arrayLikeToArray(arr, len) {
-    if (len == null || len > arr.length) len = arr.length;
-
-    for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i];
-
-    return arr2;
-  }
-
-  function _nonIterableRest() {
-    throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.");
-  }
-
-  function _createForOfIteratorHelper(o, allowArrayLike) {
-    var it;
-
-    if (typeof Symbol === "undefined" || o[Symbol.iterator] == null) {
-      if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") {
-        if (it) o = it;
-        var i = 0;
-
-        var F = function () {};
-
-        return {
-          s: F,
-          n: function () {
-            if (i >= o.length) return {
-              done: true
-            };
-            return {
-              done: false,
-              value: o[i++]
-            };
-          },
-          e: function (e) {
-            throw e;
-          },
-          f: F
-        };
-      }
-
-      throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.");
-    }
-
-    var normalCompletion = true,
-        didErr = false,
-        err;
-    return {
-      s: function () {
-        it = o[Symbol.iterator]();
-      },
-      n: function () {
-        var step = it.next();
-        normalCompletion = step.done;
-        return step;
-      },
-      e: function (e) {
-        didErr = true;
-        err = e;
-      },
-      f: function () {
-        try {
-          if (!normalCompletion && it.return != null) it.return();
-        } finally {
-          if (didErr) throw err;
-        }
-      }
-    };
-  }
-
-  function ascending (a, b) {
+  (typeof exports === "undefined" ? "undefined" : _typeof2(exports)) === 'object' && typeof module !== 'undefined' ? factory(exports) : typeof define === 'function' && define.amd ? define('d3plus-geomap', ['exports'], factory) : (global = typeof globalThis !== 'undefined' ? globalThis : global || self, factory(global.d3plus = {}));
+})(this, function (exports) {
+  function ascending(a, b) {
     return a < b ? -1 : a > b ? 1 : a >= b ? 0 : NaN;
   }
 
-  function bisector (compare) {
+  function bisector(compare) {
     if (compare.length === 1) compare = ascendingComparator(compare);
     return {
       left: function left(a, x, lo, hi) {
@@ -1415,11 +1197,11 @@
   var ascendingBisect = bisector(ascending);
   var bisectRight = ascendingBisect.right;
 
-  function number (x) {
+  function number(x) {
     return x === null ? NaN : +x;
   }
 
-  function variance (values, valueof) {
+  function variance(values, valueof) {
     var n = values.length,
         m = 0,
         i = -1,
@@ -1449,12 +1231,12 @@
     if (m > 1) return sum / (m - 1);
   }
 
-  function deviation (array, f) {
+  function deviation(array, f) {
     var v = variance(array, f);
     return v ? Math.sqrt(v) : v;
   }
 
-  function extent (values, valueof) {
+  function extent(values, valueof) {
     var n = values.length,
         i = -1,
         value,
@@ -1496,7 +1278,7 @@
     return [min, max];
   }
 
-  function range (start, stop, step) {
+  function range(start, stop, step) {
     start = +start, stop = +stop, step = (n = arguments.length) < 2 ? (stop = start, start = 0, 1) : n < 3 ? 1 : +step;
     var i = -1,
         n = Math.max(0, Math.ceil((stop - start) / step)) | 0,
@@ -1512,7 +1294,8 @@
   var e10 = Math.sqrt(50),
       e5 = Math.sqrt(10),
       e2 = Math.sqrt(2);
-  function d3Ticks (start, stop, count) {
+
+  function d3Ticks(start, stop, count) {
     var reverse,
         i = -1,
         n,
@@ -1544,12 +1327,14 @@
     if (reverse) ticks.reverse();
     return ticks;
   }
+
   function tickIncrement(start, stop, count) {
     var step = (stop - start) / Math.max(0, count),
         power = Math.floor(Math.log(step) / Math.LN10),
         error = step / Math.pow(10, power);
     return power >= 0 ? (error >= e10 ? 10 : error >= e5 ? 5 : error >= e2 ? 2 : 1) * Math.pow(10, power) : -Math.pow(10, -power) / (error >= e10 ? 10 : error >= e5 ? 5 : error >= e2 ? 2 : 1);
   }
+
   function tickStep(start, stop, count) {
     var step0 = Math.abs(stop - start) / Math.max(0, count),
         step1 = Math.pow(10, Math.floor(Math.log(step0) / Math.LN10)),
@@ -1558,7 +1343,7 @@
     return stop < start ? -step1 : step1;
   }
 
-  function quantile (values, p, valueof) {
+  function quantile(values, p, valueof) {
     if (valueof == null) valueof = number;
     if (!(n = values.length)) return;
     if ((p = +p) <= 0 || n < 2) return +valueof(values[0], 0, values);
@@ -1571,7 +1356,7 @@
     return value0 + (value1 - value0) * (i - i0);
   }
 
-  function max (values, valueof) {
+  function max(values, valueof) {
     var n = values.length,
         i = -1,
         value,
@@ -1610,7 +1395,7 @@
     return max;
   }
 
-  function arrayMerge (arrays) {
+  function arrayMerge(arrays) {
     var n = arrays.length,
         m,
         i = -1,
@@ -1636,7 +1421,7 @@
     return merged;
   }
 
-  function min (values, valueof) {
+  function min(values, valueof) {
     var n = values.length,
         i = -1,
         value,
@@ -1675,7 +1460,7 @@
     return min;
   }
 
-  function sum (values, valueof) {
+  function sum(values, valueof) {
     var n = values.length,
         i = -1,
         value,
@@ -1694,10 +1479,11 @@
     return sum;
   }
 
-  function define (constructor, factory, prototype) {
+  function define(constructor, factory, prototype) {
     constructor.prototype = factory.prototype = prototype;
     prototype.constructor = constructor;
   }
+
   function extend(parent, definition) {
     var prototype = Object.create(parent.prototype);
 
@@ -1709,9 +1495,11 @@
   }
 
   function Color() {}
+
   var _darker = 0.7;
 
   var _brighter = 1 / _darker;
+
   var reI = "\\s*([+-]?\\d+)\\s*",
       reN = "\\s*([+-]?\\d*\\.?\\d+(?:[eE][+-]?\\d+)?)\\s*",
       reP = "\\s*([+-]?\\d*\\.?\\d+(?:[eE][+-]?\\d+)?)%\\s*",
@@ -1932,15 +1720,18 @@
     o = o.rgb();
     return new Rgb(o.r, o.g, o.b, o.opacity);
   }
+
   function rgb(r, g, b, opacity) {
     return arguments.length === 1 ? rgbConvert(r) : new Rgb(r, g, b, opacity == null ? 1 : opacity);
   }
+
   function Rgb(r, g, b, opacity) {
     this.r = +r;
     this.g = +g;
     this.b = +b;
     this.opacity = +opacity;
   }
+
   define(Rgb, rgb, extend(Color, {
     brighter: function brighter(k) {
       k = k == null ? _brighter : Math.pow(_brighter, k);
@@ -2008,6 +1799,7 @@
 
     return new Hsl(h, s, l, o.opacity);
   }
+
   function hsl(h, s, l, opacity) {
     return arguments.length === 1 ? hslConvert(h) : new Hsl(h, s, l, opacity == null ? 1 : opacity);
   }
@@ -2171,7 +1963,7 @@
     xmlns: "http://www.w3.org/2000/xmlns/"
   };
 
-  function namespace (name) {
+  function namespace(name) {
     var prefix = name += "",
         i = prefix.indexOf(":");
     if (i >= 0 && (prefix = name.slice(0, i)) !== "xmlns") name = name.slice(i + 1);
@@ -2195,20 +1987,20 @@
     };
   }
 
-  function creator (name) {
+  function creator(name) {
     var fullname = namespace(name);
     return (fullname.local ? creatorFixed : creatorInherit)(fullname);
   }
 
   function none() {}
 
-  function selector (selector) {
+  function selector(selector) {
     return selector == null ? none : function () {
       return this.querySelector(selector);
     };
   }
 
-  function selection_select (select) {
+  function selection_select(select) {
     if (typeof select !== "function") select = selector(select);
 
     for (var groups = this._groups, m = groups.length, subgroups = new Array(m), j = 0; j < m; ++j) {
@@ -2227,13 +2019,13 @@
     return [];
   }
 
-  function selectorAll (selector) {
+  function selectorAll(selector) {
     return selector == null ? empty : function () {
       return this.querySelectorAll(selector);
     };
   }
 
-  function selection_selectAll (select) {
+  function selection_selectAll(select) {
     if (typeof select !== "function") select = selectorAll(select);
 
     for (var groups = this._groups, m = groups.length, subgroups = [], parents = [], j = 0; j < m; ++j) {
@@ -2248,13 +2040,13 @@
     return new Selection(subgroups, parents);
   }
 
-  function matcher (selector) {
+  function matcher(selector) {
     return function () {
       return this.matches(selector);
     };
   }
 
-  function selection_filter (match) {
+  function selection_filter(match) {
     if (typeof match !== "function") match = matcher(match);
 
     for (var groups = this._groups, m = groups.length, subgroups = new Array(m), j = 0; j < m; ++j) {
@@ -2268,13 +2060,14 @@
     return new Selection(subgroups, this._parents);
   }
 
-  function sparse (update) {
+  function sparse(update) {
     return new Array(update.length);
   }
 
-  function selection_enter () {
+  function selection_enter() {
     return new Selection(this._enter || this._groups.map(sparse), this._parents);
   }
+
   function EnterNode(parent, datum) {
     this.ownerDocument = parent.ownerDocument;
     this.namespaceURI = parent.namespaceURI;
@@ -2282,6 +2075,7 @@
     this._parent = parent;
     this.__data__ = datum;
   }
+
   EnterNode.prototype = {
     constructor: EnterNode,
     appendChild: function appendChild(child) {
@@ -2298,7 +2092,7 @@
     }
   };
 
-  function constant (x) {
+  function constant(x) {
     return function () {
       return x;
     };
@@ -2376,7 +2170,7 @@
     }
   }
 
-  function selection_data (value, key) {
+  function selection_data(value, key) {
     if (!value) {
       data = new Array(this.size()), j = -1;
       this.each(function (d) {
@@ -2408,6 +2202,7 @@
           if (i0 >= i1) i1 = i0 + 1;
 
           while (!(next = updateGroup[i1]) && ++i1 < dataLength) {
+            ;
           }
 
           previous._next = next || null;
@@ -2421,11 +2216,11 @@
     return update;
   }
 
-  function selection_exit () {
+  function selection_exit() {
     return new Selection(this._exit || this._groups.map(sparse), this._parents);
   }
 
-  function selection_join (onenter, onupdate, onexit) {
+  function selection_join(onenter, onupdate, onexit) {
     var enter = this.enter(),
         update = this,
         exit = this.exit();
@@ -2435,7 +2230,7 @@
     return enter && update ? enter.merge(update).order() : update;
   }
 
-  function selection_merge (selection) {
+  function selection_merge(selection) {
     for (var groups0 = this._groups, groups1 = selection._groups, m0 = groups0.length, m1 = groups1.length, m = Math.min(m0, m1), merges = new Array(m0), j = 0; j < m; ++j) {
       for (var group0 = groups0[j], group1 = groups1[j], n = group0.length, merge = merges[j] = new Array(n), node, i = 0; i < n; ++i) {
         if (node = group0[i] || group1[i]) {
@@ -2451,7 +2246,7 @@
     return new Selection(merges, this._parents);
   }
 
-  function selection_order () {
+  function selection_order() {
     for (var groups = this._groups, j = -1, m = groups.length; ++j < m;) {
       for (var group = groups[j], i = group.length - 1, next = group[i], node; --i >= 0;) {
         if (node = group[i]) {
@@ -2464,7 +2259,7 @@
     return this;
   }
 
-  function selection_sort (compare) {
+  function selection_sort(compare) {
     if (!compare) compare = ascending$1;
 
     function compareNode(a, b) {
@@ -2488,14 +2283,14 @@
     return a < b ? -1 : a > b ? 1 : a >= b ? 0 : NaN;
   }
 
-  function selection_call () {
+  function selection_call() {
     var callback = arguments[0];
     arguments[0] = this;
     callback.apply(null, arguments);
     return this;
   }
 
-  function selection_nodes () {
+  function selection_nodes() {
     var nodes = new Array(this.size()),
         i = -1;
     this.each(function () {
@@ -2504,7 +2299,7 @@
     return nodes;
   }
 
-  function selection_node () {
+  function selection_node() {
     for (var groups = this._groups, j = 0, m = groups.length; j < m; ++j) {
       for (var group = groups[j], i = 0, n = group.length; i < n; ++i) {
         var node = group[i];
@@ -2515,7 +2310,7 @@
     return null;
   }
 
-  function selection_size () {
+  function selection_size() {
     var size = 0;
     this.each(function () {
       ++size;
@@ -2523,11 +2318,11 @@
     return size;
   }
 
-  function selection_empty () {
+  function selection_empty() {
     return !this.node();
   }
 
-  function selection_each (callback) {
+  function selection_each(callback) {
     for (var groups = this._groups, j = 0, m = groups.length; j < m; ++j) {
       for (var group = groups[j], i = 0, n = group.length, node; i < n; ++i) {
         if (node = group[i]) callback.call(node, node.__data__, i, group);
@@ -2575,7 +2370,7 @@
     };
   }
 
-  function selection_attr (name, value) {
+  function selection_attr(name, value) {
     var fullname = namespace(name);
 
     if (arguments.length < 2) {
@@ -2586,7 +2381,7 @@
     return this.each((value == null ? fullname.local ? attrRemoveNS : attrRemove : typeof value === "function" ? fullname.local ? attrFunctionNS : attrFunction : fullname.local ? attrConstantNS : attrConstant)(fullname, value));
   }
 
-  function defaultView (node) {
+  function defaultView(node) {
     return node.ownerDocument && node.ownerDocument.defaultView || // node is a Node
     node.document && node // node is a Window
     || node.defaultView; // node is a Document
@@ -2611,9 +2406,10 @@
     };
   }
 
-  function selection_style (name, value, priority) {
+  function selection_style(name, value, priority) {
     return arguments.length > 1 ? this.each((value == null ? styleRemove : typeof value === "function" ? styleFunction : styleConstant)(name, value, priority == null ? "" : priority)) : styleValue(this.node(), name);
   }
+
   function styleValue(node, name) {
     return node.style.getPropertyValue(name) || defaultView(node).getComputedStyle(node, null).getPropertyValue(name);
   }
@@ -2637,7 +2433,7 @@
     };
   }
 
-  function selection_property (name, value) {
+  function selection_property(name, value) {
     return arguments.length > 1 ? this.each((value == null ? propertyRemove : typeof value === "function" ? propertyFunction : propertyConstant)(name, value)) : this.node()[name];
   }
 
@@ -2716,7 +2512,7 @@
     };
   }
 
-  function selection_classed (name, value) {
+  function selection_classed(name, value) {
     var names = classArray(name + "");
 
     if (arguments.length < 2) {
@@ -2751,7 +2547,7 @@
     };
   }
 
-  function selection_text (value) {
+  function selection_text(value) {
     return arguments.length ? this.each(value == null ? textRemove : (typeof value === "function" ? textFunction : textConstant)(value)) : this.node().textContent;
   }
 
@@ -2772,7 +2568,7 @@
     };
   }
 
-  function selection_html (value) {
+  function selection_html(value) {
     return arguments.length ? this.each(value == null ? htmlRemove : (typeof value === "function" ? htmlFunction : htmlConstant)(value)) : this.node().innerHTML;
   }
 
@@ -2780,7 +2576,7 @@
     if (this.nextSibling) this.parentNode.appendChild(this);
   }
 
-  function selection_raise () {
+  function selection_raise() {
     return this.each(raise);
   }
 
@@ -2788,11 +2584,11 @@
     if (this.previousSibling) this.parentNode.insertBefore(this, this.parentNode.firstChild);
   }
 
-  function selection_lower () {
+  function selection_lower() {
     return this.each(lower);
   }
 
-  function selection_append (name) {
+  function selection_append(name) {
     var create = typeof name === "function" ? name : creator(name);
     return this.select(function () {
       return this.appendChild(create.apply(this, arguments));
@@ -2803,7 +2599,7 @@
     return null;
   }
 
-  function selection_insert (name, before) {
+  function selection_insert(name, before) {
     var create = typeof name === "function" ? name : creator(name),
         select = before == null ? constantNull : typeof before === "function" ? before : selector(before);
     return this.select(function () {
@@ -2816,7 +2612,7 @@
     if (parent) parent.removeChild(this);
   }
 
-  function selection_remove () {
+  function selection_remove() {
     return this.each(remove);
   }
 
@@ -2832,11 +2628,11 @@
     return parent ? parent.insertBefore(clone, this.nextSibling) : clone;
   }
 
-  function selection_clone (deep) {
+  function selection_clone(deep) {
     return this.select(deep ? selection_cloneDeep : selection_cloneShallow);
   }
 
-  function selection_datum (value) {
+  function selection_datum(value) {
     return arguments.length ? this.property("__data__", value) : this.node().__data__;
   }
 
@@ -2934,7 +2730,7 @@
     };
   }
 
-  function selection_on (typename, value, capture) {
+  function selection_on(typename, value, capture) {
     var typenames = parseTypenames$1(typename + ""),
         i,
         n = typenames.length,
@@ -2962,6 +2758,7 @@
 
     return this;
   }
+
   function customEvent(event1, listener, that, args) {
     var event0 = event$1;
     event1.sourceEvent = event$1;
@@ -3000,11 +2797,12 @@
     };
   }
 
-  function selection_dispatch (type, params) {
+  function selection_dispatch(type, params) {
     return this.each((typeof params === "function" ? dispatchFunction : dispatchConstant)(type, params));
   }
 
   var root = [null];
+
   function Selection(groups, parents) {
     this._groups = groups;
     this._parents = parents;
@@ -3049,11 +2847,11 @@
     dispatch: selection_dispatch
   };
 
-  function _select (selector) {
+  function _select(selector) {
     return typeof selector === "string" ? new Selection([[document.querySelector(selector)]], [document.documentElement]) : new Selection([[selector]], root);
   }
 
-  function sourceEvent () {
+  function sourceEvent() {
     var current = event$1,
         source;
 
@@ -3064,7 +2862,7 @@
     return current;
   }
 
-  function point (node, event) {
+  function point(node, event) {
     var svg = node.ownerSVGElement || node;
 
     if (svg.createSVGPoint) {
@@ -3078,17 +2876,17 @@
     return [event.clientX - rect.left - node.clientLeft, event.clientY - rect.top - node.clientTop];
   }
 
-  function mouse (node) {
+  function mouse(node) {
     var event = sourceEvent();
     if (event.changedTouches) event = event.changedTouches[0];
     return point(node, event);
   }
 
-  function selectAll (selector) {
+  function selectAll(selector) {
     return typeof selector === "string" ? new Selection([document.querySelectorAll(selector)], [document.documentElement]) : new Selection([selector == null ? [] : selector], root);
   }
 
-  function touch (node, touches, identifier) {
+  function touch(node, touches, identifier) {
     if (arguments.length < 3) identifier = touches, touches = sourceEvent().changedTouches;
 
     for (var i = 0, n = touches ? touches.length : 0, touch; i < n; ++i) {
@@ -3100,12 +2898,12 @@
     return null;
   }
 
-  function noevent () {
+  function noevent() {
     event$1.preventDefault();
     event$1.stopImmediatePropagation();
   }
 
-  function dragDisable (view) {
+  function dragDisable(view) {
     var root = view.document.documentElement,
         selection = _select(view).on("dragstart.drag", noevent, true);
 
@@ -3116,6 +2914,7 @@
       root.style.MozUserSelect = "none";
     }
   }
+
   function yesdrag(view, noclick) {
     var root = view.document.documentElement,
         selection = _select(view).on("dragstart.drag", null);
@@ -3135,7 +2934,7 @@
     }
   }
 
-  function constant$1 (x) {
+  function constant$1(x) {
     return function () {
       return x;
     };
@@ -3152,17 +2951,19 @@
       return Math.pow(a + t * b, y);
     };
   }
+
   function gamma(y) {
     return (y = +y) === 1 ? nogamma : function (a, b) {
       return b - a ? exponential(a, b, y) : constant$1(isNaN(a) ? b : a);
     };
   }
+
   function nogamma(a, b) {
     var d = b - a;
     return d ? linear(a, d) : constant$1(isNaN(a) ? b : a);
   }
 
-  var interpolateRgb = (function rgbGamma(y) {
+  var interpolateRgb = function rgbGamma(y) {
     var color = gamma(y);
 
     function rgb$1(start, end) {
@@ -3181,9 +2982,27 @@
 
     rgb$1.gamma = rgbGamma;
     return rgb$1;
-  })(1);
+  }(1);
 
-  function array (a, b) {
+  function numberArray(a, b) {
+    if (!b) b = [];
+    var n = a ? Math.min(b.length, a.length) : 0,
+        c = b.slice(),
+        i;
+    return function (t) {
+      for (i = 0; i < n; ++i) {
+        c[i] = a[i] * (1 - t) + b[i] * t;
+      }
+
+      return c;
+    };
+  }
+
+  function isNumberArray(x) {
+    return ArrayBuffer.isView(x) && !(x instanceof DataView);
+  }
+
+  function genericArray(a, b) {
     var nb = b ? b.length : 0,
         na = a ? Math.min(nb, a.length) : 0,
         x = new Array(na),
@@ -3207,25 +3026,25 @@
     };
   }
 
-  function date (a, b) {
+  function date(a, b) {
     var d = new Date();
-    return a = +a, b -= a, function (t) {
-      return d.setTime(a + b * t), d;
+    return a = +a, b = +b, function (t) {
+      return d.setTime(a * (1 - t) + b * t), d;
     };
   }
 
-  function interpolateNumber (a, b) {
-    return a = +a, b -= a, function (t) {
-      return a + b * t;
+  function interpolateNumber(a, b) {
+    return a = +a, b = +b, function (t) {
+      return a * (1 - t) + b * t;
     };
   }
 
-  function object (a, b) {
+  function object(a, b) {
     var i = {},
         c = {},
         k;
-    if (a === null || _typeof(a) !== "object") a = {};
-    if (b === null || _typeof(b) !== "object") b = {};
+    if (a === null || _typeof2(a) !== "object") a = {};
+    if (b === null || _typeof2(b) !== "object") b = {};
 
     for (k in b) {
       if (k in a) {
@@ -3259,7 +3078,7 @@
     };
   }
 
-  function interpolateString (a, b) {
+  function interpolateString(a, b) {
     var bi = reA.lastIndex = reB.lastIndex = 0,
         // scan index for next number in b
     am,
@@ -3319,16 +3138,16 @@
     });
   }
 
-  function interpolate (a, b) {
-    var t = _typeof(b),
+  function interpolate(a, b) {
+    var t = _typeof2(b),
         c;
 
-    return b == null || t === "boolean" ? constant$1(b) : (t === "number" ? interpolateNumber : t === "string" ? (c = color(b)) ? (b = c, interpolateRgb) : interpolateString : b instanceof color ? interpolateRgb : b instanceof Date ? date : Array.isArray(b) ? array : typeof b.valueOf !== "function" && typeof b.toString !== "function" || isNaN(b) ? object : interpolateNumber)(a, b);
+    return b == null || t === "boolean" ? constant$1(b) : (t === "number" ? interpolateNumber : t === "string" ? (c = color(b)) ? (b = c, interpolateRgb) : interpolateString : b instanceof color ? interpolateRgb : b instanceof Date ? date : isNumberArray(b) ? numberArray : Array.isArray(b) ? genericArray : typeof b.valueOf !== "function" && typeof b.toString !== "function" || isNaN(b) ? object : interpolateNumber)(a, b);
   }
 
-  function interpolateRound (a, b) {
-    return a = +a, b -= a, function (t) {
-      return Math.round(a + b * t);
+  function interpolateRound(a, b) {
+    return a = +a, b = +b, function (t) {
+      return Math.round(a * (1 - t) + b * t);
     };
   }
 
@@ -3341,7 +3160,8 @@
     scaleX: 1,
     scaleY: 1
   };
-  function decompose (a, b, c, d, e, f) {
+
+  function decompose(a, b, c, d, e, f) {
     var scaleX, scaleY, skewX;
     if (scaleX = Math.sqrt(a * a + b * b)) a /= scaleX, b /= scaleX;
     if (skewX = a * c + b * d) c -= a * skewX, d -= b * skewX;
@@ -3358,6 +3178,7 @@
   }
 
   var cssNode, cssRoot, cssView, svgNode;
+
   function parseCss(value) {
     if (value === "none") return identity;
     if (!cssNode) cssNode = document.createElement("DIV"), cssRoot = document.documentElement, cssView = document.defaultView;
@@ -3367,6 +3188,7 @@
     value = value.slice(7, -1).split(",");
     return decompose(+value[0], +value[1], +value[2], +value[3], +value[4], +value[5]);
   }
+
   function parseSvg(value) {
     if (value == null) return identity;
     if (!svgNode) svgNode = document.createElementNS("http://www.w3.org/2000/svg", "g");
@@ -3463,7 +3285,6 @@
 
   var interpolateTransformCss = interpolateTransform(parseCss, "px, ", "px)", "deg)");
   var interpolateTransformSvg = interpolateTransform(parseSvg, ", ", ")", ")");
-
   var rho = Math.SQRT2,
       rho2 = 2,
       rho4 = 4,
@@ -3483,7 +3304,7 @@
   // p1 = [ux1, uy1, w1]
 
 
-  function interpolateZoom (p0, p1) {
+  function interpolateZoom(p0, p1) {
     var ux0 = p0[0],
         uy0 = p0[1],
         w0 = p0[2],
@@ -3536,10 +3357,11 @@
       clockLast = 0,
       clockNow = 0,
       clockSkew = 0,
-      clock = (typeof performance === "undefined" ? "undefined" : _typeof(performance)) === "object" && performance.now ? performance : Date,
-      setFrame = (typeof window === "undefined" ? "undefined" : _typeof(window)) === "object" && window.requestAnimationFrame ? window.requestAnimationFrame.bind(window) : function (f) {
+      clock = (typeof performance === "undefined" ? "undefined" : _typeof2(performance)) === "object" && performance.now ? performance : Date,
+      setFrame = (typeof window === "undefined" ? "undefined" : _typeof2(window)) === "object" && window.requestAnimationFrame ? window.requestAnimationFrame.bind(window) : function (f) {
     setTimeout(f, 17);
   };
+
   function now() {
     return clockNow || (setFrame(clearNow), clockNow = clock.now() + clockSkew);
   }
@@ -3551,6 +3373,7 @@
   function Timer() {
     this._call = this._time = this._next = null;
   }
+
   Timer.prototype = timer.prototype = {
     constructor: Timer,
     restart: function restart(callback, delay, time) {
@@ -3574,11 +3397,13 @@
       }
     }
   };
+
   function timer(callback, delay, time) {
     var t = new Timer();
     t.restart(callback, delay, time);
     return t;
   }
+
   function timerFlush() {
     now(); // Get the current time, if not already set.
 
@@ -3649,7 +3474,7 @@
     }
   }
 
-  function timeout$1 (callback, delay, time) {
+  function timeout$1(callback, delay, time) {
     var t = new Timer();
     delay = delay == null ? 0 : +delay;
     t.restart(function (elapsed) {
@@ -3668,7 +3493,8 @@
   var RUNNING = 4;
   var ENDING = 5;
   var ENDED = 6;
-  function schedule (node, name, id, index, group, timing) {
+
+  function schedule(node, name, id, index, group, timing) {
     var schedules = node.__transition;
     if (!schedules) node.__transition = {};else if (id in schedules) return;
     create(node, id, {
@@ -3687,16 +3513,19 @@
       state: CREATED
     });
   }
+
   function init(node, id) {
     var schedule = get$1(node, id);
     if (schedule.state > CREATED) throw new Error("too late; already scheduled");
     return schedule;
   }
+
   function set$1(node, id) {
     var schedule = get$1(node, id);
     if (schedule.state > STARTED) throw new Error("too late; already running");
     return schedule;
   }
+
   function get$1(node, id) {
     var schedule = node.__transition;
     if (!schedule || !(schedule = schedule[id])) throw new Error("transition not found");
@@ -3805,7 +3634,7 @@
     }
   }
 
-  function interrupt (node, name) {
+  function interrupt(node, name) {
     var schedules = node.__transition,
         schedule,
         active,
@@ -3830,7 +3659,7 @@
     if (empty) delete node.__transition;
   }
 
-  function selection_interrupt (name) {
+  function selection_interrupt(name) {
     return this.each(function () {
       interrupt(this, name);
     });
@@ -3889,7 +3718,7 @@
     };
   }
 
-  function transition_tween (name, value) {
+  function transition_tween(name, value) {
     var id = this._id;
     name += "";
 
@@ -3907,6 +3736,7 @@
 
     return this.each((value == null ? tweenRemove : tweenFunction)(id, name, value));
   }
+
   function tweenValue(transition, name, value) {
     var id = transition._id;
     transition.each(function () {
@@ -3918,7 +3748,7 @@
     };
   }
 
-  function interpolate$1 (a, b) {
+  function interpolate$1(a, b) {
     var c;
     return (typeof b === "number" ? interpolateNumber : b instanceof color ? interpolateRgb : (c = color(b)) ? (b = c, interpolateRgb) : interpolateString)(a, b);
   }
@@ -3981,7 +3811,7 @@
     };
   }
 
-  function transition_attr (name, value) {
+  function transition_attr(name, value) {
     var fullname = namespace(name),
         i = fullname === "transform" ? interpolateTransformSvg : interpolate$1;
     return this.attrTween(name, typeof value === "function" ? (fullname.local ? attrFunctionNS$1 : attrFunction$1)(fullname, i, tweenValue(this, "attr." + name, value)) : value == null ? (fullname.local ? attrRemoveNS$1 : attrRemove$1)(fullname) : (fullname.local ? attrConstantNS$1 : attrConstant$1)(fullname, i, value));
@@ -4025,7 +3855,7 @@
     return tween;
   }
 
-  function transition_attrTween (name, value) {
+  function transition_attrTween(name, value) {
     var key = "attr." + name;
     if (arguments.length < 2) return (key = this.tween(key)) && key._value;
     if (value == null) return this.tween(key, null);
@@ -4046,7 +3876,7 @@
     };
   }
 
-  function transition_delay (value) {
+  function transition_delay(value) {
     var id = this._id;
     return arguments.length ? this.each((typeof value === "function" ? delayFunction : delayConstant)(id, value)) : get$1(this.node(), id).delay;
   }
@@ -4063,7 +3893,7 @@
     };
   }
 
-  function transition_duration (value) {
+  function transition_duration(value) {
     var id = this._id;
     return arguments.length ? this.each((typeof value === "function" ? durationFunction : durationConstant)(id, value)) : get$1(this.node(), id).duration;
   }
@@ -4075,12 +3905,12 @@
     };
   }
 
-  function transition_ease (value) {
+  function transition_ease(value) {
     var id = this._id;
     return arguments.length ? this.each(easeConstant(id, value)) : get$1(this.node(), id).ease;
   }
 
-  function transition_filter (match) {
+  function transition_filter(match) {
     if (typeof match !== "function") match = matcher(match);
 
     for (var groups = this._groups, m = groups.length, subgroups = new Array(m), j = 0; j < m; ++j) {
@@ -4094,7 +3924,7 @@
     return new Transition(subgroups, this._parents, this._name, this._id);
   }
 
-  function transition_merge (transition) {
+  function transition_merge(transition) {
     if (transition._id !== this._id) throw new Error();
 
     for (var groups0 = this._groups, groups1 = transition._groups, m0 = groups0.length, m1 = groups1.length, m = Math.min(m0, m1), merges = new Array(m0), j = 0; j < m; ++j) {
@@ -4135,7 +3965,7 @@
     };
   }
 
-  function transition_on (name, listener) {
+  function transition_on(name, listener) {
     var id = this._id;
     return arguments.length < 2 ? get$1(this.node(), id).on.on(name) : this.each(onFunction(id, name, listener));
   }
@@ -4152,11 +3982,11 @@
     };
   }
 
-  function transition_remove () {
+  function transition_remove() {
     return this.on("end.remove", removeFunction(this._id));
   }
 
-  function transition_select (select) {
+  function transition_select(select) {
     var name = this._name,
         id = this._id;
     if (typeof select !== "function") select = selector(select);
@@ -4174,7 +4004,7 @@
     return new Transition(subgroups, this._parents, name, id);
   }
 
-  function transition_selectAll (select) {
+  function transition_selectAll(select) {
     var name = this._name,
         id = this._id;
     if (typeof select !== "function") select = selectorAll(select);
@@ -4198,7 +4028,8 @@
   }
 
   var Selection$1 = selection.prototype.constructor;
-  function transition_selection () {
+
+  function transition_selection() {
     return new Selection$1(this._groups, this._parents);
   }
 
@@ -4257,7 +4088,7 @@
     };
   }
 
-  function transition_style (name, value, priority) {
+  function transition_style(name, value, priority) {
     var i = (name += "") === "transform" ? interpolateTransformCss : interpolate$1;
     return value == null ? this.styleTween(name, styleNull(name, i)).on("end.style." + name, styleRemove$1(name)) : typeof value === "function" ? this.styleTween(name, styleFunction$1(name, i, tweenValue(this, "style." + name, value))).each(styleMaybeRemove(this._id, name)) : this.styleTween(name, styleConstant$1(name, i, value), priority).on("end.style." + name, null);
   }
@@ -4281,7 +4112,7 @@
     return tween;
   }
 
-  function transition_styleTween (name, value, priority) {
+  function transition_styleTween(name, value, priority) {
     var key = "style." + (name += "");
     if (arguments.length < 2) return (key = this.tween(key)) && key._value;
     if (value == null) return this.tween(key, null);
@@ -4302,7 +4133,7 @@
     };
   }
 
-  function transition_text (value) {
+  function transition_text(value) {
     return this.tween("text", typeof value === "function" ? textFunction$1(tweenValue(this, "text", value)) : textConstant$1(value == null ? "" : value + ""));
   }
 
@@ -4325,7 +4156,7 @@
     return tween;
   }
 
-  function transition_textTween (value) {
+  function transition_textTween(value) {
     var key = "text";
     if (arguments.length < 1) return (key = this.tween(key)) && key._value;
     if (value == null) return this.tween(key, null);
@@ -4333,7 +4164,7 @@
     return this.tween(key, textTween(value));
   }
 
-  function transition_transition () {
+  function transition_transition() {
     var name = this._name,
         id0 = this._id,
         id1 = newId();
@@ -4355,7 +4186,7 @@
     return new Transition(groups, this._parents, name, id1);
   }
 
-  function transition_end () {
+  function transition_end() {
     var on0,
         on1,
         that = this,
@@ -4392,18 +4223,22 @@
   }
 
   var id = 0;
+
   function Transition(groups, parents, name, id) {
     this._groups = groups;
     this._parents = parents;
     this._name = name;
     this._id = id;
   }
+
   function transition(name) {
     return selection().transition(name);
   }
+
   function newId() {
     return ++id;
   }
+
   var selection_prototype = selection.prototype;
   Transition.prototype = transition.prototype = {
     constructor: Transition,
@@ -4458,7 +4293,7 @@
     return timing;
   }
 
-  function selection_transition (name) {
+  function selection_transition(name) {
     var id, timing;
 
     if (name instanceof Transition) {
@@ -4481,7 +4316,7 @@
   selection.prototype.interrupt = selection_interrupt;
   selection.prototype.transition = selection_transition;
 
-  function constant$2 (x) {
+  function constant$2(x) {
     return function () {
       return x;
     };
@@ -4498,6 +4333,7 @@
     this.x = x;
     this.y = y;
   }
+
   Transform.prototype = {
     constructor: Transform,
     scale: function scale(k) {
@@ -4536,6 +4372,7 @@
   };
   var identity$1 = new Transform(1, 0, 0);
   transform.prototype = Transform.prototype;
+
   function transform(node) {
     while (!node.__zoom) {
       if (!(node = node.parentNode)) return identity$1;
@@ -4547,10 +4384,12 @@
   function nopropagation() {
     event$1.stopImmediatePropagation();
   }
-  function noevent$1 () {
+
+  function noevent$1() {
     event$1.preventDefault();
     event$1.stopImmediatePropagation();
-  }
+  } // Ignore right-click, since that should open the context menu.
+
 
   function defaultFilter() {
     return !event$1.ctrlKey && !event$1.button;
@@ -4593,7 +4432,7 @@
     return transform.translate(dx1 > dx0 ? (dx0 + dx1) / 2 : Math.min(0, dx0) || Math.max(0, dx1), dy1 > dy0 ? (dy0 + dy1) / 2 : Math.min(0, dy0) || Math.max(0, dy1));
   }
 
-  function zoom () {
+  function zoom() {
     var filter = defaultFilter,
         extent = defaultExtent,
         constrain = defaultConstrain,
@@ -4779,11 +4618,13 @@
 
     function mousedowned() {
       if (touchending || !filter.apply(this, arguments)) return;
+
       var g = gesture(this, arguments, true),
           v = _select(event$1.view).on("mousemove.zoom", mousemoved, true).on("mouseup.zoom", mouseupped, true),
           p = mouse(this),
           x0 = event$1.clientX,
           y0 = event$1.clientY;
+
       dragDisable(event$1.view);
       nopropagation();
       g.mouse = [p, this.__zoom.invert(p)];
@@ -4908,6 +4749,7 @@
 
         if (g.taps === 2) {
           var p = _select(this).on("dblclick.zoom");
+
           if (p) p.apply(this, arguments);
         }
       }
@@ -4959,15 +4801,15 @@
     };
 
     return zoom;
-  }
-
-  // Adds floating point numbers with twice the normal precision.
+  } // Adds floating point numbers with twice the normal precision.
   // Reference: J. R. Shewchuk, Adaptive Precision Floating-Point Arithmetic and
   // Fast Robust Geometric Predicates, Discrete & Computational Geometry 18(3)
   // 305–363 (1997).
   // Code adapted from GeographicLib by Charles F. F. Karney,
   // http://geographiclib.sourceforge.net/
-  function adder () {
+
+
+  function adder() {
     return new Adder();
   }
 
@@ -5018,17 +4860,22 @@
   var log = Math.log;
   var pow = Math.pow;
   var sin = Math.sin;
+
   var sign = Math.sign || function (x) {
     return x > 0 ? 1 : x < 0 ? -1 : 0;
   };
+
   var sqrt = Math.sqrt;
   var tan = Math.tan;
+
   function acos(x) {
     return x > 1 ? 0 : x < -1 ? pi : Math.acos(x);
   }
+
   function asin(x) {
     return x > 1 ? halfPi : x < -1 ? -halfPi : Math.asin(x);
   }
+
   function haversin(x) {
     return (x = sin(x / 2)) * x;
   }
@@ -5132,7 +4979,7 @@
     stream.polygonEnd();
   }
 
-  function geoStream (object, stream) {
+  function geoStream(object, stream) {
     if (object && streamObjectType.hasOwnProperty(object.type)) {
       streamObjectType[object.type](object, stream);
     } else {
@@ -5201,7 +5048,7 @@
     lambda0 = lambda, cosPhi0 = cosPhi, sinPhi0 = sinPhi;
   }
 
-  function area (object) {
+  function area(object) {
     areaSum.reset();
     geoStream(object, areaStream);
     return areaSum * 2;
@@ -5210,25 +5057,31 @@
   function spherical(cartesian) {
     return [atan2(cartesian[1], cartesian[0]), asin(cartesian[2])];
   }
+
   function cartesian(spherical) {
     var lambda = spherical[0],
         phi = spherical[1],
         cosPhi = cos(phi);
     return [cosPhi * cos(lambda), cosPhi * sin(lambda), sin(phi)];
   }
+
   function cartesianDot(a, b) {
     return a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
   }
+
   function cartesianCross(a, b) {
     return [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
   } // TODO return a
 
+
   function cartesianAddInPlace(a, b) {
     a[0] += b[0], a[1] += b[1], a[2] += b[2];
   }
+
   function cartesianScale(vector, k) {
     return [vector[0] * k, vector[1] * k, vector[2] * k];
   } // TODO return d
+
 
   function cartesianNormalizeInPlace(d) {
     var l = sqrt(d[0] * d[0] + d[1] * d[1] + d[2] * d[2]);
@@ -5382,7 +5235,7 @@
     return range[0] <= range[1] ? range[0] <= x && x <= range[1] : x < range[0] || range[1] < x;
   }
 
-  function bounds (feature) {
+  function bounds(feature) {
     var i, n, a, b, merged, deltaMax, delta;
     phi1 = lambda1 = -(lambda0$1 = phi0 = Infinity);
     ranges = [];
@@ -5523,7 +5376,7 @@
     centroidPointCartesian(x0, y0, z0);
   }
 
-  function centroid (object) {
+  function centroid(object) {
     W0 = W1 = X0 = Y0 = Z0 = X1 = Y1 = Z1 = X2 = Y2 = Z2 = 0;
     geoStream(object, centroidStream);
     var x = X2,
@@ -5543,13 +5396,13 @@
     return [atan2(y, x) * degrees$1, asin(z / sqrt(m)) * degrees$1];
   }
 
-  function constant$3 (x) {
+  function constant$3(x) {
     return function () {
       return x;
     };
   }
 
-  function compose (a, b) {
+  function compose(a, b) {
     function compose(x, y) {
       return x = a(x, y), b(x[0], x[1]);
     }
@@ -5565,6 +5418,7 @@
   }
 
   rotationIdentity.invert = rotationIdentity;
+
   function rotateRadians(deltaLambda, deltaPhi, deltaGamma) {
     return (deltaLambda %= tau) ? deltaPhi || deltaGamma ? compose(rotationLambda(deltaLambda), rotationPhiGamma(deltaPhi, deltaGamma)) : rotationLambda(deltaLambda) : deltaPhi || deltaGamma ? rotationPhiGamma(deltaPhi, deltaGamma) : rotationIdentity;
   }
@@ -5608,7 +5462,7 @@
     return rotation;
   }
 
-  function rotation (rotate) {
+  function rotation(rotate) {
     rotate = rotateRadians(rotate[0] * radians, rotate[1] * radians, rotate.length > 2 ? rotate[2] * radians : 0);
 
     function forward(coordinates) {
@@ -5622,7 +5476,8 @@
     };
 
     return forward;
-  }
+  } // Generates a circle centered at [0°, 0°], with a given radius and precision.
+
 
   function circleStream(stream, radius, delta, direction, t0, t1) {
     if (!delta) return;
@@ -5645,6 +5500,7 @@
     }
   } // Returns the signed angle of a cartesian point relative to [cosRadius, 0, 0].
 
+
   function circleRadius(cosRadius, point) {
     point = cartesian(point), point[0] -= cosRadius;
     cartesianNormalizeInPlace(point);
@@ -5652,7 +5508,7 @@
     return ((-point[2] < 0 ? -radius : radius) + tau - epsilon) % tau;
   }
 
-  function geoCircle () {
+  function geoCircle() {
     var center = constant$3([0, 0]),
         radius = constant$3(90),
         precision = constant$3(6),
@@ -5697,12 +5553,12 @@
     return circle;
   }
 
-  function clipBuffer () {
+  function clipBuffer() {
     var lines = [],
         line;
     return {
-      point: function point(x, y) {
-        line.push([x, y]);
+      point: function point(x, y, m) {
+        line.push([x, y, m]);
       },
       lineStart: function lineStart() {
         lines.push(line = []);
@@ -5720,7 +5576,7 @@
     };
   }
 
-  function pointEqual (a, b) {
+  function pointEqual(a, b) {
     return abs(a[0] - b[0]) < epsilon && abs(a[1] - b[1]) < epsilon;
   }
 
@@ -5739,7 +5595,7 @@
   // along the clip edge.
 
 
-  function clipRejoin (segments, compareIntersection, startInside, interpolate, stream) {
+  function clipRejoin(segments, compareIntersection, startInside, interpolate, stream) {
     var subject = [],
         clip = [],
         i,
@@ -5749,19 +5605,22 @@
       var n,
           p0 = segment[0],
           p1 = segment[n],
-          x; // If the first and last points of a segment are coincident, then treat as a
-      // closed ring. TODO if all rings are closed, then the winding order of the
-      // exterior ring should be checked.
+          x;
 
       if (pointEqual(p0, p1)) {
-        stream.lineStart();
+        if (!p0[2] && !p1[2]) {
+          stream.lineStart();
 
-        for (i = 0; i < n; ++i) {
-          stream.point((p0 = segment[i])[0], p0[1]);
-        }
+          for (i = 0; i < n; ++i) {
+            stream.point((p0 = segment[i])[0], p0[1]);
+          }
 
-        stream.lineEnd();
-        return;
+          stream.lineEnd();
+          return;
+        } // handle degenerate cases by moving the point
+
+
+        p1[0] += 2 * epsilon;
       }
 
       subject.push(x = new Intersection(p0, segment, null, true));
@@ -5853,7 +5712,7 @@
     if (abs(point[0]) <= pi) return point[0];else return sign(point[0]) * ((abs(point[0]) + pi) % tau - pi);
   }
 
-  function polygonContains (polygon, point) {
+  function polygonContains(polygon, point) {
     var lambda = longitude(point),
         phi = point[1],
         sinPhi = sin(phi),
@@ -5915,7 +5774,7 @@
     return (angle < -epsilon || angle < epsilon && sum$1 < -epsilon) ^ winding & 1;
   }
 
-  function clip (pointVisible, clipLine, interpolate, start) {
+  function clip(pointVisible, clipLine, interpolate, start) {
     return function (sink) {
       var line = clipLine(sink),
           ringBuffer = clipBuffer(),
@@ -6133,7 +5992,7 @@
     }
   }
 
-  function clipCircle (radius) {
+  function clipCircle(radius) {
     var cr = cos(radius),
         delta = 6 * radians,
         smallRadius = cr > 0,
@@ -6156,34 +6015,28 @@
       c0, // code for previous point
       v0, // visibility of previous point
       v00, // visibility of first point
-      _clean; // no intersections
+      _clean2; // no intersections
 
 
       return {
         lineStart: function lineStart() {
           v00 = v0 = false;
-          _clean = 1;
+          _clean2 = 1;
         },
         point: function point(lambda, phi) {
           var point1 = [lambda, phi],
               point2,
               v = visible(lambda, phi),
               c = smallRadius ? v ? 0 : code(lambda, phi) : v ? code(lambda + (lambda < 0 ? pi : -pi), phi) : 0;
-          if (!point0 && (v00 = v0 = v)) stream.lineStart(); // Handle degeneracies.
-          // TODO ignore if not clipping polygons.
+          if (!point0 && (v00 = v0 = v)) stream.lineStart();
 
           if (v !== v0) {
             point2 = intersect(point0, point1);
-
-            if (!point2 || pointEqual(point0, point2) || pointEqual(point1, point2)) {
-              point1[0] += epsilon;
-              point1[1] += epsilon;
-              v = visible(point1[0], point1[1]);
-            }
+            if (!point2 || pointEqual(point0, point2) || pointEqual(point1, point2)) point1[2] = 1;
           }
 
           if (v !== v0) {
-            _clean = 0;
+            _clean2 = 0;
 
             if (v) {
               // outside going in
@@ -6193,7 +6046,7 @@
             } else {
               // inside going out
               point2 = intersect(point0, point1);
-              stream.point(point2[0], point2[1]);
+              stream.point(point2[0], point2[1], 2);
               stream.lineEnd();
             }
 
@@ -6203,7 +6056,7 @@
             // and there this segment intersects with the small circle.
 
             if (!(c & c0) && (t = intersect(point1, point0, true))) {
-              _clean = 0;
+              _clean2 = 0;
 
               if (smallRadius) {
                 stream.lineStart();
@@ -6214,7 +6067,7 @@
                 stream.point(t[1][0], t[1][1]);
                 stream.lineEnd();
                 stream.lineStart();
-                stream.point(t[0][0], t[0][1]);
+                stream.point(t[0][0], t[0][1], 3);
               }
             }
           }
@@ -6232,7 +6085,7 @@
         // Rejoin first and last segments if there were intersections and the first
         // and last points were visible.
         clean: function clean() {
-          return _clean | (v00 && v0) << 1;
+          return _clean2 | (v00 && v0) << 1;
         }
       };
     } // Intersects the great circle between a and b with the clip circle.
@@ -6305,7 +6158,7 @@
     return clip(visible, clipLine, interpolate, smallRadius ? [0, -radius] : [-pi, radius - pi]);
   }
 
-  function clipLine (a, b, x0, y0, x1, y1) {
+  function clipLine(a, b, x0, y0, x1, y1) {
     var ax = a[0],
         ay = a[1],
         bx = b[0],
@@ -6542,7 +6395,7 @@
     };
   }
 
-  function extent$1 () {
+  function extent$1() {
     var x0 = 0,
         y0 = 0,
         x1 = 960,
@@ -6602,7 +6455,7 @@
     lambda0$2 = lambda, sinPhi0$1 = sinPhi, cosPhi0$1 = cosPhi;
   }
 
-  function length (object) {
+  function length(object) {
     lengthSum.reset();
     geoStream(object, lengthStream);
     return +lengthSum;
@@ -6613,7 +6466,8 @@
     type: "LineString",
     coordinates: coordinates
   };
-  function distance (a, b) {
+
+  function distance(a, b) {
     coordinates[0] = a;
     coordinates[1] = b;
     return length(object$1);
@@ -6732,7 +6586,7 @@
     return [point[0] * radians, point[1] * radians];
   }
 
-  function contains (object, point) {
+  function contains(object, point) {
     return (object && containsObjectType.hasOwnProperty(object.type) ? containsObjectType[object.type] : containsGeometry)(object, point);
   }
 
@@ -6856,11 +6710,12 @@
 
     return graticule.extentMajor([[-180, -90 + epsilon], [180, 90 - epsilon]]).extentMinor([[-180, -80 - epsilon], [180, 80 + epsilon]]);
   }
+
   function graticule10() {
     return graticule()();
   }
 
-  function interpolate$2 (a, b) {
+  function interpolate$2(a, b) {
     var x0 = a[0] * radians,
         y0 = a[1] * radians,
         x1 = b[0] * radians,
@@ -6889,7 +6744,7 @@
     return interpolate;
   }
 
-  function identity$2 (x) {
+  function identity$2(x) {
     return x;
   }
 
@@ -6959,7 +6814,8 @@
     if (x > x1) x1 = x;
     if (y < y0$2) y0$2 = y;
     if (y > y1) y1 = y;
-  }
+  } // TODO Enforce positive area for exterior, negative area for interior?
+
 
   var X0$1 = 0,
       Y0$1 = 0,
@@ -7053,6 +6909,7 @@
   function PathContext(context) {
     this._context = context;
   }
+
   PathContext.prototype = {
     _radius: 4.5,
     pointRadius: function pointRadius(_) {
@@ -7100,7 +6957,6 @@
     },
     result: noop$1
   };
-
   var lengthSum$1 = adder(),
       lengthRing,
       x00$2,
@@ -7143,6 +6999,7 @@
   function PathString() {
     this._string = [];
   }
+
   PathString.prototype = {
     _radius: 4.5,
     _circle: circle(4.5),
@@ -7206,7 +7063,7 @@
     return "m0," + radius + "a" + radius + "," + radius + " 0 1,1 0," + -2 * radius + "a" + radius + "," + radius + " 0 1,1 0," + 2 * radius + "z";
   }
 
-  function index (projection, context) {
+  function index(projection, context) {
     var pointRadius = 4.5,
         projectionStream,
         contextStream;
@@ -7260,11 +7117,12 @@
     return path.projection(projection).context(context);
   }
 
-  function transform$1 (methods) {
+  function transform$1(methods) {
     return {
       stream: transformer(methods)
     };
   }
+
   function transformer(methods) {
     return function (stream) {
       var s = new TransformStream();
@@ -7322,9 +7180,11 @@
       projection.scale(150 * k).translate([x, y]);
     }, object);
   }
+
   function fitSize(projection, size, object) {
     return fitExtent(projection, [[0, 0], size], object);
   }
+
   function fitWidth(projection, width, object) {
     return fit(projection, function (b) {
       var w = +width,
@@ -7334,6 +7194,7 @@
       projection.scale(150 * k).translate([x, y]);
     }, object);
   }
+
   function fitHeight(projection, height, object) {
     return fit(projection, function (b) {
       var h = +height,
@@ -7348,7 +7209,7 @@
       // maximum depth of subdivision
   cosMinDistance = cos(30 * radians); // cos(minimum angular distance)
 
-  function resample (project, delta2) {
+  function resample(project, delta2) {
     return +delta2 ? resample$1(project, delta2) : resampleNone(project);
   }
 
@@ -7511,6 +7372,7 @@
       return project;
     })();
   }
+
   function projectionMutator(projectAt) {
     var project,
         k = 150,
@@ -7697,15 +7559,16 @@
 
     return project;
   }
-  function conicEqualArea () {
+
+  function conicEqualArea() {
     return conicProjection(conicEqualAreaRaw).scale(155.424).center([0, 33.6442]);
   }
 
-  function albers () {
+  function albers() {
     return conicEqualArea().parallels([29.5, 45.5]).scale(1070).translate([480, 250]).rotate([96, 0]).center([-0.6, 38.7]);
-  }
-
+  } // The projections must have mutually exclusive clip regions on the sphere,
   // as this will avoid emitting interleaving lines and polygons.
+
 
   function multiplex(streams) {
     var n = streams.length;
@@ -7760,7 +7623,7 @@
   // http://egsc.usgs.gov/isb/pubs/MapProjections/projections.html#albers
 
 
-  function albersUsa () {
+  function albersUsa() {
     var cache,
         cacheStream,
         lower48 = albers(),
@@ -7851,6 +7714,7 @@
       return [k * cy * sin(x), k * sin(y)];
     };
   }
+
   function azimuthalInvert(angle) {
     return function (x, y) {
       var z = sqrt(x * x + y * y),
@@ -7867,7 +7731,8 @@
   azimuthalEqualAreaRaw.invert = azimuthalInvert(function (z) {
     return 2 * asin(z / 2);
   });
-  function azimuthalEqualArea () {
+
+  function azimuthalEqualArea() {
     return projection(azimuthalEqualAreaRaw).scale(124.75).clipAngle(180 - 1e-3);
   }
 
@@ -7877,7 +7742,8 @@
   azimuthalEquidistantRaw.invert = azimuthalInvert(function (z) {
     return z;
   });
-  function azimuthalEquidistant () {
+
+  function azimuthalEquidistant() {
     return projection(azimuthalEquidistantRaw).scale(79.4188).clipAngle(180 - 1e-3);
   }
 
@@ -7889,9 +7755,10 @@
     return [x, 2 * atan(exp(y)) - halfPi];
   };
 
-  function mercator () {
+  function mercator() {
     return mercatorProjection(mercatorRaw).scale(961 / tau);
   }
+
   function mercatorProjection(project) {
     var m = projection(project),
         center = m.center,
@@ -7959,15 +7826,18 @@
 
     return project;
   }
-  function conicConformal () {
+
+  function conicConformal() {
     return conicProjection(conicConformalRaw).scale(109.5).parallels([30, 30]);
   }
 
   function equirectangularRaw(lambda, phi) {
     return [lambda, phi];
   }
+
   equirectangularRaw.invert = equirectangularRaw;
-  function equirectangular () {
+
+  function equirectangular() {
     return projection(equirectangularRaw).scale(152.63);
   }
 
@@ -7992,7 +7862,8 @@
 
     return project;
   }
-  function conicEquidistant () {
+
+  function conicEquidistant() {
     return conicProjection(conicEquidistantRaw).scale(131.154).center([0, 13.9389]);
   }
 
@@ -8002,6 +7873,7 @@
       A4 = 0.003796,
       M = sqrt(3) / 2,
       iterations = 12;
+
   function equalEarthRaw(lambda, phi) {
     var l = asin(M * sin(phi)),
         l2 = l * l,
@@ -8024,7 +7896,7 @@
     return [M * x * (A1 + 3 * A2 * l2 + l6 * (7 * A3 + 9 * A4 * l2)) / cos(l), asin(sin(l) / M)];
   };
 
-  function equalEarth () {
+  function equalEarth() {
     return projection(equalEarthRaw).scale(177.158);
   }
 
@@ -8033,12 +7905,14 @@
         k = cos(x) * cy;
     return [cy * sin(x) / k, sin(y) / k];
   }
+
   gnomonicRaw.invert = azimuthalInvert(atan);
-  function gnomonic () {
+
+  function gnomonic() {
     return projection(gnomonicRaw).scale(144.049).clipAngle(60);
   }
 
-  function identity$3 () {
+  function identity$3() {
     var k = 1,
         tx = 0,
         ty = 0,
@@ -8170,15 +8044,17 @@
     return [x / (0.8707 + (phi2 = phi * phi) * (-0.131979 + phi2 * (-0.013791 + phi2 * phi2 * phi2 * (0.003971 - 0.001529 * phi2)))), phi];
   };
 
-  function naturalEarth1 () {
+  function naturalEarth1() {
     return projection(naturalEarth1Raw).scale(175.295);
   }
 
   function orthographicRaw(x, y) {
     return [cos(y) * sin(x), sin(y)];
   }
+
   orthographicRaw.invert = azimuthalInvert(asin);
-  function geoOrthographic () {
+
+  function geoOrthographic() {
     return projection(orthographicRaw).scale(249.5).clipAngle(90 + epsilon);
   }
 
@@ -8187,10 +8063,12 @@
         k = 1 + cos(x) * cy;
     return [cy * sin(x) / k, sin(y) / k];
   }
+
   stereographicRaw.invert = azimuthalInvert(function (z) {
     return 2 * atan(z);
   });
-  function stereographic () {
+
+  function stereographic() {
     return projection(stereographicRaw).scale(250).clipAngle(142);
   }
 
@@ -8202,7 +8080,7 @@
     return [-y, 2 * atan(exp(x)) - halfPi];
   };
 
-  function transverseMercator () {
+  function transverseMercator() {
     var m = mercatorProjection(transverseMercatorRaw),
         center = m.center,
         rotate = m.rotate;
@@ -8217,8 +8095,6 @@
 
     return rotate([0, 0, 90]).scale(159.155);
   }
-
-
 
   var d3GeoCore = /*#__PURE__*/Object.freeze({
     __proto__: null,
@@ -8272,7 +8148,6 @@
     geoStream: geoStream,
     geoTransform: transform$1
   });
-
   var abs$1 = Math.abs;
   var atan$1 = Math.atan;
   var atan2$1 = Math.atan2;
@@ -8284,9 +8159,11 @@
   var min$1 = Math.min;
   var pow$1 = Math.pow;
   var round = Math.round;
+
   var sign$1 = Math.sign || function (x) {
     return x > 0 ? 1 : x < 0 ? -1 : 0;
   };
+
   var sin$1 = Math.sin;
   var tan$1 = Math.tan;
   var epsilon$1 = 1e-6;
@@ -8300,31 +8177,40 @@
   var tau$1 = pi$1 * 2;
   var degrees$2 = 180 / pi$1;
   var radians$1 = pi$1 / 180;
+
   function sinci(x) {
     return x ? x / Math.sin(x) : 1;
   }
+
   function asin$1(x) {
     return x > 1 ? halfPi$1 : x < -1 ? -halfPi$1 : Math.asin(x);
   }
+
   function acos$1(x) {
     return x > 1 ? 0 : x < -1 ? pi$1 : Math.acos(x);
   }
+
   function sqrt$1(x) {
     return x > 0 ? Math.sqrt(x) : 0;
   }
+
   function tanh$1(x) {
     x = exp$1(2 * x);
     return (x - 1) / (x + 1);
   }
+
   function sinh$1(x) {
     return (exp$1(x) - exp$1(-x)) / 2;
   }
+
   function cosh$1(x) {
     return (exp$1(x) + exp$1(-x)) / 2;
   }
+
   function arsinh(x) {
     return log$1(x + sqrt$1(x * x + 1));
   }
+
   function arcosh(x) {
     return log$1(x + sqrt$1(x * x - 1));
   }
@@ -8364,7 +8250,8 @@
 
     return forward;
   }
-  function airy () {
+
+  function airy() {
     var beta = halfPi$1,
         m = projectionMutator(airyRaw),
         p = m(beta);
@@ -8382,6 +8269,7 @@
     return [2 * cosy * sin$1(x) * sincia, sin$1(y) * sincia];
   } // Abort if [x, y] is not within an ellipse centered at [0, 0] with
   // semi-major axis pi and semi-minor axis pi/2.
+
 
   aitoffRaw.invert = function (x, y) {
     if (x * x + 4 * y * y > pi$1 * pi$1 + epsilon$1) return;
@@ -8418,7 +8306,7 @@
     return [x1, y1];
   };
 
-  function aitoff () {
+  function aitoff() {
     return projection(aitoffRaw).scale(152.63);
   }
 
@@ -8465,7 +8353,8 @@
 
     return forward;
   }
-  function armadillo () {
+
+  function armadillo() {
     var phi0 = 20 * radians$1,
         sPhi0 = phi0 >= 0 ? 1 : -1,
         tanPhi0 = tan$1(sPhi0 * phi0),
@@ -8531,12 +8420,13 @@
     return [sign$1(x) * 2 * atan2$1(sinh$1(xi) * cosEta, 0.25 - d), sign$1(y) * 2 * atan2$1(coshXi * sin$1(eta), 0.25 + d)];
   };
 
-  function august () {
+  function august() {
     return projection(augustRaw).scale(66.1603);
   }
 
   var sqrt8 = sqrt$1(8),
       phi0$1 = log$1(1 + sqrt2);
+
   function bakerRaw(lambda, phi) {
     var phi0 = abs$1(phi);
     return phi0 < quarterPi$1 ? [lambda, log$1(tan$1(quarterPi$1 + phi / 2))] : [lambda * cos$1(phi0) * (2 * sqrt2 - 1 / sin$1(phi0)), sign$1(phi) * (2 * sqrt2 * (phi0 - quarterPi$1) - log$1(tan$1(phi0 / 2)))];
@@ -8558,7 +8448,7 @@
     return [x / (cos$1(phi) * (sqrt8 - 1 / sin$1(phi))), sign$1(y) * phi];
   };
 
-  function baker () {
+  function baker() {
     return projection(bakerRaw).scale(112.314);
   }
 
@@ -8601,7 +8491,8 @@
 
     return forward;
   }
-  function berghaus () {
+
+  function berghaus() {
     var lobes = 5,
         m = projectionMutator(berghausRaw),
         p = m(lobes),
@@ -8673,7 +8564,7 @@
     return [x * cos$1(phi / 2) / cos$1(phi), phi];
   };
 
-  function hammer () {
+  function hammer() {
     var B = 2,
         m = projectionMutator(hammerRaw),
         p = m(B);
@@ -8684,9 +8575,9 @@
     };
 
     return p.scale(169.529);
-  }
-
+  } // Approximate Newton-Raphson
   // Solve f(x) = y, start from x
+
 
   function solve(f, y, x) {
     var steps = 100,
@@ -8706,6 +8597,7 @@
     return steps < 0 ? NaN : x;
   } // Approximate Newton-Raphson in 2D
   // Solve f(a,b) = [x,y]
+
 
   function solve2d(f, MAX_ITERATIONS, eps) {
     if (MAX_ITERATIONS === undefined) MAX_ITERATIONS = 40;
@@ -8754,9 +8646,9 @@
 
       return [a, b];
     };
-  }
-
+  } // Bertin 1953 as a modified Briesemeister
   // https://bl.ocks.org/Fil/5b9ee9636dfb6ffa53443c9006beb642
+
 
   function bertin1953Raw() {
     var hammer = hammerRaw(1.68, 2),
@@ -8787,7 +8679,8 @@
     forward.invert = solve2d(forward);
     return forward;
   }
-  function bertin () {
+
+  function bertin() {
     // this projection should not be rotated
     return projection(bertin1953Raw()).rotate([-16.5, -42]).scale(176.57).center([7.93, 0.09]);
   }
@@ -8803,6 +8696,7 @@
 
     return phi / 2;
   }
+
   function mollweideBromleyRaw(cx, cy, cp) {
     function forward(lambda, phi) {
       return [cx * lambda * cos$1(phi = mollweideBromleyTheta(cp, phi)), cy * sin$1(phi)];
@@ -8814,13 +8708,16 @@
 
     return forward;
   }
+
   var mollweideRaw = mollweideBromleyRaw(sqrt2 / halfPi$1, sqrt2, pi$1);
-  function mollweide () {
+
+  function mollweide() {
     return projection(mollweideRaw).scale(169.529);
   }
 
   var k = 2.00276,
       w = 1.11072;
+
   function boggsRaw(lambda, phi) {
     var theta = mollweideBromleyTheta(pi$1, phi);
     return [k * lambda / (1 / cos$1(phi) + w / cos$1(theta)), (phi + sqrt2 * sin$1(theta)) / k];
@@ -8842,11 +8739,11 @@
     return [x * (1 / cos$1(phi) + w / cos$1(theta)) / k, phi];
   };
 
-  function boggs () {
+  function boggs() {
     return projection(boggsRaw).scale(160.857);
   }
 
-  function parallel1 (projectAt) {
+  function parallel1(projectAt) {
     var phi0 = 0,
         m = projectionMutator(projectAt),
         p = m(phi0);
@@ -8866,7 +8763,7 @@
     return [x / cos$1(y), y];
   };
 
-  function sinusoidal () {
+  function sinusoidal() {
     return projection(sinusoidalRaw).scale(152.63);
   }
 
@@ -8888,7 +8785,8 @@
 
     return forward;
   }
-  function bonne () {
+
+  function bonne() {
     return parallel1(bonneRaw).scale(123.082).center([0, 26.1441]).parallel(45);
   }
 
@@ -8909,7 +8807,8 @@
 
     return forward;
   }
-  function bottomley () {
+
+  function bottomley() {
     var sinPsi = 0.5,
         m = projectionMutator(bottomleyRaw),
         p = m(sinPsi);
@@ -8922,9 +8821,11 @@
   }
 
   var bromleyRaw = mollweideBromleyRaw(1, 4 / pi$1, pi$1);
-  function bromley () {
+
+  function bromley() {
     return projection(bromleyRaw).scale(152.63);
-  }
+  } // Azimuthal distance.
+
 
   function distance$1(dPhi, c1, s1, c2, s2, dLambda) {
     var cosdLambda = cos$1(dLambda),
@@ -9016,6 +8917,7 @@
   function chamberlinAfrica() {
     return chamberlin([0, 22], [45, 22], [22.5, -22]).scale(380).center([22.5, 2]);
   }
+
   function chamberlin(p0, p1, p2) {
     // TODO order matters!
     var c = centroid({
@@ -9047,7 +8949,7 @@
     return [lambda > 0 ? x * sqrt$1(pi$1 / lambda) / 2 : 0, asin$1(1 - lambda)];
   };
 
-  function collignon () {
+  function collignon() {
     return projection(collignonRaw).scale(95.6464).center([0, 30]);
   }
 
@@ -9067,11 +8969,13 @@
     };
     return forward;
   }
-  function craig () {
+
+  function craig() {
     return parallel1(craigRaw).scale(249.828).clipAngle(90);
   }
 
   var sqrt3 = sqrt$1(3);
+
   function crasterRaw(lambda, phi) {
     return [sqrt3 * lambda * (2 * cos$1(2 * phi / 3) - 1) / sqrtPi, sqrt3 * sqrtPi * sin$1(phi / 3)];
   }
@@ -9081,7 +8985,7 @@
     return [sqrtPi * x / (sqrt3 * (2 * cos$1(2 * phi / 3) - 1)), phi];
   };
 
-  function craster () {
+  function craster() {
     return projection(crasterRaw).scale(156.19);
   }
 
@@ -9098,7 +9002,8 @@
 
     return forward;
   }
-  function cylindricalEqualArea () {
+
+  function cylindricalEqualArea() {
     return parallel1(cylindricalEqualAreaRaw$1).parallel(38.58) // acos(sqrt(width / height / pi)) * radians
     .scale(195.044); // width / (sqrt(width / height / pi) * 2 * pi)
   }
@@ -9116,7 +9021,8 @@
 
     return forward;
   }
-  function cylindricalStereographic () {
+
+  function cylindricalStereographic() {
     return parallel1(cylindricalStereographicRaw).scale(124.75);
   }
 
@@ -9131,7 +9037,7 @@
     return [x / (alpha * (1 - abs$1(phi) / pi$1)), phi];
   };
 
-  function eckert1 () {
+  function eckert1() {
     return projection(eckert1Raw).scale(165.664);
   }
 
@@ -9145,7 +9051,7 @@
     return [x * sqrt$1(6 * pi$1) / (2 * alpha), sign$1(y) * asin$1((4 - alpha * alpha) / 3)];
   };
 
-  function eckert2 () {
+  function eckert2() {
     return projection(eckert2Raw).scale(165.664);
   }
 
@@ -9159,7 +9065,7 @@
     return [x * k / (1 + sqrt$1(1 - y * y * (4 + pi$1) / (4 * pi$1))), y * k / 2];
   };
 
-  function eckert3 () {
+  function eckert3() {
     return projection(eckert3Raw).scale(180.739);
   }
 
@@ -9182,7 +9088,7 @@
     return [x / (2 / sqrt$1(pi$1 * (4 + pi$1)) * (1 + c)), asin$1((k + A * (c + 2)) / (2 + halfPi$1))];
   };
 
-  function eckert4 () {
+  function eckert4() {
     return projection(eckert4Raw).scale(180.739);
   }
 
@@ -9196,7 +9102,7 @@
     return [k * x / (1 + cos$1(phi)), phi];
   };
 
-  function eckert5 () {
+  function eckert5() {
     return projection(eckert5Raw).scale(173.044);
   }
 
@@ -9217,11 +9123,12 @@
     return [x * 2 * k / (1 + cos$1(y *= k)), asin$1((y + sin$1(y)) / j)];
   };
 
-  function eckert6 () {
+  function eckert6() {
     return projection(eckert6Raw).scale(173.044);
   }
 
   var eisenlohrK = 3 + 2 * sqrt2;
+
   function eisenlohrRaw(lambda, phi) {
     var s0 = sin$1(lambda /= 2),
         c0 = cos$1(lambda),
@@ -9285,11 +9192,12 @@
     return abs$1(abs$1(phi) - halfPi$1) < epsilon$1 ? [0, phi] : i && [lambda, phi];
   };
 
-  function eisenlohr () {
+  function eisenlohr() {
     return projection(eisenlohrRaw).scale(62.5271);
   }
 
   var faheyK = cos$1(35 * radians$1);
+
   function faheyRaw(lambda, phi) {
     var t = tan$1(phi / 2);
     return [lambda * faheyK * sqrt$1(1 - t * t), (1 + faheyK) * t];
@@ -9300,7 +9208,7 @@
     return [x && x / (faheyK * sqrt$1(1 - t * t)), 2 * atan$1(t)];
   };
 
-  function fahey () {
+  function fahey() {
     return projection(faheyRaw).scale(137.152);
   }
 
@@ -9317,7 +9225,7 @@
     return [x * sqrtPi / 2 / (cos$1(phi) * cosk * cosk), phi];
   };
 
-  function foucaut () {
+  function foucaut() {
     return projection(foucautRaw).scale(135.264);
   }
 
@@ -9350,7 +9258,8 @@
 
     return forward;
   }
-  function foucautSinusoidal () {
+
+  function foucautSinusoidal() {
     var alpha = 0.5,
         m = projectionMutator(foucautSinusoidalRaw),
         p = m(alpha);
@@ -9370,7 +9279,7 @@
     return [point[0] * 2, 2 * atan$1(sin$1(point[1] * radians$1)) * degrees$2];
   }
 
-  function gilbert (projectionType) {
+  function gilbert(projectionType) {
     if (projectionType == null) projectionType = geoOrthographic;
     var projection = projectionType(),
         equirectangular$1 = equirectangular().scale(degrees$2).precision(0).clipAngle(null).translate([0, 0]); // antimeridian cutting
@@ -9531,7 +9440,7 @@
     return s * 0.5 * h;
   }
 
-  function gingery () {
+  function gingery() {
     var n = 6,
         rho = 30 * radians$1,
         cRho = cos$1(rho),
@@ -9578,7 +9487,7 @@
     return p.rotate([90, -40]).scale(91.7095).clipAngle(180 - 1e-3);
   }
 
-  function ginzburgPolyconicRaw (a, b, c, d, e, f, g, h) {
+  function ginzburgPolyconicRaw(a, b, c, d, e, f, g, h) {
     if (arguments.length < 8) h = 0;
 
     function forward(lambda, phi) {
@@ -9638,17 +9547,20 @@
   }
 
   var ginzburg4Raw = ginzburgPolyconicRaw(2.8284, -1.6988, 0.75432, -0.18071, 1.76003, -0.38914, 0.042555);
-  function ginzburg4 () {
+
+  function ginzburg4() {
     return projection(ginzburg4Raw).scale(149.995);
   }
 
   var ginzburg5Raw = ginzburgPolyconicRaw(2.583819, -0.835827, 0.170354, -0.038094, 1.543313, -0.411435, 0.082742);
-  function ginzburg5 () {
+
+  function ginzburg5() {
     return projection(ginzburg5Raw).scale(153.93);
   }
 
   var ginzburg6Raw = ginzburgPolyconicRaw(5 / 6 * pi$1, -0.62636, -0.0344, 0, 1.3493, -0.05524, 0, 0.045);
-  function ginzburg6 () {
+
+  function ginzburg6() {
     return projection(ginzburg6Raw).scale(130.945);
   }
 
@@ -9680,16 +9592,17 @@
     return [lambda, phi];
   };
 
-  function ginzburg8 () {
+  function ginzburg8() {
     return projection(ginzburg8Raw).scale(131.747);
   }
 
   var ginzburg9Raw = ginzburgPolyconicRaw(2.6516, -0.76534, 0.19123, -0.047094, 1.36289, -0.13965, 0.031762);
-  function ginzburg9 () {
+
+  function ginzburg9() {
     return projection(ginzburg9Raw).scale(131.087);
   }
 
-  function squareRaw (project) {
+  function squareRaw(project) {
     var dx = project(halfPi$1, 0)[0] - project(-halfPi$1, 0)[0];
 
     function projectSquare(lambda, phi) {
@@ -9842,9 +9755,10 @@
     return [pi$1 / 4 * (x * (zeta + mu * g) + nu * asin$1(x / sqrt$1(a2))), phi];
   }
 
-  function gringorten () {
+  function gringorten() {
     return projection(squareRaw(gringortenRaw)).scale(239.75);
-  }
+  } // Returns [sn, cn, dn](u + iv|m).
+
 
   function ellipticJi(u, v, m) {
     var a, b, c;
@@ -9860,6 +9774,7 @@
     c = b[1] * b[1] + m * a[0] * a[0] * b[0] * b[0];
     return [[a[0] * b[2] / c, a[1] * a[2] * b[0] * b[1] / c], [a[1] * b[1] / c, -a[0] * a[2] * b[0] * b[2] / c], [a[2] * b[1] * b[2] / c, -m * a[0] * a[1] * b[0] / c]];
   } // Returns [sn, cn, dn, ph](u|m).
+
 
   function ellipticJ(u, m) {
     var ai, b, phi, t, twon;
@@ -9905,6 +9820,7 @@
   } // Calculate F(phi+iPsi|m).
   // See Abramowitz and Stegun, 17.4.11.
 
+
   function ellipticFi(phi, psi, m) {
     var r = abs$1(phi),
         i = abs$1(psi),
@@ -9922,6 +9838,7 @@
     return [0, ellipticF(atan$1(sinhPsi), 1 - m) * sign$1(psi)];
   } // Calculate F(phi|m) where m = k² = sin²α.
   // See Abramowitz and Stegun, 17.6.7.
+
 
   function ellipticF(phi, m) {
     if (!m) return phi;
@@ -9980,7 +9897,7 @@
     return [lambda, 2 * atan$1(exp$1(0.5 / f * log$1(k_ * tn[0] * tn[0] + k_ * tn[1] * tn[1]))) - halfPi$1];
   };
 
-  function guyou () {
+  function guyou() {
     return projection(squareRaw(guyouRaw)).scale(151.496);
   }
 
@@ -10020,6 +9937,7 @@
   } // Latitudinal rotation by phi0.
   // Temporary hack until D3 supports arbitrary small-circle clipping origins.
 
+
   function hammerRetroazimuthalRotation(phi0) {
     var sinPhi0 = sin$1(phi0),
         cosPhi0 = cos$1(phi0);
@@ -10032,7 +9950,7 @@
     };
   }
 
-  function hammerRetroazimuthal () {
+  function hammerRetroazimuthal() {
     var phi0 = 0,
         m = projectionMutator(hammerRetroazimuthalRaw),
         p = m(phi0),
@@ -10092,6 +10010,7 @@
   var K = 3,
       healpixParallel = asin$1(1 - 1 / K) * degrees$2,
       healpixLambert = cylindricalEqualAreaRaw$1(0);
+
   function healpixRaw(H) {
     var phi0 = healpixParallel * radians$1,
         dx = collignonRaw(pi$1, phi0)[0] - collignonRaw(-pi$1, phi0)[0],
@@ -10160,7 +10079,7 @@
     };
   }
 
-  function healpix () {
+  function healpix() {
     var H = 4,
         m = projectionMutator(healpixRaw),
         p = m(H),
@@ -10235,7 +10154,8 @@
 
     return forward;
   }
-  function hill () {
+
+  function hill() {
     var K = 1,
         m = projectionMutator(hillRaw),
         p = m(K);
@@ -10249,6 +10169,7 @@
 
   var sinuMollweidePhi = 0.7109889596207567;
   var sinuMollweideY = 0.0528035274542;
+
   function sinuMollweideRaw(lambda, phi) {
     return phi > -sinuMollweidePhi ? (lambda = mollweideRaw(lambda, phi), lambda[1] += sinuMollweideY, lambda) : sinusoidalRaw(lambda, phi);
   }
@@ -10257,7 +10178,7 @@
     return y > -sinuMollweidePhi ? mollweideRaw.invert(x, y - sinuMollweideY) : sinusoidalRaw.invert(x, y);
   };
 
-  function sinuMollweide () {
+  function sinuMollweide() {
     return projection(sinuMollweideRaw).rotate([-20, -55]).scale(164.263).center([0, -5.4036]);
   }
 
@@ -10269,7 +10190,7 @@
     return abs$1(y) > sinuMollweidePhi ? mollweideRaw.invert(x, y + (y > 0 ? sinuMollweideY : -sinuMollweideY)) : sinusoidalRaw.invert(x, y);
   };
 
-  function homolosine () {
+  function homolosine() {
     return projection(homolosineRaw).scale(152.63);
   }
 
@@ -10317,7 +10238,8 @@
 
     return forward;
   }
-  function hufnagel () {
+
+  function hufnagel() {
     var a = 1,
         b = 0,
         psiMax = 45 * radians$1,
@@ -10342,11 +10264,11 @@
     };
 
     return projection.scale(180.739);
-  }
-
-  // https://github.com/scijs/integrate-adaptive-simpson
+  } // https://github.com/scijs/integrate-adaptive-simpson
   // This algorithm adapted from pseudocode in:
   // http://www.math.utk.edu/~ccollins/refs/Handouts/rich.pdf
+
+
   function adsimp(f, a, b, fa, fm, fb, V0, tol, maxdepth, depth, state) {
     if (state.nanEncountered) {
       return NaN;
@@ -10421,8 +10343,7 @@
       if (state.maxDepthCount > 0 && console && console.warn) {
         console.warn('integrate-adaptive-simpson: Warning: maximum recursion depth (' + maxdepth + ') reached ' + state.maxDepthCount + ' times');
       }
-    
-      if (state.nanEncountered && console && console.warn) {
+       if (state.nanEncountered && console && console.warn) {
         console.warn('integrate-adaptive-simpson: Warning: NaN encountered. Halting early.');
       }
     */
@@ -10481,7 +10402,8 @@
 
     return forward;
   }
-  function hyperelliptical () {
+
+  function hyperelliptical() {
     var alpha = 0,
         k = 2.5,
         gamma = 1.183136,
@@ -10565,7 +10487,7 @@
     };
   }
 
-  function interrupt$1 (project, lobes, inverse) {
+  function interrupt$1(project, lobes, inverse) {
     var sphere, bounds;
 
     function forward(lambda, phi) {
@@ -10573,6 +10495,7 @@
           lobe = lobes[+(phi < 0)];
 
       for (var i = 0, n = lobe.length - 1; i < n && lambda > lobe[i][2][0]; ++i) {
+        ;
       }
 
       var p = project(lambda - lobe[i][1][0], phi);
@@ -10648,42 +10571,48 @@
   var lobes = [[// northern hemisphere
   [[-180, 0], [-100, 90], [-40, 0]], [[-40, 0], [30, 90], [180, 0]]], [// southern hemisphere
   [[-180, 0], [-160, -90], [-100, 0]], [[-100, 0], [-60, -90], [-20, 0]], [[-20, 0], [20, -90], [80, 0]], [[80, 0], [140, -90], [180, 0]]]];
-  function boggs$1 () {
+
+  function boggs$1() {
     return interrupt$1(boggsRaw, lobes).scale(160.857);
   }
 
   var lobes$1 = [[// northern hemisphere
   [[-180, 0], [-100, 90], [-40, 0]], [[-40, 0], [30, 90], [180, 0]]], [// southern hemisphere
   [[-180, 0], [-160, -90], [-100, 0]], [[-100, 0], [-60, -90], [-20, 0]], [[-20, 0], [20, -90], [80, 0]], [[80, 0], [140, -90], [180, 0]]]];
-  function homolosine$1 () {
+
+  function homolosine$1() {
     return interrupt$1(homolosineRaw, lobes$1).scale(152.63);
   }
 
   var lobes$2 = [[// northern hemisphere
   [[-180, 0], [-100, 90], [-40, 0]], [[-40, 0], [30, 90], [180, 0]]], [// southern hemisphere
   [[-180, 0], [-160, -90], [-100, 0]], [[-100, 0], [-60, -90], [-20, 0]], [[-20, 0], [20, -90], [80, 0]], [[80, 0], [140, -90], [180, 0]]]];
-  function mollweide$1 () {
+
+  function mollweide$1() {
     return interrupt$1(mollweideRaw, lobes$2).scale(169.529);
   }
 
   var lobes$3 = [[// northern hemisphere
   [[-180, 0], [-90, 90], [0, 0]], [[0, 0], [90, 90], [180, 0]]], [// southern hemisphere
   [[-180, 0], [-90, -90], [0, 0]], [[0, 0], [90, -90], [180, 0]]]];
-  function mollweideHemispheres () {
+
+  function mollweideHemispheres() {
     return interrupt$1(mollweideRaw, lobes$3).scale(169.529).rotate([20, 0]);
   }
 
   var lobes$4 = [[// northern hemisphere
   [[-180, 35], [-30, 90], [0, 35]], [[0, 35], [30, 90], [180, 35]]], [// southern hemisphere
   [[-180, -10], [-102, -90], [-65, -10]], [[-65, -10], [5, -90], [77, -10]], [[77, -10], [103, -90], [180, -10]]]];
-  function sinuMollweide$1 () {
+
+  function sinuMollweide$1() {
     return interrupt$1(sinuMollweideRaw, lobes$4, solve2d).rotate([-20, -55]).scale(164.263).center([0, -5.4036]);
   }
 
   var lobes$5 = [[// northern hemisphere
   [[-180, 0], [-110, 90], [-40, 0]], [[-40, 0], [0, 90], [40, 0]], [[40, 0], [110, 90], [180, 0]]], [// southern hemisphere
   [[-180, 0], [-110, -90], [-40, 0]], [[-40, 0], [0, -90], [40, 0]], [[40, 0], [110, -90], [180, 0]]]];
-  function sinusoidal$1 () {
+
+  function sinusoidal$1() {
     return interrupt$1(sinusoidalRaw, lobes$5).scale(152.63).rotate([-20, 0]);
   }
 
@@ -10695,7 +10624,7 @@
     return [tau$1 / 3 * x / sqrt$1(pi$1 * pi$1 / 3 - y * y), y];
   };
 
-  function kavrayskiy7 () {
+  function kavrayskiy7() {
     return projection(kavrayskiy7Raw).scale(158.837);
   }
 
@@ -10723,7 +10652,8 @@
 
     return forward;
   }
-  function lagrange () {
+
+  function lagrange() {
     var n = 0.5,
         m = projectionMutator(lagrangeRaw),
         p = m(n);
@@ -10736,6 +10666,7 @@
   }
 
   var pi_sqrt2 = pi$1 / sqrt2;
+
   function larriveeRaw(lambda, phi) {
     return [lambda * (1 + sqrt$1(cos$1(phi))) / 2, phi / (cos$1(phi / 2) * cos$1(lambda / 6))];
   }
@@ -10771,7 +10702,7 @@
     return [x < 0 ? -lambda : lambda, y < 0 ? -phi : phi];
   };
 
-  function larrivee () {
+  function larrivee() {
     return projection(larriveeRaw).scale(97.2672);
   }
 
@@ -10805,7 +10736,7 @@
     return i && [lambda, phi];
   };
 
-  function laskowski () {
+  function laskowski() {
     return projection(laskowskiRaw).scale(139.98);
   }
 
@@ -10822,7 +10753,7 @@
     return [asin$1(x * cosPhi), sign$1(y) * acos$1(cosPhi)];
   };
 
-  function littrow () {
+  function littrow() {
     return projection(littrowRaw).scale(144.049).clipAngle(90 - 1e-3);
   }
 
@@ -10844,7 +10775,8 @@
 
     return forward;
   }
-  function loximuthal () {
+
+  function loximuthal() {
     return parallel1(loximuthalRaw).parallel(40).scale(158.837);
   }
 
@@ -10856,7 +10788,7 @@
     return [x, 2.5 * atan$1(exp$1(0.8 * y)) - 0.625 * pi$1];
   };
 
-  function miller () {
+  function miller() {
     return projection(millerRaw).scale(108.318);
   }
 
@@ -10928,26 +10860,33 @@
 
     return forward;
   }
+
   var alaska = [[0.9972523, 0], [0.0052513, -0.0041175], [0.0074606, 0.0048125], [-0.0153783, -0.1968253], [0.0636871, -0.1408027], [0.3660976, -0.2937382]],
       gs48 = [[0.98879, 0], [0, 0], [-0.050909, 0], [0, 0], [0.075528, 0]],
       gs50 = [[0.9842990, 0], [0.0211642, 0.0037608], [-0.1036018, -0.0575102], [-0.0329095, -0.0320119], [0.0499471, 0.1223335], [0.0260460, 0.0899805], [0.0007388, -0.1435792], [0.0075848, -0.1334108], [-0.0216473, 0.0776645], [-0.0225161, 0.0853673]],
       miller$1 = [[0.9245, 0], [0, 0], [0.01943, 0]],
       lee = [[0.721316, 0], [0, 0], [-0.00881625, -0.00617325]];
+
   function modifiedStereographicAlaska() {
     return modifiedStereographic(alaska, [152, -64]).scale(1400).center([-160.908, 62.4864]).clipAngle(30).angle(7.8);
   }
+
   function modifiedStereographicGs48() {
     return modifiedStereographic(gs48, [95, -38]).scale(1000).clipAngle(55).center([-96.5563, 38.8675]);
   }
+
   function modifiedStereographicGs50() {
     return modifiedStereographic(gs50, [120, -45]).scale(359.513).clipAngle(55).center([-117.474, 53.0628]);
   }
+
   function modifiedStereographicMiller() {
     return modifiedStereographic(miller$1, [-20, -18]).scale(209.091).center([20, 16.7214]).clipAngle(82);
   }
+
   function modifiedStereographicLee() {
     return modifiedStereographic(lee, [165, 10]).scale(250).clipAngle(130).center([-165, -10]);
   }
+
   function modifiedStereographic(coefficients, rotate) {
     var p = projection(modifiedStereographicRaw(coefficients)).rotate(rotate).clipAngle(90),
         r = rotation(rotate),
@@ -10963,6 +10902,7 @@
 
   var sqrt6 = sqrt$1(6),
       sqrt7 = sqrt$1(7);
+
   function mtFlatPolarParabolicRaw(lambda, phi) {
     var theta = asin$1(7 * sin$1(phi) / (3 * sqrt6));
     return [sqrt6 * lambda * (2 * cos$1(2 * theta / 3) - 1) / sqrt7, 9 * sin$1(theta / 3) / sqrt7];
@@ -10973,7 +10913,7 @@
     return [x * sqrt7 / (sqrt6 * (2 * cos$1(2 * theta / 3) - 1)), asin$1(sin$1(theta) * 3 * sqrt6 / 7)];
   };
 
-  function mtFlatPolarParabolic () {
+  function mtFlatPolarParabolic() {
     return projection(mtFlatPolarParabolicRaw).scale(164.859);
   }
 
@@ -10995,7 +10935,7 @@
     return [3 * sqrt2 * x / (1 + 2 * cos$1(theta) / cos$1(theta / 2)), asin$1((sinTheta_2 + sin$1(theta)) / (1 + sqrt1_2))];
   };
 
-  function mtFlatPolarQuartic () {
+  function mtFlatPolarQuartic() {
     return projection(mtFlatPolarQuarticRaw).scale(188.209);
   }
 
@@ -11019,7 +10959,7 @@
     return [1.5 * x / (A * (0.5 + cos$1(theta))), asin$1((theta / 2 + sin$1(theta)) / (1 + pi$1 / 4))];
   };
 
-  function mtFlatPolarSinusoidal () {
+  function mtFlatPolarSinusoidal() {
     return projection(mtFlatPolarSinusoidalRaw).scale(166.518);
   }
 
@@ -11050,7 +10990,7 @@
     return [x / (0.84719 - 0.13063 * phi2 + phi6 * phi6 * (-0.04515 + 0.05494 * phi2 - 0.02326 * phi4 + 0.00331 * phi6)), phi];
   };
 
-  function naturalEarth2 () {
+  function naturalEarth2() {
     return projection(naturalEarth2Raw).scale(175.295);
   }
 
@@ -11069,19 +11009,20 @@
     return [2 * x / (1 + cos$1(y)), y];
   };
 
-  function nellHammer () {
+  function nellHammer() {
     return projection(nellHammerRaw).scale(152.63);
   }
 
   var lobes$6 = [[// northern hemisphere
   [[-180, 0], [-90, 90], [0, 0]], [[0, 0], [90, 90], [180, 0]]], [// southern hemisphere
   [[-180, 0], [-90, -90], [0, 0]], [[0, 0], [90, -90], [180, 0]]]];
-  function quarticAuthalic () {
-    return interrupt$1(hammerRaw(Infinity), lobes$6).rotate([20, 0]).scale(152.63);
-  }
 
+  function quarticAuthalic() {
+    return interrupt$1(hammerRaw(Infinity), lobes$6).rotate([20, 0]).scale(152.63);
+  } // Based on Torben Jansen's implementation
   // https://beta.observablehq.com/@toja/nicolosi-globular-projection
   // https://beta.observablehq.com/@toja/nicolosi-globular-inverse
+
 
   function nicolosiRaw(lambda, phi) {
     var sinPhi = sin$1(phi),
@@ -11114,11 +11055,11 @@
     }, 0)];
   };
 
-  function nicolosi () {
+  function nicolosi() {
     return projection(nicolosiRaw).scale(127.267);
-  }
-
+  } // Based on Java implementation by Bojan Savric.
   // https://github.com/OSUCartography/JMapProjLib/blob/master/src/com/jhlabs/map/proj/PattersonProjection.java
+
 
   var pattersonK1 = 1.0148,
       pattersonK2 = 0.23185,
@@ -11129,6 +11070,7 @@
       pattersonC3 = 7 * pattersonK3,
       pattersonC4 = 9 * pattersonK4,
       pattersonYmax = 1.790857183;
+
   function pattersonRaw(lambda, phi) {
     var phi2 = phi * phi;
     return [lambda, phi * (pattersonK1 + phi2 * phi2 * (pattersonK2 + phi2 * (pattersonK3 + pattersonK4 * phi2)))];
@@ -11148,7 +11090,7 @@
     return [x, yc];
   };
 
-  function patterson () {
+  function patterson() {
     return projection(pattersonRaw).scale(139.319);
   }
 
@@ -11177,16 +11119,16 @@
     return [(abs$1(y) < abs$1(phi + 1 / tanPhi) ? asin$1(x * tanPhi) : sign$1(y) * sign$1(x) * (acos$1(abs$1(x * tanPhi)) + halfPi$1)) / sin$1(phi), phi];
   };
 
-  function polyconic () {
+  function polyconic() {
     return projection(polyconicRaw).scale(103.74);
-  }
-
+  } // Note: 6-element arrays are used to denote the 3x3 affine transform matrix:
   // [a, b, c,
   //  d, e, f,
   //  0, 0, 1] - this redundant row is left out.
   // Transform matrix for [a0, a1] -> [b0, b1].
 
-  function matrix (a, b) {
+
+  function matrix(a, b) {
     var u = subtract(a[1], a[0]),
         v = subtract(b[1], b[0]),
         phi = angle$2(u, v),
@@ -11194,14 +11136,17 @@
     return multiply([1, 0, a[0][0], 0, 1, a[0][1]], multiply([s, 0, 0, 0, s, 0], multiply([cos$1(phi), sin$1(phi), 0, -sin$1(phi), cos$1(phi), 0], [1, 0, -b[0][0], 0, 1, -b[0][1]])));
   } // Inverts a transform matrix.
 
+
   function inverse(m) {
     var k = 1 / (m[0] * m[4] - m[1] * m[3]);
     return [k * m[4], -k * m[1], k * (m[1] * m[5] - m[2] * m[4]), -k * m[3], k * m[0], k * (m[2] * m[3] - m[0] * m[5])];
   } // Multiplies two 3x2 matrices.
 
+
   function multiply(a, b) {
     return [a[0] * b[0] + a[1] * b[3], a[0] * b[1] + a[1] * b[4], a[0] * b[2] + a[1] * b[5] + a[2], a[3] * b[0] + a[4] * b[3], a[3] * b[1] + a[4] * b[4], a[3] * b[2] + a[4] * b[5] + a[5]];
   } // Subtracts 2D vectors.
+
 
   function subtract(a, b) {
     return [a[0] - b[0], a[1] - b[1]];
@@ -11215,15 +11160,15 @@
 
   function angle$2(a, b) {
     return atan2$1(a[0] * b[1] - a[1] * b[0], a[0] * b[0] + a[1] * b[1]);
-  }
-
+  } // Creates a polyhedral projection.
   //  * root: a spanning tree of polygon faces.  Nodes are automatically
   //    augmented with a transform matrix.
   //  * face: a function that returns the appropriate node for a given {lambda, phi}
   //    point (radians).
   //  * r: rotation angle for root face [deprecated by .angle()].
 
-  function polyhedral (root, face, r) {
+
+  function polyhedral(root, face, r) {
     recurse(root, {
       transform: null
     });
@@ -11412,9 +11357,9 @@
 
   function hasInverse(node) {
     return node.project.invert || node.children && node.children.some(hasInverse);
-  }
+  } // TODO generate on-the-fly to avoid external modification.
 
-  // TODO generate on-the-fly to avoid external modification.
+
   var octahedron = [[0, 90], [-90, 0], [0, 0], [90, 0], [180, 0], [0, -90]];
   var octahedron$1 = [[0, 2, 1], [0, 3, 2], [5, 1, 2], [5, 2, 3], [0, 1, 4], [0, 4, 3], [5, 4, 1], [5, 3, 4]].map(function (face) {
     return face.map(function (i) {
@@ -11422,7 +11367,7 @@
     });
   });
 
-  function butterfly (faceProjection) {
+  function butterfly(faceProjection) {
     faceProjection = faceProjection || function (face) {
       var c = centroid({
         type: "MultiPoint",
@@ -11457,7 +11402,7 @@
     return collignonRaw.invert(x / kx, y);
   };
 
-  function collignon$1 (faceProjection) {
+  function collignon$1(faceProjection) {
     faceProjection = faceProjection || function (face) {
       var c = centroid({
         type: "MultiPoint",
@@ -11481,7 +11426,7 @@
     }).angle(-30).scale(121.906).center([0, 48.5904]);
   }
 
-  function waterman (faceProjection) {
+  function waterman(faceProjection) {
     faceProjection = faceProjection || function (face) {
       var c = face.length === 6 ? centroid({
         type: "MultiPoint",
@@ -11565,9 +11510,9 @@
     return [cosphi * cos$1(lambda), cosphi * sin$1(lambda), sin$1(phi)];
   }
 
-  function noop$2 () {}
+  function noop$2() {}
 
-  function clockwise (ring) {
+  function clockwise(ring) {
     if ((n = ring.length) < 4) return false;
     var i = 0,
         n,
@@ -11580,7 +11525,7 @@
     return area <= 0;
   }
 
-  function contains$1 (ring, point) {
+  function contains$1(ring, point) {
     var x = point[0],
         y = point[1],
         contains = false;
@@ -11598,7 +11543,7 @@
     return contains;
   }
 
-  function index$1 (object, projection) {
+  function index$1(object, projection) {
     var stream = projection.stream,
         project;
     if (!stream) throw new Error("invalid projection");
@@ -11773,7 +11718,7 @@
     }
   };
 
-  function quincuncial (project) {
+  function quincuncial(project) {
     var dx = project(halfPi$1, 0)[0] - project(-halfPi$1, 0)[0];
 
     function projectQuincuncial(lambda, phi) {
@@ -11808,15 +11753,15 @@
     return projection(projectQuincuncial).rotate([-90, -90, 45]).clipAngle(180 - 1e-3);
   }
 
-  function gringorten$1 () {
+  function gringorten$1() {
     return quincuncial(gringortenRaw).scale(176.423);
   }
 
-  function peirce () {
+  function peirce() {
     return quincuncial(guyouRaw).scale(111.48);
   }
 
-  function quantize (input, digits) {
+  function quantize(input, digits) {
     if (!(0 <= (digits = +digits) && digits <= 20)) throw new Error("invalid digits");
 
     function quantizePoint(input) {
@@ -11981,7 +11926,8 @@
 
     return forward;
   }
-  function rectangularPolyconic () {
+
+  function rectangularPolyconic() {
     return parallel1(rectangularPolyconicRaw).scale(131.215);
   }
 
@@ -11989,6 +11935,7 @@
   K$1.forEach(function (d) {
     d[1] *= 1.0144;
   });
+
   function robinsonRaw(lambda, phi) {
     var i = min$1(18, abs$1(phi) * 36 / pi$1),
         i0 = floor(i),
@@ -12044,7 +11991,7 @@
     return [x / (bx + di * (cx - ax) / 2 + di * di * (cx - 2 * bx + ax) / 2), phi * radians$1];
   };
 
-  function robinson () {
+  function robinson() {
     return projection(robinsonRaw).scale(152.63);
   }
 
@@ -12085,7 +12032,8 @@
 
     return forward;
   }
-  function satellite () {
+
+  function satellite() {
     var distance = 2,
         omega = 0,
         m = projectionMutator(satelliteRaw),
@@ -12369,7 +12317,7 @@
     return output;
   }
 
-  function stitch (input) {
+  function stitch(input) {
     if (input == null) return input;
 
     switch (input.type) {
@@ -12403,14 +12351,14 @@
     return [x / (0.74482 - 0.34588 * s * s), 2 * atan$1(t)];
   };
 
-  function times () {
+  function times() {
     return projection(timesRaw).scale(146.153);
-  }
-
+  } // Compute the origin as the midpoint of the two reference points.
   // Rotate one of the reference points by the origin.
   // Apply the spherical law of sines to compute gamma rotation.
 
-  function twoPoint (raw, p0, p1) {
+
+  function twoPoint(raw, p0, p1) {
     var i = interpolate$2(p0, p1),
         o = i(0.5),
         a = rotation([-o[0], -o[1]])(p0),
@@ -12444,12 +12392,15 @@
 
     return forward;
   }
+
   function twoPointAzimuthalUsa() {
     return twoPointAzimuthal([-158, 21.5], [-77, 39]).clipAngle(60).scale(400);
   }
+
   function twoPointAzimuthal(p0, p1) {
     return twoPoint(twoPointAzimuthalRaw, p0, p1);
-  }
+  } // TODO clip to ellipse
+
 
   function twoPointEquidistantRaw(z0) {
     if (!(z0 *= 2)) return azimuthalEquidistantRaw;
@@ -12478,9 +12429,11 @@
 
     return forward;
   }
+
   function twoPointEquidistantUsa() {
     return twoPointEquidistant([-158, 21.5], [-77, 39]).clipAngle(130).scale(122.571);
   }
+
   function twoPointEquidistant(p0, p1) {
     return twoPoint(twoPointEquidistantRaw, p0, p1);
   }
@@ -12519,7 +12472,7 @@
     return [pi$1 * (x2_y2 - 1 + sqrt$1(1 + 2 * (x2 - y2) + z)) / (2 * x), sign$1(y) * pi$1 * (-m1 * cos$1(theta1 + pi$1 / 3) - c2 / (3 * c3))];
   };
 
-  function vanDerGrinten () {
+  function vanDerGrinten() {
     return projection(vanDerGrintenRaw).scale(79.4183);
   }
 
@@ -12544,7 +12497,7 @@
     return [sign$1(x) * pi$1 * (B - A), sign$1(y) * halfPi$1 * sin$1(2 * atan2$1(sqrt$1((1 - 2 * A * x1) * (A + B) - x1), sqrt$1(B + A + x1)))];
   };
 
-  function vanDerGrinten2 () {
+  function vanDerGrinten2() {
     return projection(vanDerGrinten2Raw).scale(79.4183);
   }
 
@@ -12565,7 +12518,7 @@
     return [x ? pi$1 * (sign$1(x) * sqrt$1(A * A + 1) - A) : 0, halfPi$1 * sin$1(2 * atan$1(y1))];
   };
 
-  function vanDerGrinten3 () {
+  function vanDerGrinten3() {
     return projection(vanDerGrinten3Raw).scale(79.4183);
   }
 
@@ -12619,7 +12572,7 @@
     return [sign$1(x) * (sqrt$1(D * D + 4) + D) * pi$1 / 4, halfPi$1 * B];
   };
 
-  function vanDerGrinten4 () {
+  function vanDerGrinten4() {
     return projection(vanDerGrinten4Raw).scale(127.16);
   }
 
@@ -12673,6 +12626,7 @@
         cy = 1 / (k * sqrt$1(n * m1 * m2));
     return wagnerFormula(cx, cy, m1, m2, n);
   }
+
   function wagner() {
     // default values generate wagner8
     var poleline = 65 * radians$1,
@@ -12700,6 +12654,7 @@
 
     return projection.scale(163.775);
   }
+
   function wagner7() {
     return wagner().poleline(65).parallels(60).inflation(0).ratio(200).scale(172.633);
   }
@@ -12707,7 +12662,8 @@
   var A = 4 * pi$1 + 3 * sqrt$1(3),
       B = 2 * sqrt$1(2 * pi$1 * sqrt$1(3) / A);
   var wagner4Raw = mollweideBromleyRaw(B * sqrt$1(3) / pi$1, B, A / 6);
-  function wagner4 () {
+
+  function wagner4() {
     return projection(wagner4Raw).scale(176.84);
   }
 
@@ -12719,7 +12675,7 @@
     return [x / sqrt$1(1 - 3 * y * y / (pi$1 * pi$1)), y];
   };
 
-  function wagner6 () {
+  function wagner6() {
     return projection(wagner6Raw).scale(152.63);
   }
 
@@ -12742,7 +12698,7 @@
     return [atan2$1(k * b, D * (1 + w)), D ? -asin$1(k * a / D) : 0];
   };
 
-  function wiechel () {
+  function wiechel() {
     return projection(wiechelRaw).rotate([0, -90, 45]).scale(124.75).clipAngle(180 - 1e-3);
   }
 
@@ -12784,11 +12740,9 @@
     return [lambda, phi];
   };
 
-  function winkel3 () {
+  function winkel3() {
     return projection(winkel3Raw).scale(158.837);
   }
-
-
 
   var d3GeoProjection = /*#__PURE__*/Object.freeze({
     __proto__: null,
@@ -12976,7 +12930,6 @@
     geoWinkel3: winkel3,
     geoWinkel3Raw: winkel3Raw
   });
-
   var epsilon$3 = 1e-6;
 
   function noop$3() {}
@@ -13019,6 +12972,7 @@
     if (clip != null) projection.clipExtent(clip);
     return projection.scale(k * 150).translate([x, y]);
   }
+
   function fitSize$1(projection, size, object) {
     return fitExtent$1(projection, [[0, 0], size], object);
   }
@@ -13134,8 +13088,7 @@
     toString: function toString() {
       return this._;
     }
-  };
-
+  }; // The projections must have mutually exclusive clip regions on the sphere,
   // as this will avoid emitting interleaving lines and polygons.
 
   function multiplex$1(streams) {
@@ -13191,7 +13144,7 @@
   // http://egsc.usgs.gov/isb/pubs/MapProjections/projections.html#albers
 
 
-  function albersUsa$1 () {
+  function albersUsa$1() {
     var cache,
         cacheStream,
         lower48 = albers(),
@@ -13202,17 +13155,17 @@
     hawaii = conicEqualArea().rotate([157, 0]).center([-3, 19.9]).parallels([8, 18]),
         hawaiiPoint,
         // ESRI:102007
-    _point,
+    _point2,
         pointStream = {
       point: function point(x, y) {
-        _point = [x, y];
+        _point2 = [x, y];
       }
     };
 
     function albersUsa(coordinates) {
       var x = coordinates[0],
           y = coordinates[1];
-      return _point = null, (lower48Point.point(x, y), _point) || (alaskaPoint.point(x, y), _point) || (hawaiiPoint.point(x, y), _point);
+      return _point2 = null, (lower48Point.point(x, y), _point2) || (alaskaPoint.point(x, y), _point2) || (hawaiiPoint.point(x, y), _point2);
     }
 
     albersUsa.invert = function (coordinates) {
@@ -13289,9 +13242,9 @@
     };
 
     return albersUsa.scale(1070);
-  }
-
+  } // The projections must have mutually exclusive clip regions on the sphere,
   // as this will avoid emitting interleaving lines and polygons.
+
 
   function multiplex$2(streams) {
     var n = streams.length;
@@ -13345,7 +13298,7 @@
   // http://egsc.usgs.gov/isb/pubs/MapProjections/projections.html#albers
 
 
-  function albersUsaTerritories () {
+  function albersUsaTerritories() {
     var cache,
         cacheStream,
         lower48 = albers(),
@@ -13364,10 +13317,10 @@
         // EPSG:4169
     guam = equirectangular().rotate([-145, -16.8]),
         guamPoint,
-        _point,
+        _point3,
         pointStream = {
       point: function point(x, y) {
-        _point = [x, y];
+        _point3 = [x, y];
       }
     };
     /*
@@ -13380,7 +13333,7 @@
     function albersUsa(coordinates) {
       var x = coordinates[0],
           y = coordinates[1];
-      return _point = null, (lower48Point.point(x, y), _point) || (alaskaPoint.point(x, y), _point) || (hawaiiPoint.point(x, y), _point) || (puertoRicoPoint.point(x, y), _point) || (samoaPoint.point(x, y), _point) || (guamPoint.point(x, y), _point);
+      return _point3 = null, (lower48Point.point(x, y), _point3) || (alaskaPoint.point(x, y), _point3) || (hawaiiPoint.point(x, y), _point3) || (puertoRicoPoint.point(x, y), _point3) || (samoaPoint.point(x, y), _point3) || (guamPoint.point(x, y), _point3);
     }
 
     albersUsa.invert = function (coordinates) {
@@ -13620,9 +13573,9 @@
     };
 
     return albersUsa.scale(1070);
-  }
-
+  } // The projections must have mutually exclusive clip regions on the sphere,
   // as this will avoid emitting interleaving lines and polygons.
+
 
   function multiplex$3(streams) {
     var n = streams.length;
@@ -13673,17 +13626,17 @@
   } // A composite projection for Spain, configured by default for 960×500.
 
 
-  function conicConformalSpain () {
+  function conicConformalSpain() {
     var cache,
         cacheStream,
         iberianPeninsule = conicConformal().rotate([5, -38.6]).parallels([0, 60]),
         iberianPeninsulePoint,
         canaryIslands = conicConformal().rotate([5, -38.6]).parallels([0, 60]),
         canaryIslandsPoint,
-        _point,
+        _point4,
         pointStream = {
       point: function point(x, y) {
-        _point = [x, y];
+        _point4 = [x, y];
       }
     };
     /*
@@ -13695,7 +13648,7 @@
     function conicConformalSpain(coordinates) {
       var x = coordinates[0],
           y = coordinates[1];
-      return _point = null, (iberianPeninsulePoint.point(x, y), _point) || (canaryIslandsPoint.point(x, y), _point);
+      return _point4 = null, (iberianPeninsulePoint.point(x, y), _point4) || (canaryIslandsPoint.point(x, y), _point4);
     }
 
     conicConformalSpain.invert = function (coordinates) {
@@ -13795,9 +13748,9 @@
     };
 
     return conicConformalSpain.scale(2700);
-  }
-
+  } // The projections must have mutually exclusive clip regions on the sphere,
   // as this will avoid emitting interleaving lines and polygons.
+
 
   function multiplex$4(streams) {
     var n = streams.length;
@@ -13848,7 +13801,7 @@
   } // A composite projection for Portugal, configured by default for 960×500.
 
 
-  function conicConformalPortugal () {
+  function conicConformalPortugal() {
     var cache,
         cacheStream,
         iberianPeninsule = conicConformal().rotate([10, -39.3]).parallels([0, 60]),
@@ -13857,10 +13810,10 @@
         madeiraPoint,
         azores = conicConformal().rotate([27.8, -38.6]).parallels([0, 60]),
         azoresPoint,
-        _point,
+        _point5,
         pointStream = {
       point: function point(x, y) {
-        _point = [x, y];
+        _point5 = [x, y];
       }
     };
     /*
@@ -13873,7 +13826,7 @@
     function conicConformalPortugal(coordinates) {
       var x = coordinates[0],
           y = coordinates[1];
-      return _point = null, (iberianPeninsulePoint.point(x, y), _point) || (madeiraPoint.point(x, y), _point) || (azoresPoint.point(x, y), _point);
+      return _point5 = null, (iberianPeninsulePoint.point(x, y), _point5) || (madeiraPoint.point(x, y), _point5) || (azoresPoint.point(x, y), _point5);
     }
 
     conicConformalPortugal.invert = function (coordinates) {
@@ -14051,9 +14004,9 @@
     };
 
     return conicConformalPortugal.scale(4200);
-  }
-
+  } // The projections must have mutually exclusive clip regions on the sphere,
   // as this will avoid emitting interleaving lines and polygons.
+
 
   function multiplex$5(streams) {
     var n = streams.length;
@@ -14104,17 +14057,17 @@
   } // A composite projection for Ecuador, configured by default for 960×500.
 
 
-  function mercatorEcuador () {
+  function mercatorEcuador() {
     var cache,
         cacheStream,
         mainland = mercator().rotate([80, 1.5]),
         mainlandPoint,
         galapagos = mercator().rotate([90.73, 1]),
         galapagosPoint,
-        _point,
+        _point6,
         pointStream = {
       point: function point(x, y) {
-        _point = [x, y];
+        _point6 = [x, y];
       }
     };
     /*
@@ -14126,7 +14079,7 @@
     function mercatorEcuador(coordinates) {
       var x = coordinates[0],
           y = coordinates[1];
-      return _point = null, (mainlandPoint.point(x, y), _point) || (galapagosPoint.point(x, y), _point);
+      return _point6 = null, (mainlandPoint.point(x, y), _point6) || (galapagosPoint.point(x, y), _point6);
     }
 
     mercatorEcuador.invert = function (coordinates) {
@@ -14259,9 +14212,9 @@
     };
 
     return mercatorEcuador.scale(3500);
-  }
-
+  } // The projections must have mutually exclusive clip regions on the sphere,
   // as this will avoid emitting interleaving lines and polygons.
+
 
   function multiplex$6(streams) {
     var n = streams.length;
@@ -14312,7 +14265,7 @@
   } // A composite projection for Chile, configured by default for 960×500.
 
 
-  function transverseMercatorChile () {
+  function transverseMercatorChile() {
     var cache,
         cacheStream,
         mainland = transverseMercator().rotate([72, 37]),
@@ -14323,10 +14276,10 @@
         juanFernandezPoint,
         pascua = mercator().rotate([110, 25]),
         pascuaPoint,
-        _point,
+        _point7,
         pointStream = {
       point: function point(x, y) {
-        _point = [x, y];
+        _point7 = [x, y];
       }
     };
     /*
@@ -14340,7 +14293,7 @@
     function transverseMercatorChile(coordinates) {
       var x = coordinates[0],
           y = coordinates[1];
-      return _point = null, (mainlandPoint.point(x, y), _point) || (antarcticPoint.point(x, y), _point) || (juanFernandezPoint.point(x, y), _point) || (pascuaPoint.point(x, y), _point);
+      return _point7 = null, (mainlandPoint.point(x, y), _point7) || (antarcticPoint.point(x, y), _point7) || (juanFernandezPoint.point(x, y), _point7) || (pascuaPoint.point(x, y), _point7);
     }
 
     transverseMercatorChile.invert = function (coordinates) {
@@ -14560,9 +14513,9 @@
     };
 
     return transverseMercatorChile.scale(700);
-  }
-
+  } // The projections must have mutually exclusive clip regions on the sphere,
   // as this will avoid emitting interleaving lines and polygons.
+
 
   function multiplex$7(streams) {
     var n = streams.length;
@@ -14613,7 +14566,7 @@
   } // A composite projection for Portugal, configured by default for 960×500.
 
 
-  function conicEquidistantJapan () {
+  function conicEquidistantJapan() {
     var cache,
         cacheStream,
         mainland = conicEquidistant().rotate([-136, -22]).parallels([40, 34]),
@@ -14623,10 +14576,10 @@
         hokkaidoPoint,
         okinawa = conicEquidistant().rotate([-126, -19]).parallels([40, 34]),
         okinawaPoint,
-        _point,
+        _point8,
         pointStream = {
       point: function point(x, y) {
-        _point = [x, y];
+        _point8 = [x, y];
       }
     };
     /*
@@ -14639,7 +14592,7 @@
     function conicEquidistantJapan(coordinates) {
       var x = coordinates[0],
           y = coordinates[1];
-      return _point = null, (mainlandPoint.point(x, y), _point) || (hokkaidoPoint.point(x, y), _point) || (okinawaPoint.point(x, y), _point);
+      return _point8 = null, (mainlandPoint.point(x, y), _point8) || (hokkaidoPoint.point(x, y), _point8) || (okinawaPoint.point(x, y), _point8);
     }
 
     conicEquidistantJapan.invert = function (coordinates) {
@@ -14809,9 +14762,9 @@
     };
 
     return conicEquidistantJapan.scale(2200);
-  }
-
+  } // The projections must have mutually exclusive clip regions on the sphere,
   // as this will avoid emitting interleaving lines and polygons.
+
 
   function multiplex$8(streams) {
     var n = streams.length;
@@ -14862,7 +14815,7 @@
   } // A composite projection for France, configured by default for 960×500.
 
 
-  function conicConformalFrance () {
+  function conicConformalFrance() {
     var cache,
         cacheStream,
         europe = conicConformal().rotate([-3, -46.2]).parallels([0, 60]),
@@ -14889,10 +14842,10 @@
         polynesiePoint,
         polynesie2 = mercator().center([-150.55, -17.11]),
         polynesie2Point,
-        _point,
+        _point9,
         pointStream = {
       point: function point(x, y) {
-        _point = [x, y];
+        _point9 = [x, y];
       }
     };
     /*
@@ -14904,7 +14857,7 @@
     function conicConformalFrance(coordinates) {
       var x = coordinates[0],
           y = coordinates[1];
-      return _point = null, (europePoint.point(x, y), _point) || (guyanePoint.point(x, y), _point) || (martiniquePoint.point(x, y), _point) || (guadeloupePoint.point(x, y), _point) || (saintBarthelemyPoint.point(x, y), _point) || (stPierreMiquelonPoint.point(x, y), _point) || (mayottePoint.point(x, y), _point) || (reunionPoint.point(x, y), _point) || (nouvelleCaledoniePoint.point(x, y), _point) || (wallisFutunaPoint.point(x, y), _point) || (polynesiePoint.point(x, y), _point) || (polynesie2Point.point(x, y), _point);
+      return _point9 = null, (europePoint.point(x, y), _point9) || (guyanePoint.point(x, y), _point9) || (martiniquePoint.point(x, y), _point9) || (guadeloupePoint.point(x, y), _point9) || (saintBarthelemyPoint.point(x, y), _point9) || (stPierreMiquelonPoint.point(x, y), _point9) || (mayottePoint.point(x, y), _point9) || (reunionPoint.point(x, y), _point9) || (nouvelleCaledoniePoint.point(x, y), _point9) || (wallisFutunaPoint.point(x, y), _point9) || (polynesiePoint.point(x, y), _point9) || (polynesie2Point.point(x, y), _point9);
     }
 
     conicConformalFrance.invert = function (coordinates) {
@@ -15118,9 +15071,9 @@
     };
 
     return conicConformalFrance.scale(2700);
-  }
-
+  } // The projections must have mutually exclusive clip regions on the sphere,
   // as this will avoid emitting interleaving lines and polygons.
+
 
   function multiplex$9(streams) {
     var n = streams.length;
@@ -15171,7 +15124,7 @@
   } // A composite projection for Portugal, configured by default for 960×500.
 
 
-  function conicConformalEurope () {
+  function conicConformalEurope() {
     var cache,
         cacheStream,
         europe = conicConformal().rotate([-10, -53]).parallels([0, 60]),
@@ -15198,10 +15151,10 @@
         reunionPoint,
         malta = conicConformal().rotate([-14.4, -35.95]).parallels([0, 60]),
         maltaPoint,
-        _point,
+        _point10,
         pointStream = {
       point: function point(x, y) {
-        _point = [x, y];
+        _point10 = [x, y];
       }
     };
     /*
@@ -15213,7 +15166,7 @@
     function conicConformalEurope(coordinates) {
       var x = coordinates[0],
           y = coordinates[1];
-      return _point = null, (europePoint.point(x, y), _point) || (guyanePoint.point(x, y), _point) || (martiniquePoint.point(x, y), _point) || (guadeloupePoint.point(x, y), _point) || (canaryIslandsPoint.point(x, y), _point) || (madeiraPoint.point(x, y), _point) || (mayottePoint.point(x, y), _point) || (reunionPoint.point(x, y), _point) || (maltaPoint.point(x, y), _point) || (azoresPoint.point(x, y), _point) || (azores2Point.point(x, y), _point) || (azores3Point.point(x, y), _point);
+      return _point10 = null, (europePoint.point(x, y), _point10) || (guyanePoint.point(x, y), _point10) || (martiniquePoint.point(x, y), _point10) || (guadeloupePoint.point(x, y), _point10) || (canaryIslandsPoint.point(x, y), _point10) || (madeiraPoint.point(x, y), _point10) || (mayottePoint.point(x, y), _point10) || (reunionPoint.point(x, y), _point10) || (maltaPoint.point(x, y), _point10) || (azoresPoint.point(x, y), _point10) || (azores2Point.point(x, y), _point10) || (azores3Point.point(x, y), _point10);
     }
 
     conicConformalEurope.invert = function (coordinates) {
@@ -15431,9 +15384,9 @@
     };
 
     return conicConformalEurope.scale(750);
-  }
-
+  } // The projections must have mutually exclusive clip regions on the sphere,
   // as this will avoid emitting interleaving lines and polygons.
+
 
   function multiplex$a(streams) {
     var n = streams.length;
@@ -15484,24 +15437,24 @@
   } // A composite projection for Malaysia, configured by default for 960×500.
 
 
-  function mercatorMalaysia () {
+  function mercatorMalaysia() {
     var cache,
         cacheStream,
         peninsular = mercator().center([105.25, 4.00]),
         peninsularPoint,
         borneo = mercator().center([118.65, 2.86]),
         borneoPoint,
-        _point,
+        _point11,
         pointStream = {
       point: function point(x, y) {
-        _point = [x, y];
+        _point11 = [x, y];
       }
     };
 
     function mercatorMalaysia(coordinates) {
       var x = coordinates[0],
           y = coordinates[1];
-      return _point = null, (peninsularPoint.point(x, y), _point) || (borneoPoint.point(x, y), _point);
+      return _point11 = null, (peninsularPoint.point(x, y), _point11) || (borneoPoint.point(x, y), _point11);
     }
 
     mercatorMalaysia.invert = function (coordinates) {
@@ -15580,9 +15533,9 @@
     };
 
     return mercatorMalaysia.scale(4800);
-  }
-
+  } // The projections must have mutually exclusive clip regions on the sphere,
   // as this will avoid emitting interleaving lines and polygons.
+
 
   function multiplex$b(streams) {
     var n = streams.length;
@@ -15633,7 +15586,7 @@
   } // A composite projection for Equatorial Guinea, configured by default for 960×500.
 
 
-  function mercatorEquatorialGuinea () {
+  function mercatorEquatorialGuinea() {
     var cache,
         cacheStream,
         continent = mercator().rotate([-9.5, -1.5]),
@@ -15642,17 +15595,17 @@
         biokoPoint,
         annobon = mercator().rotate([-5.6, 1.45]),
         annobonPoint,
-        _point,
+        _point12,
         pointStream = {
       point: function point(x, y) {
-        _point = [x, y];
+        _point12 = [x, y];
       }
     };
 
     function mercatorEquatorialGuinea(coordinates) {
       var x = coordinates[0],
           y = coordinates[1];
-      return _point = null, (continentPoint.point(x, y), _point) || (biokoPoint.point(x, y), _point) || (annobonPoint.point(x, y), _point);
+      return _point12 = null, (continentPoint.point(x, y), _point12) || (biokoPoint.point(x, y), _point12) || (annobonPoint.point(x, y), _point12);
     }
 
     mercatorEquatorialGuinea.invert = function (coordinates) {
@@ -15822,24 +15775,24 @@
     };
   }
 
-  function albersUk () {
+  function albersUk() {
     var cache,
         cacheStream,
         main = albers().rotate([4.4, 0.8]).center([0, 55.4]).parallels([50, 60]),
         mainPoint,
         shetland = albers().rotate([4.4, 0.8]).center([0, 55.4]).parallels([50, 60]),
         shetlandPoint,
-        _point,
+        _point13,
         pointStream = {
       point: function point(x, y) {
-        _point = [x, y];
+        _point13 = [x, y];
       }
     };
 
     function albersUk(coordinates) {
       var x = coordinates[0],
           y = coordinates[1];
-      return _point = null, (mainPoint.point(x, y), _point) || (shetlandPoint.point(x, y), _point);
+      return _point13 = null, (mainPoint.point(x, y), _point13) || (shetlandPoint.point(x, y), _point13);
     }
 
     albersUk.invert = function (coordinates) {
@@ -15936,8 +15889,6 @@
     return albersUk.scale(2800);
   }
 
-
-
   var d3CompositeProjections = /*#__PURE__*/Object.freeze({
     __proto__: null,
     geoAlbersUsa: albersUsa$1,
@@ -15970,6 +15921,7 @@
 
     return this;
   }
+
   function initInterpolator(domain, interpolator) {
     switch (arguments.length) {
       case 0:
@@ -16087,7 +16039,7 @@
     return map;
   }
 
-  function nest () {
+  function nest() {
     var keys = [],
         _sortKeys = [],
         _sortValues,
@@ -16220,7 +16172,7 @@
     return set;
   }
 
-  function keys (map) {
+  function keys(map) {
     var keys = [];
 
     for (var key in map) {
@@ -16230,13 +16182,13 @@
     return keys;
   }
 
-  var array$1 = Array.prototype;
-  var map$1 = array$1.map;
-  var slice = array$1.slice;
-
+  var array = Array.prototype;
+  var map$1 = array.map;
+  var slice = array.slice;
   var implicit = {
     name: "implicit"
   };
+
   function ordinal() {
     var index = map(),
         domain = [],
@@ -16379,17 +16331,18 @@
     return pointish(band.apply(null, arguments).paddingInner(1));
   }
 
-  function constant$4 (x) {
+  function constant$4(x) {
     return function () {
       return x;
     };
   }
 
-  function number$1 (x) {
+  function number$1(x) {
     return +x;
   }
 
   var unit = [0, 1];
+
   function identity$4(x) {
     return x;
   }
@@ -16448,6 +16401,7 @@
   function copy(source, target) {
     return target.domain(source.domain()).range(source.range()).interpolate(source.interpolate()).clamp(source.clamp()).unknown(source.unknown());
   }
+
   function transformer$1() {
     var domain = unit,
         range = unit,
@@ -16503,14 +16457,19 @@
       return rescale();
     };
   }
+
   function continuous(transform, untransform) {
     return transformer$1()(transform, untransform);
   }
 
-  // Computes the decimal coefficient and exponent of the specified number x with
+  function formatDecimal(x) {
+    return Math.abs(x = Math.round(x)) >= 1e21 ? x.toLocaleString("en").replace(/,/g, "") : x.toString(10);
+  } // Computes the decimal coefficient and exponent of the specified number x with
   // significant digits p, where x is positive and p is in [1, 21] or undefined.
-  // For example, formatDecimal(1.23) returns ["123", 0].
-  function formatDecimal (x, p) {
+  // For example, formatDecimalParts(1.23) returns ["123", 0].
+
+
+  function formatDecimalParts(x, p) {
     if ((i = (x = p ? x.toExponential(p - 1) : x.toExponential()).indexOf("e")) < 0) return null; // NaN, ±Infinity
 
     var i,
@@ -16520,11 +16479,11 @@
     return [coefficient.length > 1 ? coefficient[0] + coefficient.slice(2) : coefficient, +x.slice(i + 1)];
   }
 
-  function exponent (x) {
-    return x = formatDecimal(Math.abs(x)), x ? x[1] : NaN;
+  function exponent(x) {
+    return x = formatDecimalParts(Math.abs(x)), x ? x[1] : NaN;
   }
 
-  function formatGroup (grouping, thousands) {
+  function formatGroup(grouping, thousands) {
     return function (value, width) {
       var i = value.length,
           t = [],
@@ -16543,42 +16502,55 @@
     };
   }
 
-  function formatNumerals (numerals) {
+  function formatNumerals(numerals) {
     return function (value) {
       return value.replace(/[0-9]/g, function (i) {
         return numerals[+i];
       });
     };
+  } // [[fill]align][sign][symbol][0][width][,][.precision][~][type]
+
+
+  var re = /^(?:(.)?([<>=^]))?([+\-( ])?([$#])?(0)?(\d+)?(,)?(\.\d+)?(~)?([a-z%])?$/i;
+
+  function formatSpecifier(specifier) {
+    if (!(match = re.exec(specifier))) throw new Error("invalid format: " + specifier);
+    var match;
+    return new FormatSpecifier({
+      fill: match[1],
+      align: match[2],
+      sign: match[3],
+      symbol: match[4],
+      zero: match[5],
+      width: match[6],
+      comma: match[7],
+      precision: match[8] && match[8].slice(1),
+      trim: match[9],
+      type: match[10]
+    });
   }
 
-  // [[fill]align][sign][symbol][0][width][,][.precision][~][type]
-  var re = /^(?:(.)?([<>=^]))?([+\-( ])?([$#])?(0)?(\d+)?(,)?(\.\d+)?(~)?([a-z%])?$/i;
-  function formatSpecifier(specifier) {
-    return new FormatSpecifier(specifier);
-  }
   formatSpecifier.prototype = FormatSpecifier.prototype; // instanceof
 
   function FormatSpecifier(specifier) {
-    if (!(match = re.exec(specifier))) throw new Error("invalid format: " + specifier);
-    var match;
-    this.fill = match[1] || " ";
-    this.align = match[2] || ">";
-    this.sign = match[3] || "-";
-    this.symbol = match[4] || "";
-    this.zero = !!match[5];
-    this.width = match[6] && +match[6];
-    this.comma = !!match[7];
-    this.precision = match[8] && +match[8].slice(1);
-    this.trim = !!match[9];
-    this.type = match[10] || "";
+    this.fill = specifier.fill === undefined ? " " : specifier.fill + "";
+    this.align = specifier.align === undefined ? ">" : specifier.align + "";
+    this.sign = specifier.sign === undefined ? "-" : specifier.sign + "";
+    this.symbol = specifier.symbol === undefined ? "" : specifier.symbol + "";
+    this.zero = !!specifier.zero;
+    this.width = specifier.width === undefined ? undefined : +specifier.width;
+    this.comma = !!specifier.comma;
+    this.precision = specifier.precision === undefined ? undefined : +specifier.precision;
+    this.trim = !!specifier.trim;
+    this.type = specifier.type === undefined ? "" : specifier.type + "";
   }
 
   FormatSpecifier.prototype.toString = function () {
-    return this.fill + this.align + this.sign + this.symbol + (this.zero ? "0" : "") + (this.width == null ? "" : Math.max(1, this.width | 0)) + (this.comma ? "," : "") + (this.precision == null ? "" : "." + Math.max(0, this.precision | 0)) + (this.trim ? "~" : "") + this.type;
-  };
+    return this.fill + this.align + this.sign + this.symbol + (this.zero ? "0" : "") + (this.width === undefined ? "" : Math.max(1, this.width | 0)) + (this.comma ? "," : "") + (this.precision === undefined ? "" : "." + Math.max(0, this.precision | 0)) + (this.trim ? "~" : "") + this.type;
+  }; // Trims insignificant zeros, e.g., replaces 1.2000k with 1.2k.
 
-  // Trims insignificant zeros, e.g., replaces 1.2000k with 1.2k.
-  function formatTrim (s) {
+
+  function formatTrim(s) {
     out: for (var n = s.length, i = 1, i0 = -1, i1; i < n; ++i) {
       switch (s[i]) {
         case ".":
@@ -16591,11 +16563,8 @@
           break;
 
         default:
-          if (i0 > 0) {
-            if (!+s[i]) break out;
-            i0 = 0;
-          }
-
+          if (!+s[i]) break out;
+          if (i0 > 0) i0 = 0;
           break;
       }
     }
@@ -16604,18 +16573,19 @@
   }
 
   var prefixExponent;
-  function formatPrefixAuto (x, p) {
-    var d = formatDecimal(x, p);
+
+  function formatPrefixAuto(x, p) {
+    var d = formatDecimalParts(x, p);
     if (!d) return x + "";
     var coefficient = d[0],
         exponent = d[1],
         i = exponent - (prefixExponent = Math.max(-8, Math.min(8, Math.floor(exponent / 3))) * 3) + 1,
         n = coefficient.length;
-    return i === n ? coefficient : i > n ? coefficient + new Array(i - n + 1).join("0") : i > 0 ? coefficient.slice(0, i) + "." + coefficient.slice(i) : "0." + new Array(1 - i).join("0") + formatDecimal(x, Math.max(0, p + i - 1))[0]; // less than 1y!
+    return i === n ? coefficient : i > n ? coefficient + new Array(i - n + 1).join("0") : i > 0 ? coefficient.slice(0, i) + "." + coefficient.slice(i) : "0." + new Array(1 - i).join("0") + formatDecimalParts(x, Math.max(0, p + i - 1))[0]; // less than 1y!
   }
 
-  function formatRounded (x, p) {
-    var d = formatDecimal(x, p);
+  function formatRounded(x, p) {
+    var d = formatDecimalParts(x, p);
     if (!d) return x + "";
     var coefficient = d[0],
         exponent = d[1];
@@ -16632,9 +16602,7 @@
     "c": function c(x) {
       return x + "";
     },
-    "d": function d(x) {
-      return Math.round(x).toString(10);
-    },
+    "d": formatDecimal,
     "e": function e(x, p) {
       return x.toExponential(p);
     },
@@ -16647,30 +16615,35 @@
     "o": function o(x) {
       return Math.round(x).toString(8);
     },
-    "p": function p(x, _p) {
-      return formatRounded(x * 100, _p);
+    "p": function p(x, _p2) {
+      return formatRounded(x * 100, _p2);
     },
     "r": formatRounded,
     "s": formatPrefixAuto,
     "X": function X(x) {
       return Math.round(x).toString(16).toUpperCase();
     },
-    "x": function x(_x) {
-      return Math.round(_x).toString(16);
+    "x": function x(_x5) {
+      return Math.round(_x5).toString(16);
     }
   };
 
-  function identity$5 (x) {
+  function identity$5(x) {
     return x;
   }
 
-  var prefixes = ["y", "z", "a", "f", "p", "n", "µ", "m", "", "k", "M", "G", "T", "P", "E", "Z", "Y"];
-  function formatLocale (locale) {
-    var group = locale.grouping && locale.thousands ? formatGroup(locale.grouping, locale.thousands) : identity$5,
-        currency = locale.currency,
-        decimal = locale.decimal,
-        numerals = locale.numerals ? formatNumerals(locale.numerals) : identity$5,
-        percent = locale.percent || "%";
+  var map$2 = Array.prototype.map,
+      prefixes = ["y", "z", "a", "f", "p", "n", "µ", "m", "", "k", "M", "G", "T", "P", "E", "Z", "Y"];
+
+  function formatLocale(locale) {
+    var group = locale.grouping === undefined || locale.thousands === undefined ? identity$5 : formatGroup(map$2.call(locale.grouping, Number), locale.thousands + ""),
+        currencyPrefix = locale.currency === undefined ? "" : locale.currency[0] + "",
+        currencySuffix = locale.currency === undefined ? "" : locale.currency[1] + "",
+        decimal = locale.decimal === undefined ? "." : locale.decimal + "",
+        numerals = locale.numerals === undefined ? identity$5 : formatNumerals(map$2.call(locale.numerals, String)),
+        percent = locale.percent === undefined ? "%" : locale.percent + "",
+        minus = locale.minus === undefined ? "-" : locale.minus + "",
+        nan = locale.nan === undefined ? "NaN" : locale.nan + "";
 
     function newFormat(specifier) {
       specifier = formatSpecifier(specifier);
@@ -16686,13 +16659,13 @@
           type = specifier.type; // The "n" type is an alias for ",g".
 
       if (type === "n") comma = true, type = "g"; // The "" type, and any invalid type, is an alias for ".12~g".
-      else if (!formatTypes[type]) precision == null && (precision = 12), trim = true, type = "g"; // If zero fill is specified, padding goes after sign and before digits.
+      else if (!formatTypes[type]) precision === undefined && (precision = 12), trim = true, type = "g"; // If zero fill is specified, padding goes after sign and before digits.
 
       if (zero || fill === "0" && align === "=") zero = true, fill = "0", align = "="; // Compute the prefix and suffix.
       // For SI-prefix, the suffix is lazily computed.
 
-      var prefix = symbol === "$" ? currency[0] : symbol === "#" && /[boxX]/.test(type) ? "0" + type.toLowerCase() : "",
-          suffix = symbol === "$" ? currency[1] : /[%p]/.test(type) ? percent : ""; // What format function should we use?
+      var prefix = symbol === "$" ? currencyPrefix : symbol === "#" && /[boxX]/.test(type) ? "0" + type.toLowerCase() : "",
+          suffix = symbol === "$" ? currencySuffix : /[%p]/.test(type) ? percent : ""; // What format function should we use?
       // Is this an integer type?
       // Can this type generate exponential notation?
 
@@ -16702,7 +16675,7 @@
       // For significant precision, it must be in [1, 21].
       // For fixed precision, it must be in [0, 20].
 
-      precision = precision == null ? 6 : /[gprs]/.test(type) ? Math.max(1, Math.min(21, precision)) : Math.max(0, Math.min(20, precision));
+      precision = precision === undefined ? 6 : /[gprs]/.test(type) ? Math.max(1, Math.min(21, precision)) : Math.max(0, Math.min(20, precision));
 
       function format(value) {
         var valuePrefix = prefix,
@@ -16715,16 +16688,17 @@
           valueSuffix = formatType(value) + valueSuffix;
           value = "";
         } else {
-          value = +value; // Perform the initial formatting.
+          value = +value; // Determine the sign. -0 is not less than 0, but 1 / -0 is!
 
-          var valueNegative = value < 0;
-          value = formatType(Math.abs(value), precision); // Trim insignificant zeros.
+          var valueNegative = value < 0 || 1 / value < 0; // Perform the initial formatting.
 
-          if (trim) value = formatTrim(value); // If a negative value rounds to zero during formatting, treat as positive.
+          value = isNaN(value) ? nan : formatType(Math.abs(value), precision); // Trim insignificant zeros.
 
-          if (valueNegative && +value === 0) valueNegative = false; // Compute the prefix and suffix.
+          if (trim) value = formatTrim(value); // If a negative value rounds to zero after formatting, and no explicit positive sign is requested, hide the sign.
 
-          valuePrefix = (valueNegative ? sign === "(" ? sign : "-" : sign === "-" || sign === "(" ? "" : sign) + valuePrefix;
+          if (valueNegative && +value === 0 && sign !== "+") valueNegative = false; // Compute the prefix and suffix.
+
+          valuePrefix = (valueNegative ? sign === "(" ? sign : minus : sign === "-" || sign === "(" ? "" : sign) + valuePrefix;
           valueSuffix = (type === "s" ? prefixes[8 + prefixExponent / 3] : "") + valueSuffix + (valueNegative && sign === "(" ? ")" : ""); // Break the formatted value into the integer “value” part that can be
           // grouped, and fractional or exponential “suffix” part that is not.
 
@@ -16800,8 +16774,10 @@
     decimal: ".",
     thousands: ",",
     grouping: [3],
-    currency: ["$", ""]
+    currency: ["$", ""],
+    minus: "-"
   });
+
   function defaultLocale(definition) {
     locale = formatLocale(definition);
     format = locale.format;
@@ -16809,20 +16785,20 @@
     return locale;
   }
 
-  function precisionFixed (step) {
+  function precisionFixed(step) {
     return Math.max(0, -exponent(Math.abs(step)));
   }
 
-  function precisionPrefix (step, value) {
+  function precisionPrefix(step, value) {
     return Math.max(0, Math.max(-8, Math.min(8, Math.floor(exponent(value) / 3))) * 3 - exponent(Math.abs(step)));
   }
 
-  function precisionRound (step, max) {
+  function precisionRound(step, max) {
     step = Math.abs(step), max = Math.abs(max) - step;
     return Math.max(0, exponent(max) - exponent(step)) + 1;
   }
 
-  function tickFormat (start, stop, count, specifier) {
+  function tickFormat(start, stop, count, specifier) {
     var step = tickStep(start, stop, count),
         precision;
     specifier = formatSpecifier(specifier == null ? ",f" : specifier);
@@ -16910,6 +16886,7 @@
 
     return scale;
   }
+
   function linear$1() {
     var scale = continuous(identity$4, identity$4);
 
@@ -16946,7 +16923,7 @@
     return linearish(scale);
   }
 
-  function nice (domain, interval) {
+  function nice(domain, interval) {
     domain = domain.slice();
     var i0 = 0,
         i1 = domain.length - 1,
@@ -17095,6 +17072,7 @@
 
     return scale;
   }
+
   function log$2() {
     var scale = loggish(transformer$1()).domain([1, 10]);
 
@@ -17128,6 +17106,7 @@
 
     return linearish(scale);
   }
+
   function symlog() {
     var scale = symlogish(transformer$1());
 
@@ -17166,6 +17145,7 @@
 
     return linearish(scale);
   }
+
   function pow$2() {
     var scale = powish(transformer$1());
 
@@ -17176,6 +17156,7 @@
     initRange.apply(scale, arguments);
     return scale;
   }
+
   function sqrt$2() {
     return pow$2.apply(null, arguments).exponent(0.5);
   }
@@ -17325,12 +17306,15 @@
 
   var t0 = new Date(),
       t1 = new Date();
+
   function newInterval(floori, offseti, count, field) {
     function interval(date) {
-      return floori(date = new Date(+date)), date;
+      return floori(date = arguments.length === 0 ? new Date() : new Date(+date)), date;
     }
 
-    interval.floor = interval;
+    interval.floor = function (date) {
+      return floori(date = new Date(+date)), date;
+    };
 
     interval.ceil = function (date) {
       return floori(date = new Date(date - 1)), offseti(date, 1), floori(date), date;
@@ -17423,7 +17407,6 @@
   var durationHour = 36e5;
   var durationDay = 864e5;
   var durationWeek = 6048e5;
-
   var second = newInterval(function (date) {
     date.setTime(date - date.getMilliseconds());
   }, function (date, step) {
@@ -17433,7 +17416,6 @@
   }, function (date) {
     return date.getUTCSeconds();
   });
-
   var minute = newInterval(function (date) {
     date.setTime(date - date.getMilliseconds() - date.getSeconds() * durationSecond);
   }, function (date, step) {
@@ -17443,7 +17425,6 @@
   }, function (date) {
     return date.getMinutes();
   });
-
   var hour = newInterval(function (date) {
     date.setTime(date - date.getMilliseconds() - date.getSeconds() * durationSecond - date.getMinutes() * durationMinute);
   }, function (date, step) {
@@ -17453,7 +17434,6 @@
   }, function (date) {
     return date.getHours();
   });
-
   var day = newInterval(function (date) {
     date.setHours(0, 0, 0, 0);
   }, function (date, step) {
@@ -17482,7 +17462,6 @@
   var thursday = weekday(4);
   var friday = weekday(5);
   var saturday = weekday(6);
-
   var month = newInterval(function (date) {
     date.setDate(1);
     date.setHours(0, 0, 0, 0);
@@ -17493,7 +17472,6 @@
   }, function (date) {
     return date.getMonth();
   });
-
   var year = newInterval(function (date) {
     date.setMonth(0, 1);
     date.setHours(0, 0, 0, 0);
@@ -17524,7 +17502,6 @@
   }, function (date) {
     return date.getUTCMinutes();
   });
-
   var utcHour = newInterval(function (date) {
     date.setUTCMinutes(0, 0, 0);
   }, function (date, step) {
@@ -17534,7 +17511,6 @@
   }, function (date) {
     return date.getUTCHours();
   });
-
   var utcDay = newInterval(function (date) {
     date.setUTCHours(0, 0, 0, 0);
   }, function (date, step) {
@@ -17563,7 +17539,6 @@
   var utcThursday = utcWeekday(4);
   var utcFriday = utcWeekday(5);
   var utcSaturday = utcWeekday(6);
-
   var utcMonth = newInterval(function (date) {
     date.setUTCDate(1);
     date.setUTCHours(0, 0, 0, 0);
@@ -17574,7 +17549,6 @@
   }, function (date) {
     return date.getUTCMonth();
   });
-
   var utcYear = newInterval(function (date) {
     date.setUTCMonth(0, 1);
     date.setUTCHours(0, 0, 0, 0);
@@ -17616,11 +17590,11 @@
     return new Date(Date.UTC(d.y, d.m, d.d, d.H, d.M, d.S, d.L));
   }
 
-  function newYear(y) {
+  function newDate(y, m, d) {
     return {
       y: y,
-      m: 0,
-      d: 1,
+      m: m,
+      d: d,
       H: 0,
       M: 0,
       S: 0,
@@ -17656,6 +17630,8 @@
       "d": formatDayOfMonth,
       "e": formatDayOfMonth,
       "f": formatMicroseconds,
+      "g": formatYearISO,
+      "G": formatFullYearISO,
       "H": formatHour24,
       "I": formatHour12,
       "j": formatDayOfYear,
@@ -17663,6 +17639,7 @@
       "m": formatMonthNumber,
       "M": formatMinutes,
       "p": formatPeriod,
+      "q": formatQuarter,
       "Q": formatUnixTimestamp,
       "s": formatUnixTimestampSeconds,
       "S": formatSeconds,
@@ -17687,6 +17664,8 @@
       "d": formatUTCDayOfMonth,
       "e": formatUTCDayOfMonth,
       "f": formatUTCMicroseconds,
+      "g": formatUTCYearISO,
+      "G": formatUTCFullYearISO,
       "H": formatUTCHour24,
       "I": formatUTCHour12,
       "j": formatUTCDayOfYear,
@@ -17694,6 +17673,7 @@
       "m": formatUTCMonthNumber,
       "M": formatUTCMinutes,
       "p": formatUTCPeriod,
+      "q": formatUTCQuarter,
       "Q": formatUnixTimestamp,
       "s": formatUnixTimestampSeconds,
       "S": formatUTCSeconds,
@@ -17718,6 +17698,8 @@
       "d": parseDayOfMonth,
       "e": parseDayOfMonth,
       "f": parseMicroseconds,
+      "g": parseYear,
+      "G": parseFullYear,
       "H": parseHour24,
       "I": parseHour24,
       "j": parseDayOfYear,
@@ -17725,6 +17707,7 @@
       "m": parseMonthNumber,
       "M": parseMinutes,
       "p": parsePeriod,
+      "q": parseQuarter,
       "Q": parseUnixTimestamp,
       "s": parseUnixTimestampSeconds,
       "S": parseSeconds,
@@ -17774,31 +17757,36 @@
       };
     }
 
-    function newParse(specifier, newDate) {
+    function newParse(specifier, Z) {
       return function (string) {
-        var d = newYear(1900),
+        var d = newDate(1900, undefined, 1),
             i = parseSpecifier(d, specifier, string += "", 0),
             week,
             day$1;
         if (i != string.length) return null; // If a UNIX timestamp is specified, return it.
 
-        if ("Q" in d) return new Date(d.Q); // The am-pm flag is 0 for AM, and 1 for PM.
+        if ("Q" in d) return new Date(d.Q);
+        if ("s" in d) return new Date(d.s * 1000 + ("L" in d ? d.L : 0)); // If this is utcParse, never use the local timezone.
 
-        if ("p" in d) d.H = d.H % 12 + d.p * 12; // Convert day-of-week and week-of-year to day-of-year.
+        if (Z && !("Z" in d)) d.Z = 0; // The am-pm flag is 0 for AM, and 1 for PM.
+
+        if ("p" in d) d.H = d.H % 12 + d.p * 12; // If the month was not specified, inherit from the quarter.
+
+        if (d.m === undefined) d.m = "q" in d ? d.q : 0; // Convert day-of-week and week-of-year to day-of-year.
 
         if ("V" in d) {
           if (d.V < 1 || d.V > 53) return null;
           if (!("w" in d)) d.w = 1;
 
           if ("Z" in d) {
-            week = utcDate(newYear(d.y)), day$1 = week.getUTCDay();
+            week = utcDate(newDate(d.y, 0, 1)), day$1 = week.getUTCDay();
             week = day$1 > 4 || day$1 === 0 ? utcMonday.ceil(week) : utcMonday(week);
             week = utcDay.offset(week, (d.V - 1) * 7);
             d.y = week.getUTCFullYear();
             d.m = week.getUTCMonth();
             d.d = week.getUTCDate() + (d.w + 6) % 7;
           } else {
-            week = newDate(newYear(d.y)), day$1 = week.getDay();
+            week = localDate(newDate(d.y, 0, 1)), day$1 = week.getDay();
             week = day$1 > 4 || day$1 === 0 ? monday.ceil(week) : monday(week);
             week = day.offset(week, (d.V - 1) * 7);
             d.y = week.getFullYear();
@@ -17807,7 +17795,7 @@
           }
         } else if ("W" in d || "U" in d) {
           if (!("w" in d)) d.w = "u" in d ? d.u % 7 : "W" in d ? 1 : 0;
-          day$1 = "Z" in d ? utcDate(newYear(d.y)).getUTCDay() : newDate(newYear(d.y)).getDay();
+          day$1 = "Z" in d ? utcDate(newDate(d.y, 0, 1)).getUTCDay() : localDate(newDate(d.y, 0, 1)).getDay();
           d.m = 0;
           d.d = "W" in d ? (d.w + 6) % 7 + d.W * 7 - (day$1 + 5) % 7 : d.w + d.U * 7 - (day$1 + 6) % 7;
         } // If a time zone is specified, all fields are interpreted as UTC and then
@@ -17821,7 +17809,7 @@
         } // Otherwise, all fields are in local time.
 
 
-        return newDate(d);
+        return localDate(d);
       };
     }
 
@@ -17905,6 +17893,10 @@
       return locale_periods[+(d.getHours() >= 12)];
     }
 
+    function formatQuarter(d) {
+      return 1 + ~~(d.getMonth() / 3);
+    }
+
     function formatUTCShortWeekday(d) {
       return locale_shortWeekdays[d.getUTCDay()];
     }
@@ -17925,6 +17917,10 @@
       return locale_periods[+(d.getUTCHours() >= 12)];
     }
 
+    function formatUTCQuarter(d) {
+      return 1 + ~~(d.getUTCMonth() / 3);
+    }
+
     return {
       format: function format(specifier) {
         var f = newFormat(specifier += "", formats);
@@ -17936,7 +17932,7 @@
         return f;
       },
       parse: function parse(specifier) {
-        var p = newParse(specifier += "", localDate);
+        var p = newParse(specifier += "", false);
 
         p.toString = function () {
           return specifier;
@@ -17954,7 +17950,7 @@
         return f;
       },
       utcParse: function utcParse(specifier) {
-        var p = newParse(specifier, utcDate);
+        var p = newParse(specifier += "", true);
 
         p.toString = function () {
           return specifier;
@@ -17964,6 +17960,7 @@
       }
     };
   }
+
   var pads = {
     "-": "",
     "_": " ",
@@ -18041,6 +18038,11 @@
     return n ? (d.Z = n[1] ? 0 : -(n[2] + (n[3] || "00")), i + n[0].length) : -1;
   }
 
+  function parseQuarter(d, string, i) {
+    var n = numberRe.exec(string.slice(i, i + 1));
+    return n ? (d.q = n[0] * 3 - 3, i + n[0].length) : -1;
+  }
+
   function parseMonthNumber(d, string, i) {
     var n = numberRe.exec(string.slice(i, i + 2));
     return n ? (d.m = n[0] - 1, i + n[0].length) : -1;
@@ -18093,7 +18095,7 @@
 
   function parseUnixTimestampSeconds(d, string, i) {
     var n = numberRe.exec(string.slice(i));
-    return n ? (d.Q = +n[0] * 1000, i + n[0].length) : -1;
+    return n ? (d.s = +n[0], i + n[0].length) : -1;
   }
 
   function formatDayOfMonth(d, p) {
@@ -18138,12 +18140,16 @@
   }
 
   function formatWeekNumberSunday(d, p) {
-    return pad(sunday.count(year(d), d), p, 2);
+    return pad(sunday.count(year(d) - 1, d), p, 2);
+  }
+
+  function dISO(d) {
+    var day = d.getDay();
+    return day >= 4 || day === 0 ? thursday(d) : thursday.ceil(d);
   }
 
   function formatWeekNumberISO(d, p) {
-    var day = d.getDay();
-    d = day >= 4 || day === 0 ? thursday(d) : thursday.ceil(d);
+    d = dISO(d);
     return pad(thursday.count(year(d), d) + (year(d).getDay() === 4), p, 2);
   }
 
@@ -18152,14 +18158,25 @@
   }
 
   function formatWeekNumberMonday(d, p) {
-    return pad(monday.count(year(d), d), p, 2);
+    return pad(monday.count(year(d) - 1, d), p, 2);
   }
 
   function formatYear(d, p) {
     return pad(d.getFullYear() % 100, p, 2);
   }
 
+  function formatYearISO(d, p) {
+    d = dISO(d);
+    return pad(d.getFullYear() % 100, p, 2);
+  }
+
   function formatFullYear(d, p) {
+    return pad(d.getFullYear() % 10000, p, 4);
+  }
+
+  function formatFullYearISO(d, p) {
+    var day = d.getDay();
+    d = day >= 4 || day === 0 ? thursday(d) : thursday.ceil(d);
     return pad(d.getFullYear() % 10000, p, 4);
   }
 
@@ -18210,12 +18227,16 @@
   }
 
   function formatUTCWeekNumberSunday(d, p) {
-    return pad(utcSunday.count(utcYear(d), d), p, 2);
+    return pad(utcSunday.count(utcYear(d) - 1, d), p, 2);
+  }
+
+  function UTCdISO(d) {
+    var day = d.getUTCDay();
+    return day >= 4 || day === 0 ? utcThursday(d) : utcThursday.ceil(d);
   }
 
   function formatUTCWeekNumberISO(d, p) {
-    var day = d.getUTCDay();
-    d = day >= 4 || day === 0 ? utcThursday(d) : utcThursday.ceil(d);
+    d = UTCdISO(d);
     return pad(utcThursday.count(utcYear(d), d) + (utcYear(d).getUTCDay() === 4), p, 2);
   }
 
@@ -18224,14 +18245,25 @@
   }
 
   function formatUTCWeekNumberMonday(d, p) {
-    return pad(utcMonday.count(utcYear(d), d), p, 2);
+    return pad(utcMonday.count(utcYear(d) - 1, d), p, 2);
   }
 
   function formatUTCYear(d, p) {
     return pad(d.getUTCFullYear() % 100, p, 2);
   }
 
+  function formatUTCYearISO(d, p) {
+    d = UTCdISO(d);
+    return pad(d.getUTCFullYear() % 100, p, 2);
+  }
+
   function formatUTCFullYear(d, p) {
+    return pad(d.getUTCFullYear() % 10000, p, 4);
+  }
+
+  function formatUTCFullYearISO(d, p) {
+    var day = d.getUTCDay();
+    d = day >= 4 || day === 0 ? utcThursday(d) : utcThursday.ceil(d);
     return pad(d.getUTCFullYear() % 10000, p, 4);
   }
 
@@ -18266,6 +18298,7 @@
     months: ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],
     shortMonths: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
   });
+
   function defaultLocale$1(definition) {
     locale$1 = formatLocale$1(definition);
     timeFormat = locale$1.format;
@@ -18274,21 +18307,6 @@
     utcParse = locale$1.utcParse;
     return locale$1;
   }
-
-  var isoSpecifier = "%Y-%m-%dT%H:%M:%S.%LZ";
-
-  function formatIsoNative(date) {
-    return date.toISOString();
-  }
-
-  var formatIso = Date.prototype.toISOString ? formatIsoNative : utcFormat(isoSpecifier);
-
-  function parseIsoNative(string) {
-    var date = new Date(string);
-    return isNaN(date) ? null : date;
-  }
-
-  var parseIso = +new Date("2000-01-01T00:00:00.000Z") ? parseIsoNative : utcParse(isoSpecifier);
 
   var durationSecond$1 = 1000,
       durationMinute$1 = durationSecond$1 * 60,
@@ -18387,11 +18405,12 @@
 
     return scale;
   }
-  function scaleTime () {
+
+  function scaleTime() {
     return initRange.apply(calendar(year, month, sunday, day, hour, minute, second, millisecond, timeFormat).domain([new Date(2000, 0, 1), new Date(2000, 0, 2)]), arguments);
   }
 
-  function utcTime () {
+  function utcTime() {
     return initRange.apply(calendar(utcYear, utcMonth, utcSunday, utcDay, utcHour, utcMinute, second, millisecond, utcFormat).domain([Date.UTC(2000, 0, 1), Date.UTC(2000, 0, 2)]), arguments);
   }
 
@@ -18435,6 +18454,7 @@
   function copy$1(source, target) {
     return target.domain(source.domain()).interpolator(source.interpolator()).clamp(source.clamp()).unknown(source.unknown());
   }
+
   function sequential() {
     var scale = linearish(transformer$2()(identity$4));
 
@@ -18444,6 +18464,7 @@
 
     return initInterpolator.apply(scale, arguments);
   }
+
   function sequentialLog() {
     var scale = loggish(transformer$2()).domain([1, 10]);
 
@@ -18453,6 +18474,7 @@
 
     return initInterpolator.apply(scale, arguments);
   }
+
   function sequentialSymlog() {
     var scale = symlogish(transformer$2());
 
@@ -18462,6 +18484,7 @@
 
     return initInterpolator.apply(scale, arguments);
   }
+
   function sequentialPow() {
     var scale = powish(transformer$2());
 
@@ -18471,6 +18494,7 @@
 
     return initInterpolator.apply(scale, arguments);
   }
+
   function sequentialSqrt() {
     return sequentialPow.apply(null, arguments).exponent(0.5);
   }
@@ -18555,6 +18579,7 @@
 
     return initInterpolator.apply(scale, arguments);
   }
+
   function divergingLog() {
     var scale = loggish(transformer$3()).domain([0.1, 1, 10]);
 
@@ -18564,6 +18589,7 @@
 
     return initInterpolator.apply(scale, arguments);
   }
+
   function divergingSymlog() {
     var scale = symlogish(transformer$3());
 
@@ -18573,6 +18599,7 @@
 
     return initInterpolator.apply(scale, arguments);
   }
+
   function divergingPow() {
     var scale = powish(transformer$3());
 
@@ -18582,11 +18609,10 @@
 
     return initInterpolator.apply(scale, arguments);
   }
+
   function divergingSqrt() {
     return divergingPow.apply(null, arguments).exponent(0.5);
   }
-
-
 
   var scales = /*#__PURE__*/Object.freeze({
     __proto__: null,
@@ -18633,7 +18659,7 @@
     };
   }
 
-  function tile () {
+  function tile() {
     var x0 = 0,
         y0 = 0,
         x1 = 960,
@@ -18659,9 +18685,9 @@
       var ymax = Math.min(clampY ? 1 << z0 : Infinity, Math.ceil((y1 - y) / k));
       var tiles = [];
 
-      for (var _y = ymin; _y < ymax; ++_y) {
-        for (var _x = xmin; _x < xmax; ++_x) {
-          tiles.push([_x, _y, z0]);
+      for (var _y5 = ymin; _y5 < ymax; ++_y5) {
+        for (var _x6 = xmin; _x6 < xmax; ++_x6) {
+          tiles.push([_x6, _y5, z0]);
         }
       }
 
@@ -18709,11 +18735,11 @@
     return tile;
   }
 
-  function identity$7 (x) {
+  function identity$7(x) {
     return x;
   }
 
-  function transform$2 (transform) {
+  function transform$2(transform) {
     if (transform == null) return identity$7;
     var x0,
         y0,
@@ -18737,7 +18763,7 @@
     };
   }
 
-  function reverse (array, n) {
+  function reverse(array, n) {
     var t,
         j = array.length,
         i = j - n;
@@ -18747,7 +18773,7 @@
     }
   }
 
-  function feature (topology, o) {
+  function feature(topology, o) {
     if (typeof o === "string") o = topology.objects[o];
     return o.type === "GeometryCollection" ? {
       type: "FeatureCollection",
@@ -18872,7 +18898,6 @@
 
     return geometry(o);
   }
-
   /**
       @function accessor
       @desc Wraps an object key in a simple accessor function.
@@ -18885,7 +18910,9 @@
     return d["id"];
   }
   */
-  function accessor (key, def) {
+
+
+  function accessor(key, def) {
     if (def === void 0) return function (d) {
       return d[key];
     };
@@ -18894,20 +18921,20 @@
     };
   }
 
-  function _typeof$1(obj) {
+  function _typeof(obj) {
     "@babel/helpers - typeof";
 
     if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") {
-      _typeof$1 = function _typeof(obj) {
+      _typeof = function _typeof(obj) {
         return typeof obj;
       };
     } else {
-      _typeof$1 = function _typeof(obj) {
+      _typeof = function _typeof(obj) {
         return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
       };
     }
 
-    return _typeof$1(obj);
+    return _typeof(obj);
   }
   /**
       @function isObject
@@ -18916,16 +18943,16 @@
   */
 
 
-  function isObject (item) {
-    return item && _typeof$1(item) === "object" && (typeof window === "undefined" || item !== window && item !== window.document && !(item instanceof Element)) && !Array.isArray(item) ? true : false;
+  function isObject(item) {
+    return item && _typeof(item) === "object" && (typeof window === "undefined" || item !== window && item !== window.document && !(item instanceof Element)) && !Array.isArray(item) ? true : false;
   }
-
   /**
       @function validObject
       @desc Determines if the object passed is the document or window.
       @param {Object} obj
       @private
   */
+
 
   function validObject(obj) {
     if (typeof window === "undefined") return true;else return obj !== window && obj !== document;
@@ -18962,14 +18989,15 @@
 
     return target;
   }
-
   /**
       @function attrize
       @desc Applies each key/value in an object as an attr.
       @param {D3selection} elem The D3 element to apply the styles to.
       @param {Object} attrs An object of key/value attr pairs.
   */
-  function attrize (e) {
+
+
+  function attrize(e) {
     var a = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
 
     for (var k in a) {
@@ -18978,11189 +19006,9836 @@
   }
 
   var aa = {
-  	language: "Afar",
-  	location: null,
-  	id: 4096,
-  	tag: "aa",
-  	version: "Release 10"
+    language: "Afar",
+    location: null,
+    id: 4096,
+    tag: "aa",
+    version: "Release 10"
   };
   var af = {
-  	language: "Afrikaans",
-  	location: null,
-  	id: 54,
-  	tag: "af",
-  	version: "Release 7"
+    language: "Afrikaans",
+    location: null,
+    id: 54,
+    tag: "af",
+    version: "Release 7"
   };
   var agq = {
-  	language: "Aghem",
-  	location: null,
-  	id: 4096,
-  	tag: "agq",
-  	version: "Release 10"
+    language: "Aghem",
+    location: null,
+    id: 4096,
+    tag: "agq",
+    version: "Release 10"
   };
   var ak = {
-  	language: "Akan",
-  	location: null,
-  	id: 4096,
-  	tag: "ak",
-  	version: "Release 10"
+    language: "Akan",
+    location: null,
+    id: 4096,
+    tag: "ak",
+    version: "Release 10"
   };
   var sq = {
-  	language: "Albanian",
-  	location: null,
-  	id: 28,
-  	tag: "sq",
-  	version: "Release 7"
+    language: "Albanian",
+    location: null,
+    id: 28,
+    tag: "sq",
+    version: "Release 7"
   };
   var gsw = {
-  	language: "Alsatian",
-  	location: null,
-  	id: 132,
-  	tag: "gsw",
-  	version: "Release 7"
+    language: "Alsatian",
+    location: null,
+    id: 132,
+    tag: "gsw",
+    version: "Release 7"
   };
   var am = {
-  	language: "Amharic",
-  	location: null,
-  	id: 94,
-  	tag: "am",
-  	version: "Release 7"
+    language: "Amharic",
+    location: null,
+    id: 94,
+    tag: "am",
+    version: "Release 7"
   };
   var ar = {
-  	language: "Arabic",
-  	location: null,
-  	id: 1,
-  	tag: "ar",
-  	version: "Release 7"
+    language: "Arabic",
+    location: null,
+    id: 1,
+    tag: "ar",
+    version: "Release 7"
   };
   var hy = {
-  	language: "Armenian",
-  	location: null,
-  	id: 43,
-  	tag: "hy",
-  	version: "Release 7"
+    language: "Armenian",
+    location: null,
+    id: 43,
+    tag: "hy",
+    version: "Release 7"
   };
   var as = {
-  	language: "Assamese",
-  	location: null,
-  	id: 77,
-  	tag: "as",
-  	version: "Release 7"
+    language: "Assamese",
+    location: null,
+    id: 77,
+    tag: "as",
+    version: "Release 7"
   };
   var ast = {
-  	language: "Asturian",
-  	location: null,
-  	id: 4096,
-  	tag: "ast",
-  	version: "Release 10"
+    language: "Asturian",
+    location: null,
+    id: 4096,
+    tag: "ast",
+    version: "Release 10"
   };
   var asa = {
-  	language: "Asu",
-  	location: null,
-  	id: 4096,
-  	tag: "asa",
-  	version: "Release 10"
+    language: "Asu",
+    location: null,
+    id: 4096,
+    tag: "asa",
+    version: "Release 10"
   };
   var az = {
-  	language: "Azerbaijani (Latin)",
-  	location: null,
-  	id: 44,
-  	tag: "az",
-  	version: "Release 7"
+    language: "Azerbaijani (Latin)",
+    location: null,
+    id: 44,
+    tag: "az",
+    version: "Release 7"
   };
   var ksf = {
-  	language: "Bafia",
-  	location: null,
-  	id: 4096,
-  	tag: "ksf",
-  	version: "Release 10"
+    language: "Bafia",
+    location: null,
+    id: 4096,
+    tag: "ksf",
+    version: "Release 10"
   };
   var bm = {
-  	language: "Bamanankan",
-  	location: null,
-  	id: 4096,
-  	tag: "bm",
-  	version: "Release 10"
+    language: "Bamanankan",
+    location: null,
+    id: 4096,
+    tag: "bm",
+    version: "Release 10"
   };
   var bn = {
-  	language: "Bangla",
-  	location: null,
-  	id: 69,
-  	tag: "bn",
-  	version: "Release 7"
+    language: "Bangla",
+    location: null,
+    id: 69,
+    tag: "bn",
+    version: "Release 7"
   };
   var bas = {
-  	language: "Basaa",
-  	location: null,
-  	id: 4096,
-  	tag: "bas",
-  	version: "Release 10"
+    language: "Basaa",
+    location: null,
+    id: 4096,
+    tag: "bas",
+    version: "Release 10"
   };
   var ba = {
-  	language: "Bashkir",
-  	location: null,
-  	id: 109,
-  	tag: "ba",
-  	version: "Release 7"
+    language: "Bashkir",
+    location: null,
+    id: 109,
+    tag: "ba",
+    version: "Release 7"
   };
   var eu = {
-  	language: "Basque",
-  	location: null,
-  	id: 45,
-  	tag: "eu",
-  	version: "Release 7"
+    language: "Basque",
+    location: null,
+    id: 45,
+    tag: "eu",
+    version: "Release 7"
   };
   var be = {
-  	language: "Belarusian",
-  	location: null,
-  	id: 35,
-  	tag: "be",
-  	version: "Release 7"
+    language: "Belarusian",
+    location: null,
+    id: 35,
+    tag: "be",
+    version: "Release 7"
   };
   var bem = {
-  	language: "Bemba",
-  	location: null,
-  	id: 4096,
-  	tag: "bem",
-  	version: "Release 10"
+    language: "Bemba",
+    location: null,
+    id: 4096,
+    tag: "bem",
+    version: "Release 10"
   };
   var bez = {
-  	language: "Bena",
-  	location: null,
-  	id: 4096,
-  	tag: "bez",
-  	version: "Release 10"
+    language: "Bena",
+    location: null,
+    id: 4096,
+    tag: "bez",
+    version: "Release 10"
   };
   var byn = {
-  	language: "Blin",
-  	location: null,
-  	id: 4096,
-  	tag: "byn",
-  	version: "Release 10"
+    language: "Blin",
+    location: null,
+    id: 4096,
+    tag: "byn",
+    version: "Release 10"
   };
   var brx = {
-  	language: "Bodo",
-  	location: null,
-  	id: 4096,
-  	tag: "brx",
-  	version: "Release 10"
+    language: "Bodo",
+    location: null,
+    id: 4096,
+    tag: "brx",
+    version: "Release 10"
   };
   var bs = {
-  	language: "Bosnian (Latin)",
-  	location: null,
-  	id: 30746,
-  	tag: "bs",
-  	version: "Release 7"
+    language: "Bosnian (Latin)",
+    location: null,
+    id: 30746,
+    tag: "bs",
+    version: "Release 7"
   };
   var br = {
-  	language: "Breton",
-  	location: null,
-  	id: 126,
-  	tag: "br",
-  	version: "Release 7"
+    language: "Breton",
+    location: null,
+    id: 126,
+    tag: "br",
+    version: "Release 7"
   };
   var bg = {
-  	language: "Bulgarian",
-  	location: null,
-  	id: 2,
-  	tag: "bg",
-  	version: "Release 7"
+    language: "Bulgarian",
+    location: null,
+    id: 2,
+    tag: "bg",
+    version: "Release 7"
   };
   var my = {
-  	language: "Burmese",
-  	location: null,
-  	id: 85,
-  	tag: "my",
-  	version: "Release 8.1"
+    language: "Burmese",
+    location: null,
+    id: 85,
+    tag: "my",
+    version: "Release 8.1"
   };
   var ca = {
-  	language: "Catalan",
-  	location: null,
-  	id: 3,
-  	tag: "ca",
-  	version: "Release 7"
+    language: "Catalan",
+    location: null,
+    id: 3,
+    tag: "ca",
+    version: "Release 7"
   };
   var ceb = {
-  	language: "Cebuano",
-  	location: null,
-  	id: 4096,
-  	tag: "ceb",
-  	version: "Release 10.5"
+    language: "Cebuano",
+    location: null,
+    id: 4096,
+    tag: "ceb",
+    version: "Release 10.5"
   };
   var ku = {
-  	language: "Central Kurdish",
-  	location: null,
-  	id: 146,
-  	tag: "ku",
-  	version: "Release 8"
+    language: "Central Kurdish",
+    location: null,
+    id: 146,
+    tag: "ku",
+    version: "Release 8"
   };
   var ccp = {
-  	language: "Chakma",
-  	location: null,
-  	id: 4096,
-  	tag: "ccp",
-  	version: "Release 10.5"
+    language: "Chakma",
+    location: null,
+    id: 4096,
+    tag: "ccp",
+    version: "Release 10.5"
   };
   var chr = {
-  	language: "Cherokee",
-  	location: null,
-  	id: 92,
-  	tag: "chr",
-  	version: "Release 8"
+    language: "Cherokee",
+    location: null,
+    id: 92,
+    tag: "chr",
+    version: "Release 8"
   };
   var cgg = {
-  	language: "Chiga",
-  	location: null,
-  	id: 4096,
-  	tag: "cgg",
-  	version: "Release 10"
+    language: "Chiga",
+    location: null,
+    id: 4096,
+    tag: "cgg",
+    version: "Release 10"
   };
   var zh = {
-  	language: "Chinese (Simplified)",
-  	location: null,
-  	id: 30724,
-  	tag: "zh",
-  	version: "Windows 7"
+    language: "Chinese (Simplified)",
+    location: null,
+    id: 30724,
+    tag: "zh",
+    version: "Windows 7"
   };
   var swc = {
-  	language: "Congo Swahili",
-  	location: null,
-  	id: 4096,
-  	tag: "swc",
-  	version: "Release 10"
+    language: "Congo Swahili",
+    location: null,
+    id: 4096,
+    tag: "swc",
+    version: "Release 10"
   };
   var kw = {
-  	language: "Cornish",
-  	location: null,
-  	id: 4096,
-  	tag: "kw",
-  	version: "Release 10"
+    language: "Cornish",
+    location: null,
+    id: 4096,
+    tag: "kw",
+    version: "Release 10"
   };
   var co = {
-  	language: "Corsican",
-  	location: null,
-  	id: 131,
-  	tag: "co",
-  	version: "Release 7"
+    language: "Corsican",
+    location: null,
+    id: 131,
+    tag: "co",
+    version: "Release 7"
   };
   var cs = {
-  	language: "Czech",
-  	location: null,
-  	id: 5,
-  	tag: "cs",
-  	version: "Release 7"
+    language: "Czech",
+    location: null,
+    id: 5,
+    tag: "cs",
+    version: "Release 7"
   };
   var da = {
-  	language: "Danish",
-  	location: null,
-  	id: 6,
-  	tag: "da",
-  	version: "Release 7"
+    language: "Danish",
+    location: null,
+    id: 6,
+    tag: "da",
+    version: "Release 7"
   };
   var prs = {
-  	language: "Dari",
-  	location: null,
-  	id: 140,
-  	tag: "prs",
-  	version: "Release 7"
+    language: "Dari",
+    location: null,
+    id: 140,
+    tag: "prs",
+    version: "Release 7"
   };
   var dv = {
-  	language: "Divehi",
-  	location: null,
-  	id: 101,
-  	tag: "dv",
-  	version: "Release 7"
+    language: "Divehi",
+    location: null,
+    id: 101,
+    tag: "dv",
+    version: "Release 7"
   };
   var dua = {
-  	language: "Duala",
-  	location: null,
-  	id: 4096,
-  	tag: "dua",
-  	version: "Release 10"
+    language: "Duala",
+    location: null,
+    id: 4096,
+    tag: "dua",
+    version: "Release 10"
   };
   var nl = {
-  	language: "Dutch",
-  	location: null,
-  	id: 19,
-  	tag: "nl",
-  	version: "Release 7"
+    language: "Dutch",
+    location: null,
+    id: 19,
+    tag: "nl",
+    version: "Release 7"
   };
   var dz = {
-  	language: "Dzongkha",
-  	location: null,
-  	id: 4096,
-  	tag: "dz",
-  	version: "Release 10"
+    language: "Dzongkha",
+    location: null,
+    id: 4096,
+    tag: "dz",
+    version: "Release 10"
   };
   var ebu = {
-  	language: "Embu",
-  	location: null,
-  	id: 4096,
-  	tag: "ebu",
-  	version: "Release 10"
+    language: "Embu",
+    location: null,
+    id: 4096,
+    tag: "ebu",
+    version: "Release 10"
   };
   var en = {
-  	language: "English",
-  	location: null,
-  	id: 9,
-  	tag: "en",
-  	version: "Release 7"
+    language: "English",
+    location: null,
+    id: 9,
+    tag: "en",
+    version: "Release 7"
   };
   var eo = {
-  	language: "Esperanto",
-  	location: null,
-  	id: 4096,
-  	tag: "eo",
-  	version: "Release 10"
+    language: "Esperanto",
+    location: null,
+    id: 4096,
+    tag: "eo",
+    version: "Release 10"
   };
   var et = {
-  	language: "Estonian",
-  	location: null,
-  	id: 37,
-  	tag: "et",
-  	version: "Release 7"
+    language: "Estonian",
+    location: null,
+    id: 37,
+    tag: "et",
+    version: "Release 7"
   };
   var ee = {
-  	language: "Ewe",
-  	location: null,
-  	id: 4096,
-  	tag: "ee",
-  	version: "Release 10"
+    language: "Ewe",
+    location: null,
+    id: 4096,
+    tag: "ee",
+    version: "Release 10"
   };
   var ewo = {
-  	language: "Ewondo",
-  	location: null,
-  	id: 4096,
-  	tag: "ewo",
-  	version: "Release 10"
+    language: "Ewondo",
+    location: null,
+    id: 4096,
+    tag: "ewo",
+    version: "Release 10"
   };
   var fo = {
-  	language: "Faroese",
-  	location: null,
-  	id: 56,
-  	tag: "fo",
-  	version: "Release 7"
+    language: "Faroese",
+    location: null,
+    id: 56,
+    tag: "fo",
+    version: "Release 7"
   };
   var fil = {
-  	language: "Filipino",
-  	location: null,
-  	id: 100,
-  	tag: "fil",
-  	version: "Release 7"
+    language: "Filipino",
+    location: null,
+    id: 100,
+    tag: "fil",
+    version: "Release 7"
   };
   var fi = {
-  	language: "Finnish",
-  	location: null,
-  	id: 11,
-  	tag: "fi",
-  	version: "Release 7"
+    language: "Finnish",
+    location: null,
+    id: 11,
+    tag: "fi",
+    version: "Release 7"
   };
   var fr = {
-  	language: "French",
-  	location: null,
-  	id: 12,
-  	tag: "fr",
-  	version: "Release 7"
+    language: "French",
+    location: null,
+    id: 12,
+    tag: "fr",
+    version: "Release 7"
   };
   var fy = {
-  	language: "Frisian",
-  	location: null,
-  	id: 98,
-  	tag: "fy",
-  	version: "Release 7"
+    language: "Frisian",
+    location: null,
+    id: 98,
+    tag: "fy",
+    version: "Release 7"
   };
   var fur = {
-  	language: "Friulian",
-  	location: null,
-  	id: 4096,
-  	tag: "fur",
-  	version: "Release 10"
+    language: "Friulian",
+    location: null,
+    id: 4096,
+    tag: "fur",
+    version: "Release 10"
   };
   var ff = {
-  	language: "Fulah",
-  	location: null,
-  	id: 103,
-  	tag: "ff",
-  	version: "Release 8"
+    language: "Fulah",
+    location: null,
+    id: 103,
+    tag: "ff",
+    version: "Release 8"
   };
   var gl = {
-  	language: "Galician",
-  	location: null,
-  	id: 86,
-  	tag: "gl",
-  	version: "Release 7"
+    language: "Galician",
+    location: null,
+    id: 86,
+    tag: "gl",
+    version: "Release 7"
   };
   var lg = {
-  	language: "Ganda",
-  	location: null,
-  	id: 4096,
-  	tag: "lg",
-  	version: "Release 10"
+    language: "Ganda",
+    location: null,
+    id: 4096,
+    tag: "lg",
+    version: "Release 10"
   };
   var ka = {
-  	language: "Georgian",
-  	location: null,
-  	id: 55,
-  	tag: "ka",
-  	version: "Release 7"
+    language: "Georgian",
+    location: null,
+    id: 55,
+    tag: "ka",
+    version: "Release 7"
   };
   var de = {
-  	language: "German",
-  	location: null,
-  	id: 7,
-  	tag: "de",
-  	version: "Release 7"
+    language: "German",
+    location: null,
+    id: 7,
+    tag: "de",
+    version: "Release 7"
   };
   var el = {
-  	language: "Greek",
-  	location: null,
-  	id: 8,
-  	tag: "el",
-  	version: "Release 7"
+    language: "Greek",
+    location: null,
+    id: 8,
+    tag: "el",
+    version: "Release 7"
   };
   var kl = {
-  	language: "Greenlandic",
-  	location: null,
-  	id: 111,
-  	tag: "kl",
-  	version: "Release 7"
+    language: "Greenlandic",
+    location: null,
+    id: 111,
+    tag: "kl",
+    version: "Release 7"
   };
   var gn = {
-  	language: "Guarani",
-  	location: null,
-  	id: 116,
-  	tag: "gn",
-  	version: "Release 8.1"
+    language: "Guarani",
+    location: null,
+    id: 116,
+    tag: "gn",
+    version: "Release 8.1"
   };
   var gu = {
-  	language: "Gujarati",
-  	location: null,
-  	id: 71,
-  	tag: "gu",
-  	version: "Release 7"
+    language: "Gujarati",
+    location: null,
+    id: 71,
+    tag: "gu",
+    version: "Release 7"
   };
   var guz = {
-  	language: "Gusii",
-  	location: null,
-  	id: 4096,
-  	tag: "guz",
-  	version: "Release 10"
+    language: "Gusii",
+    location: null,
+    id: 4096,
+    tag: "guz",
+    version: "Release 10"
   };
   var ha = {
-  	language: "Hausa (Latin)",
-  	location: null,
-  	id: 104,
-  	tag: "ha",
-  	version: "Release 7"
+    language: "Hausa (Latin)",
+    location: null,
+    id: 104,
+    tag: "ha",
+    version: "Release 7"
   };
   var haw = {
-  	language: "Hawaiian",
-  	location: null,
-  	id: 117,
-  	tag: "haw",
-  	version: "Release 8"
+    language: "Hawaiian",
+    location: null,
+    id: 117,
+    tag: "haw",
+    version: "Release 8"
   };
   var he = {
-  	language: "Hebrew",
-  	location: null,
-  	id: 13,
-  	tag: "he",
-  	version: "Release 7"
+    language: "Hebrew",
+    location: null,
+    id: 13,
+    tag: "he",
+    version: "Release 7"
   };
   var hi = {
-  	language: "Hindi",
-  	location: null,
-  	id: 57,
-  	tag: "hi",
-  	version: "Release 7"
+    language: "Hindi",
+    location: null,
+    id: 57,
+    tag: "hi",
+    version: "Release 7"
   };
   var hu = {
-  	language: "Hungarian",
-  	location: null,
-  	id: 14,
-  	tag: "hu",
-  	version: "Release 7"
+    language: "Hungarian",
+    location: null,
+    id: 14,
+    tag: "hu",
+    version: "Release 7"
   };
   var is = {
-  	language: "Icelandic",
-  	location: null,
-  	id: 15,
-  	tag: "is",
-  	version: "Release 7"
+    language: "Icelandic",
+    location: null,
+    id: 15,
+    tag: "is",
+    version: "Release 7"
   };
   var ig = {
-  	language: "Igbo",
-  	location: null,
-  	id: 112,
-  	tag: "ig",
-  	version: "Release 7"
+    language: "Igbo",
+    location: null,
+    id: 112,
+    tag: "ig",
+    version: "Release 7"
   };
   var id$1 = {
-  	language: "Indonesian",
-  	location: null,
-  	id: 33,
-  	tag: "id",
-  	version: "Release 7"
+    language: "Indonesian",
+    location: null,
+    id: 33,
+    tag: "id",
+    version: "Release 7"
   };
   var ia = {
-  	language: "Interlingua",
-  	location: null,
-  	id: 4096,
-  	tag: "ia",
-  	version: "Release 10"
+    language: "Interlingua",
+    location: null,
+    id: 4096,
+    tag: "ia",
+    version: "Release 10"
   };
   var iu = {
-  	language: "Inuktitut (Latin)",
-  	location: null,
-  	id: 93,
-  	tag: "iu",
-  	version: "Release 7"
+    language: "Inuktitut (Latin)",
+    location: null,
+    id: 93,
+    tag: "iu",
+    version: "Release 7"
   };
   var ga = {
-  	language: "Irish",
-  	location: null,
-  	id: 60,
-  	tag: "ga",
-  	version: "Windows 7"
+    language: "Irish",
+    location: null,
+    id: 60,
+    tag: "ga",
+    version: "Windows 7"
   };
   var it = {
-  	language: "Italian",
-  	location: null,
-  	id: 16,
-  	tag: "it",
-  	version: "Release 7"
+    language: "Italian",
+    location: null,
+    id: 16,
+    tag: "it",
+    version: "Release 7"
   };
   var ja = {
-  	language: "Japanese",
-  	location: null,
-  	id: 17,
-  	tag: "ja",
-  	version: "Release 7"
+    language: "Japanese",
+    location: null,
+    id: 17,
+    tag: "ja",
+    version: "Release 7"
   };
   var jv = {
-  	language: "Javanese",
-  	location: null,
-  	id: 4096,
-  	tag: "jv",
-  	version: "Release 8.1"
+    language: "Javanese",
+    location: null,
+    id: 4096,
+    tag: "jv",
+    version: "Release 8.1"
   };
   var dyo = {
-  	language: "Jola-Fonyi",
-  	location: null,
-  	id: 4096,
-  	tag: "dyo",
-  	version: "Release 10"
+    language: "Jola-Fonyi",
+    location: null,
+    id: 4096,
+    tag: "dyo",
+    version: "Release 10"
   };
   var kea = {
-  	language: "Kabuverdianu",
-  	location: null,
-  	id: 4096,
-  	tag: "kea",
-  	version: "Release 10"
+    language: "Kabuverdianu",
+    location: null,
+    id: 4096,
+    tag: "kea",
+    version: "Release 10"
   };
   var kab = {
-  	language: "Kabyle",
-  	location: null,
-  	id: 4096,
-  	tag: "kab",
-  	version: "Release 10"
+    language: "Kabyle",
+    location: null,
+    id: 4096,
+    tag: "kab",
+    version: "Release 10"
   };
   var kkj = {
-  	language: "Kako",
-  	location: null,
-  	id: 4096,
-  	tag: "kkj",
-  	version: "Release 10"
+    language: "Kako",
+    location: null,
+    id: 4096,
+    tag: "kkj",
+    version: "Release 10"
   };
   var kln = {
-  	language: "Kalenjin",
-  	location: null,
-  	id: 4096,
-  	tag: "kln",
-  	version: "Release 10"
+    language: "Kalenjin",
+    location: null,
+    id: 4096,
+    tag: "kln",
+    version: "Release 10"
   };
   var kam = {
-  	language: "Kamba",
-  	location: null,
-  	id: 4096,
-  	tag: "kam",
-  	version: "Release 10"
+    language: "Kamba",
+    location: null,
+    id: 4096,
+    tag: "kam",
+    version: "Release 10"
   };
   var kn = {
-  	language: "Kannada",
-  	location: null,
-  	id: 75,
-  	tag: "kn",
-  	version: "Release 7"
+    language: "Kannada",
+    location: null,
+    id: 75,
+    tag: "kn",
+    version: "Release 7"
   };
   var ks = {
-  	language: "Kashmiri",
-  	location: null,
-  	id: 96,
-  	tag: "ks",
-  	version: "Release 10"
+    language: "Kashmiri",
+    location: null,
+    id: 96,
+    tag: "ks",
+    version: "Release 10"
   };
   var kk = {
-  	language: "Kazakh",
-  	location: null,
-  	id: 63,
-  	tag: "kk",
-  	version: "Release 7"
+    language: "Kazakh",
+    location: null,
+    id: 63,
+    tag: "kk",
+    version: "Release 7"
   };
   var km = {
-  	language: "Khmer",
-  	location: null,
-  	id: 83,
-  	tag: "km",
-  	version: "Release 7"
+    language: "Khmer",
+    location: null,
+    id: 83,
+    tag: "km",
+    version: "Release 7"
   };
   var quc = {
-  	language: "K'iche",
-  	location: null,
-  	id: 134,
-  	tag: "quc",
-  	version: "Release 10"
+    language: "K'iche",
+    location: null,
+    id: 134,
+    tag: "quc",
+    version: "Release 10"
   };
   var ki = {
-  	language: "Kikuyu",
-  	location: null,
-  	id: 4096,
-  	tag: "ki",
-  	version: "Release 10"
+    language: "Kikuyu",
+    location: null,
+    id: 4096,
+    tag: "ki",
+    version: "Release 10"
   };
   var rw = {
-  	language: "Kinyarwanda",
-  	location: null,
-  	id: 135,
-  	tag: "rw",
-  	version: "Release 7"
+    language: "Kinyarwanda",
+    location: null,
+    id: 135,
+    tag: "rw",
+    version: "Release 7"
   };
   var sw = {
-  	language: "Kiswahili",
-  	location: null,
-  	id: 65,
-  	tag: "sw",
-  	version: "Release 7"
+    language: "Kiswahili",
+    location: null,
+    id: 65,
+    tag: "sw",
+    version: "Release 7"
   };
   var kok = {
-  	language: "Konkani",
-  	location: null,
-  	id: 87,
-  	tag: "kok",
-  	version: "Release 7"
+    language: "Konkani",
+    location: null,
+    id: 87,
+    tag: "kok",
+    version: "Release 7"
   };
   var ko = {
-  	language: "Korean",
-  	location: null,
-  	id: 18,
-  	tag: "ko",
-  	version: "Release 7"
+    language: "Korean",
+    location: null,
+    id: 18,
+    tag: "ko",
+    version: "Release 7"
   };
   var khq = {
-  	language: "Koyra Chiini",
-  	location: null,
-  	id: 4096,
-  	tag: "khq",
-  	version: "Release 10"
+    language: "Koyra Chiini",
+    location: null,
+    id: 4096,
+    tag: "khq",
+    version: "Release 10"
   };
   var ses = {
-  	language: "Koyraboro Senni",
-  	location: null,
-  	id: 4096,
-  	tag: "ses",
-  	version: "Release 10"
+    language: "Koyraboro Senni",
+    location: null,
+    id: 4096,
+    tag: "ses",
+    version: "Release 10"
   };
   var nmg = {
-  	language: "Kwasio",
-  	location: null,
-  	id: 4096,
-  	tag: "nmg",
-  	version: "Release 10"
+    language: "Kwasio",
+    location: null,
+    id: 4096,
+    tag: "nmg",
+    version: "Release 10"
   };
   var ky = {
-  	language: "Kyrgyz",
-  	location: null,
-  	id: 64,
-  	tag: "ky",
-  	version: "Release 7"
+    language: "Kyrgyz",
+    location: null,
+    id: 64,
+    tag: "ky",
+    version: "Release 7"
   };
   var lkt = {
-  	language: "Lakota",
-  	location: null,
-  	id: 4096,
-  	tag: "lkt",
-  	version: "Release 10"
+    language: "Lakota",
+    location: null,
+    id: 4096,
+    tag: "lkt",
+    version: "Release 10"
   };
   var lag = {
-  	language: "Langi",
-  	location: null,
-  	id: 4096,
-  	tag: "lag",
-  	version: "Release 10"
+    language: "Langi",
+    location: null,
+    id: 4096,
+    tag: "lag",
+    version: "Release 10"
   };
   var lo = {
-  	language: "Lao",
-  	location: null,
-  	id: 84,
-  	tag: "lo",
-  	version: "Release 7"
+    language: "Lao",
+    location: null,
+    id: 84,
+    tag: "lo",
+    version: "Release 7"
   };
   var lv = {
-  	language: "Latvian",
-  	location: null,
-  	id: 38,
-  	tag: "lv",
-  	version: "Release 7"
+    language: "Latvian",
+    location: null,
+    id: 38,
+    tag: "lv",
+    version: "Release 7"
   };
   var ln = {
-  	language: "Lingala",
-  	location: null,
-  	id: 4096,
-  	tag: "ln",
-  	version: "Release 10"
+    language: "Lingala",
+    location: null,
+    id: 4096,
+    tag: "ln",
+    version: "Release 10"
   };
   var lt = {
-  	language: "Lithuanian",
-  	location: null,
-  	id: 39,
-  	tag: "lt",
-  	version: "Release 7"
+    language: "Lithuanian",
+    location: null,
+    id: 39,
+    tag: "lt",
+    version: "Release 7"
   };
   var nds = {
-  	language: "Low German",
-  	location: null,
-  	id: 4096,
-  	tag: "nds",
-  	version: "Release 10.2"
+    language: "Low German",
+    location: null,
+    id: 4096,
+    tag: "nds",
+    version: "Release 10.2"
   };
   var dsb = {
-  	language: "Lower Sorbian",
-  	location: null,
-  	id: 31790,
-  	tag: "dsb",
-  	version: "Windows 7"
+    language: "Lower Sorbian",
+    location: null,
+    id: 31790,
+    tag: "dsb",
+    version: "Windows 7"
   };
   var lu = {
-  	language: "Luba-Katanga",
-  	location: null,
-  	id: 4096,
-  	tag: "lu",
-  	version: "Release 10"
+    language: "Luba-Katanga",
+    location: null,
+    id: 4096,
+    tag: "lu",
+    version: "Release 10"
   };
   var luo = {
-  	language: "Luo",
-  	location: null,
-  	id: 4096,
-  	tag: "luo",
-  	version: "Release 10"
+    language: "Luo",
+    location: null,
+    id: 4096,
+    tag: "luo",
+    version: "Release 10"
   };
   var lb = {
-  	language: "Luxembourgish",
-  	location: null,
-  	id: 110,
-  	tag: "lb",
-  	version: "Release 7"
+    language: "Luxembourgish",
+    location: null,
+    id: 110,
+    tag: "lb",
+    version: "Release 7"
   };
   var luy = {
-  	language: "Luyia",
-  	location: null,
-  	id: 4096,
-  	tag: "luy",
-  	version: "Release 10"
+    language: "Luyia",
+    location: null,
+    id: 4096,
+    tag: "luy",
+    version: "Release 10"
   };
   var mk = {
-  	language: "Macedonian",
-  	location: null,
-  	id: 47,
-  	tag: "mk",
-  	version: "Release 7"
+    language: "Macedonian",
+    location: null,
+    id: 47,
+    tag: "mk",
+    version: "Release 7"
   };
   var jmc = {
-  	language: "Machame",
-  	location: null,
-  	id: 4096,
-  	tag: "jmc",
-  	version: "Release 10"
+    language: "Machame",
+    location: null,
+    id: 4096,
+    tag: "jmc",
+    version: "Release 10"
   };
   var mgh = {
-  	language: "Makhuwa-Meetto",
-  	location: null,
-  	id: 4096,
-  	tag: "mgh",
-  	version: "Release 10"
+    language: "Makhuwa-Meetto",
+    location: null,
+    id: 4096,
+    tag: "mgh",
+    version: "Release 10"
   };
   var kde = {
-  	language: "Makonde",
-  	location: null,
-  	id: 4096,
-  	tag: "kde",
-  	version: "Release 10"
+    language: "Makonde",
+    location: null,
+    id: 4096,
+    tag: "kde",
+    version: "Release 10"
   };
   var mg = {
-  	language: "Malagasy",
-  	location: null,
-  	id: 4096,
-  	tag: "mg",
-  	version: "Release 8.1"
+    language: "Malagasy",
+    location: null,
+    id: 4096,
+    tag: "mg",
+    version: "Release 8.1"
   };
   var ms = {
-  	language: "Malay",
-  	location: null,
-  	id: 62,
-  	tag: "ms",
-  	version: "Release 7"
+    language: "Malay",
+    location: null,
+    id: 62,
+    tag: "ms",
+    version: "Release 7"
   };
   var ml = {
-  	language: "Malayalam",
-  	location: null,
-  	id: 76,
-  	tag: "ml",
-  	version: "Release 7"
+    language: "Malayalam",
+    location: null,
+    id: 76,
+    tag: "ml",
+    version: "Release 7"
   };
   var mt = {
-  	language: "Maltese",
-  	location: null,
-  	id: 58,
-  	tag: "mt",
-  	version: "Release 7"
+    language: "Maltese",
+    location: null,
+    id: 58,
+    tag: "mt",
+    version: "Release 7"
   };
   var gv = {
-  	language: "Manx",
-  	location: null,
-  	id: 4096,
-  	tag: "gv",
-  	version: "Release 10"
+    language: "Manx",
+    location: null,
+    id: 4096,
+    tag: "gv",
+    version: "Release 10"
   };
   var mi = {
-  	language: "Maori",
-  	location: null,
-  	id: 129,
-  	tag: "mi",
-  	version: "Release 7"
+    language: "Maori",
+    location: null,
+    id: 129,
+    tag: "mi",
+    version: "Release 7"
   };
   var arn = {
-  	language: "Mapudungun",
-  	location: null,
-  	id: 122,
-  	tag: "arn",
-  	version: "Release 7"
+    language: "Mapudungun",
+    location: null,
+    id: 122,
+    tag: "arn",
+    version: "Release 7"
   };
   var mr = {
-  	language: "Marathi",
-  	location: null,
-  	id: 78,
-  	tag: "mr",
-  	version: "Release 7"
+    language: "Marathi",
+    location: null,
+    id: 78,
+    tag: "mr",
+    version: "Release 7"
   };
   var mas = {
-  	language: "Masai",
-  	location: null,
-  	id: 4096,
-  	tag: "mas",
-  	version: "Release 10"
+    language: "Masai",
+    location: null,
+    id: 4096,
+    tag: "mas",
+    version: "Release 10"
   };
   var mer = {
-  	language: "Meru",
-  	location: null,
-  	id: 4096,
-  	tag: "mer",
-  	version: "Release 10"
+    language: "Meru",
+    location: null,
+    id: 4096,
+    tag: "mer",
+    version: "Release 10"
   };
   var mgo = {
-  	language: "Meta'",
-  	location: null,
-  	id: 4096,
-  	tag: "mgo",
-  	version: "Release 10"
+    language: "Meta'",
+    location: null,
+    id: 4096,
+    tag: "mgo",
+    version: "Release 10"
   };
   var moh = {
-  	language: "Mohawk",
-  	location: null,
-  	id: 124,
-  	tag: "moh",
-  	version: "Release 7"
+    language: "Mohawk",
+    location: null,
+    id: 124,
+    tag: "moh",
+    version: "Release 7"
   };
   var mn = {
-  	language: "Mongolian (Cyrillic)",
-  	location: null,
-  	id: 80,
-  	tag: "mn",
-  	version: "Release 7"
+    language: "Mongolian (Cyrillic)",
+    location: null,
+    id: 80,
+    tag: "mn",
+    version: "Release 7"
   };
   var mfe = {
-  	language: "Morisyen",
-  	location: null,
-  	id: 4096,
-  	tag: "mfe",
-  	version: "Release 10"
+    language: "Morisyen",
+    location: null,
+    id: 4096,
+    tag: "mfe",
+    version: "Release 10"
   };
   var mua = {
-  	language: "Mundang",
-  	location: null,
-  	id: 4096,
-  	tag: "mua",
-  	version: "Release 10"
+    language: "Mundang",
+    location: null,
+    id: 4096,
+    tag: "mua",
+    version: "Release 10"
   };
   var nqo = {
-  	language: "N'ko",
-  	location: null,
-  	id: 4096,
-  	tag: "nqo",
-  	version: "Release 8.1"
+    language: "N'ko",
+    location: null,
+    id: 4096,
+    tag: "nqo",
+    version: "Release 8.1"
   };
   var naq = {
-  	language: "Nama",
-  	location: null,
-  	id: 4096,
-  	tag: "naq",
-  	version: "Release 10"
+    language: "Nama",
+    location: null,
+    id: 4096,
+    tag: "naq",
+    version: "Release 10"
   };
   var ne = {
-  	language: "Nepali",
-  	location: null,
-  	id: 97,
-  	tag: "ne",
-  	version: "Release 7"
+    language: "Nepali",
+    location: null,
+    id: 97,
+    tag: "ne",
+    version: "Release 7"
   };
   var nnh = {
-  	language: "Ngiemboon",
-  	location: null,
-  	id: 4096,
-  	tag: "nnh",
-  	version: "Release 10"
+    language: "Ngiemboon",
+    location: null,
+    id: 4096,
+    tag: "nnh",
+    version: "Release 10"
   };
   var jgo = {
-  	language: "Ngomba",
-  	location: null,
-  	id: 4096,
-  	tag: "jgo",
-  	version: "Release 10"
+    language: "Ngomba",
+    location: null,
+    id: 4096,
+    tag: "jgo",
+    version: "Release 10"
   };
   var nd = {
-  	language: "North Ndebele",
-  	location: null,
-  	id: 4096,
-  	tag: "nd",
-  	version: "Release 10"
+    language: "North Ndebele",
+    location: null,
+    id: 4096,
+    tag: "nd",
+    version: "Release 10"
   };
   var no = {
-  	language: "Norwegian (Bokmal)",
-  	location: null,
-  	id: 20,
-  	tag: "no",
-  	version: "Release 7"
+    language: "Norwegian (Bokmal)",
+    location: null,
+    id: 20,
+    tag: "no",
+    version: "Release 7"
   };
   var nb = {
-  	language: "Norwegian (Bokmal)",
-  	location: null,
-  	id: 31764,
-  	tag: "nb",
-  	version: "Release 7"
+    language: "Norwegian (Bokmal)",
+    location: null,
+    id: 31764,
+    tag: "nb",
+    version: "Release 7"
   };
   var nn = {
-  	language: "Norwegian (Nynorsk)",
-  	location: null,
-  	id: 30740,
-  	tag: "nn",
-  	version: "Release 7"
+    language: "Norwegian (Nynorsk)",
+    location: null,
+    id: 30740,
+    tag: "nn",
+    version: "Release 7"
   };
   var nus = {
-  	language: "Nuer",
-  	location: null,
-  	id: 4096,
-  	tag: "nus",
-  	version: "Release 10"
+    language: "Nuer",
+    location: null,
+    id: 4096,
+    tag: "nus",
+    version: "Release 10"
   };
   var nyn = {
-  	language: "Nyankole",
-  	location: null,
-  	id: 4096,
-  	tag: "nyn",
-  	version: "Release 10"
+    language: "Nyankole",
+    location: null,
+    id: 4096,
+    tag: "nyn",
+    version: "Release 10"
   };
   var oc = {
-  	language: "Occitan",
-  	location: null,
-  	id: 130,
-  	tag: "oc",
-  	version: "Release 7"
+    language: "Occitan",
+    location: null,
+    id: 130,
+    tag: "oc",
+    version: "Release 7"
   };
   var or = {
-  	language: "Odia",
-  	location: null,
-  	id: 72,
-  	tag: "or",
-  	version: "Release 7"
+    language: "Odia",
+    location: null,
+    id: 72,
+    tag: "or",
+    version: "Release 7"
   };
   var om = {
-  	language: "Oromo",
-  	location: null,
-  	id: 114,
-  	tag: "om",
-  	version: "Release 8.1"
+    language: "Oromo",
+    location: null,
+    id: 114,
+    tag: "om",
+    version: "Release 8.1"
   };
   var os = {
-  	language: "Ossetian",
-  	location: null,
-  	id: 4096,
-  	tag: "os",
-  	version: "Release 10"
+    language: "Ossetian",
+    location: null,
+    id: 4096,
+    tag: "os",
+    version: "Release 10"
   };
   var ps = {
-  	language: "Pashto",
-  	location: null,
-  	id: 99,
-  	tag: "ps",
-  	version: "Release 7"
+    language: "Pashto",
+    location: null,
+    id: 99,
+    tag: "ps",
+    version: "Release 7"
   };
   var fa = {
-  	language: "Persian",
-  	location: null,
-  	id: 41,
-  	tag: "fa",
-  	version: "Release 7"
+    language: "Persian",
+    location: null,
+    id: 41,
+    tag: "fa",
+    version: "Release 7"
   };
   var pl = {
-  	language: "Polish",
-  	location: null,
-  	id: 21,
-  	tag: "pl",
-  	version: "Release 7"
+    language: "Polish",
+    location: null,
+    id: 21,
+    tag: "pl",
+    version: "Release 7"
   };
   var pt = {
-  	language: "Portuguese",
-  	location: null,
-  	id: 22,
-  	tag: "pt",
-  	version: "Release 7"
+    language: "Portuguese",
+    location: null,
+    id: 22,
+    tag: "pt",
+    version: "Release 7"
   };
   var pa = {
-  	language: "Punjabi",
-  	location: null,
-  	id: 70,
-  	tag: "pa",
-  	version: "Release 7"
+    language: "Punjabi",
+    location: null,
+    id: 70,
+    tag: "pa",
+    version: "Release 7"
   };
   var quz = {
-  	language: "Quechua",
-  	location: null,
-  	id: 107,
-  	tag: "quz",
-  	version: "Release 7"
+    language: "Quechua",
+    location: null,
+    id: 107,
+    tag: "quz",
+    version: "Release 7"
   };
   var ksh = {
-  	language: "Ripuarian",
-  	location: null,
-  	id: 4096,
-  	tag: "ksh",
-  	version: "Release 10"
+    language: "Ripuarian",
+    location: null,
+    id: 4096,
+    tag: "ksh",
+    version: "Release 10"
   };
   var ro = {
-  	language: "Romanian",
-  	location: null,
-  	id: 24,
-  	tag: "ro",
-  	version: "Release 7"
+    language: "Romanian",
+    location: null,
+    id: 24,
+    tag: "ro",
+    version: "Release 7"
   };
   var rm = {
-  	language: "Romansh",
-  	location: null,
-  	id: 23,
-  	tag: "rm",
-  	version: "Release 7"
+    language: "Romansh",
+    location: null,
+    id: 23,
+    tag: "rm",
+    version: "Release 7"
   };
   var rof = {
-  	language: "Rombo",
-  	location: null,
-  	id: 4096,
-  	tag: "rof",
-  	version: "Release 10"
+    language: "Rombo",
+    location: null,
+    id: 4096,
+    tag: "rof",
+    version: "Release 10"
   };
   var rn = {
-  	language: "Rundi",
-  	location: null,
-  	id: 4096,
-  	tag: "rn",
-  	version: "Release 10"
+    language: "Rundi",
+    location: null,
+    id: 4096,
+    tag: "rn",
+    version: "Release 10"
   };
   var ru = {
-  	language: "Russian",
-  	location: null,
-  	id: 25,
-  	tag: "ru",
-  	version: "Release 7"
+    language: "Russian",
+    location: null,
+    id: 25,
+    tag: "ru",
+    version: "Release 7"
   };
   var rwk = {
-  	language: "Rwa",
-  	location: null,
-  	id: 4096,
-  	tag: "rwk",
-  	version: "Release 10"
+    language: "Rwa",
+    location: null,
+    id: 4096,
+    tag: "rwk",
+    version: "Release 10"
   };
   var ssy = {
-  	language: "Saho",
-  	location: null,
-  	id: 4096,
-  	tag: "ssy",
-  	version: "Release 10"
+    language: "Saho",
+    location: null,
+    id: 4096,
+    tag: "ssy",
+    version: "Release 10"
   };
   var sah = {
-  	language: "Sakha",
-  	location: null,
-  	id: 133,
-  	tag: "sah",
-  	version: "Release 7"
+    language: "Sakha",
+    location: null,
+    id: 133,
+    tag: "sah",
+    version: "Release 7"
   };
   var saq = {
-  	language: "Samburu",
-  	location: null,
-  	id: 4096,
-  	tag: "saq",
-  	version: "Release 10"
+    language: "Samburu",
+    location: null,
+    id: 4096,
+    tag: "saq",
+    version: "Release 10"
   };
   var smn = {
-  	language: "Sami (Inari)",
-  	location: null,
-  	id: 28731,
-  	tag: "smn",
-  	version: "Windows 7"
+    language: "Sami (Inari)",
+    location: null,
+    id: 28731,
+    tag: "smn",
+    version: "Windows 7"
   };
   var smj = {
-  	language: "Sami (Lule)",
-  	location: null,
-  	id: 31803,
-  	tag: "smj",
-  	version: "Windows 7"
+    language: "Sami (Lule)",
+    location: null,
+    id: 31803,
+    tag: "smj",
+    version: "Windows 7"
   };
   var se = {
-  	language: "Sami (Northern)",
-  	location: null,
-  	id: 59,
-  	tag: "se",
-  	version: "Release 7"
+    language: "Sami (Northern)",
+    location: null,
+    id: 59,
+    tag: "se",
+    version: "Release 7"
   };
   var sms = {
-  	language: "Sami (Skolt)",
-  	location: null,
-  	id: 29755,
-  	tag: "sms",
-  	version: "Windows 7"
+    language: "Sami (Skolt)",
+    location: null,
+    id: 29755,
+    tag: "sms",
+    version: "Windows 7"
   };
   var sma = {
-  	language: "Sami (Southern)",
-  	location: null,
-  	id: 30779,
-  	tag: "sma",
-  	version: "Windows 7"
+    language: "Sami (Southern)",
+    location: null,
+    id: 30779,
+    tag: "sma",
+    version: "Windows 7"
   };
   var sg = {
-  	language: "Sango",
-  	location: null,
-  	id: 4096,
-  	tag: "sg",
-  	version: "Release 10"
+    language: "Sango",
+    location: null,
+    id: 4096,
+    tag: "sg",
+    version: "Release 10"
   };
   var sbp = {
-  	language: "Sangu",
-  	location: null,
-  	id: 4096,
-  	tag: "sbp",
-  	version: "Release 10"
+    language: "Sangu",
+    location: null,
+    id: 4096,
+    tag: "sbp",
+    version: "Release 10"
   };
   var sa = {
-  	language: "Sanskrit",
-  	location: null,
-  	id: 79,
-  	tag: "sa",
-  	version: "Release 7"
+    language: "Sanskrit",
+    location: null,
+    id: 79,
+    tag: "sa",
+    version: "Release 7"
   };
   var gd = {
-  	language: "Scottish Gaelic",
-  	location: null,
-  	id: 145,
-  	tag: "gd",
-  	version: "Windows 7"
+    language: "Scottish Gaelic",
+    location: null,
+    id: 145,
+    tag: "gd",
+    version: "Windows 7"
   };
   var seh = {
-  	language: "Sena",
-  	location: null,
-  	id: 4096,
-  	tag: "seh",
-  	version: "Release 10"
+    language: "Sena",
+    location: null,
+    id: 4096,
+    tag: "seh",
+    version: "Release 10"
   };
   var sr = {
-  	language: "Serbian (Latin)",
-  	location: null,
-  	id: 31770,
-  	tag: "sr",
-  	version: "Release 7"
+    language: "Serbian (Latin)",
+    location: null,
+    id: 31770,
+    tag: "sr",
+    version: "Release 7"
   };
   var nso = {
-  	language: "Sesotho sa Leboa",
-  	location: null,
-  	id: 108,
-  	tag: "nso",
-  	version: "Release 7"
+    language: "Sesotho sa Leboa",
+    location: null,
+    id: 108,
+    tag: "nso",
+    version: "Release 7"
   };
   var tn = {
-  	language: "Setswana",
-  	location: null,
-  	id: 50,
-  	tag: "tn",
-  	version: "Release 7"
+    language: "Setswana",
+    location: null,
+    id: 50,
+    tag: "tn",
+    version: "Release 7"
   };
   var ksb = {
-  	language: "Shambala",
-  	location: null,
-  	id: 4096,
-  	tag: "ksb",
-  	version: "Release 10"
+    language: "Shambala",
+    location: null,
+    id: 4096,
+    tag: "ksb",
+    version: "Release 10"
   };
   var sn = {
-  	language: "Shona",
-  	location: null,
-  	id: 4096,
-  	tag: "sn",
-  	version: "Release 8.1"
+    language: "Shona",
+    location: null,
+    id: 4096,
+    tag: "sn",
+    version: "Release 8.1"
   };
   var sd = {
-  	language: "Sindhi",
-  	location: null,
-  	id: 89,
-  	tag: "sd",
-  	version: "Release 8"
+    language: "Sindhi",
+    location: null,
+    id: 89,
+    tag: "sd",
+    version: "Release 8"
   };
   var si = {
-  	language: "Sinhala",
-  	location: null,
-  	id: 91,
-  	tag: "si",
-  	version: "Release 7"
+    language: "Sinhala",
+    location: null,
+    id: 91,
+    tag: "si",
+    version: "Release 7"
   };
   var sk = {
-  	language: "Slovak",
-  	location: null,
-  	id: 27,
-  	tag: "sk",
-  	version: "Release 7"
+    language: "Slovak",
+    location: null,
+    id: 27,
+    tag: "sk",
+    version: "Release 7"
   };
   var sl = {
-  	language: "Slovenian",
-  	location: null,
-  	id: 36,
-  	tag: "sl",
-  	version: "Release 7"
+    language: "Slovenian",
+    location: null,
+    id: 36,
+    tag: "sl",
+    version: "Release 7"
   };
   var xog = {
-  	language: "Soga",
-  	location: null,
-  	id: 4096,
-  	tag: "xog",
-  	version: "Release 10"
+    language: "Soga",
+    location: null,
+    id: 4096,
+    tag: "xog",
+    version: "Release 10"
   };
   var so = {
-  	language: "Somali",
-  	location: null,
-  	id: 119,
-  	tag: "so",
-  	version: "Release 8.1"
+    language: "Somali",
+    location: null,
+    id: 119,
+    tag: "so",
+    version: "Release 8.1"
   };
   var st = {
-  	language: "Sotho",
-  	location: null,
-  	id: 48,
-  	tag: "st",
-  	version: "Release 8.1"
+    language: "Sotho",
+    location: null,
+    id: 48,
+    tag: "st",
+    version: "Release 8.1"
   };
   var nr = {
-  	language: "South Ndebele",
-  	location: null,
-  	id: 4096,
-  	tag: "nr",
-  	version: "Release 10"
+    language: "South Ndebele",
+    location: null,
+    id: 4096,
+    tag: "nr",
+    version: "Release 10"
   };
   var es = {
-  	language: "Spanish",
-  	location: null,
-  	id: 10,
-  	tag: "es",
-  	version: "Release 7"
+    language: "Spanish",
+    location: null,
+    id: 10,
+    tag: "es",
+    version: "Release 7"
   };
   var zgh = {
-  	language: "Standard Moroccan Tamazight",
-  	location: null,
-  	id: 4096,
-  	tag: "zgh",
-  	version: "Release 8.1"
+    language: "Standard Moroccan Tamazight",
+    location: null,
+    id: 4096,
+    tag: "zgh",
+    version: "Release 8.1"
   };
   var ss = {
-  	language: "Swati",
-  	location: null,
-  	id: 4096,
-  	tag: "ss",
-  	version: "Release 10"
+    language: "Swati",
+    location: null,
+    id: 4096,
+    tag: "ss",
+    version: "Release 10"
   };
   var sv = {
-  	language: "Swedish",
-  	location: null,
-  	id: 29,
-  	tag: "sv",
-  	version: "Release 7"
+    language: "Swedish",
+    location: null,
+    id: 29,
+    tag: "sv",
+    version: "Release 7"
   };
   var syr = {
-  	language: "Syriac",
-  	location: null,
-  	id: 90,
-  	tag: "syr",
-  	version: "Release 7"
+    language: "Syriac",
+    location: null,
+    id: 90,
+    tag: "syr",
+    version: "Release 7"
   };
   var shi = {
-  	language: "Tachelhit",
-  	location: null,
-  	id: 4096,
-  	tag: "shi",
-  	version: "Release 10"
+    language: "Tachelhit",
+    location: null,
+    id: 4096,
+    tag: "shi",
+    version: "Release 10"
   };
   var dav = {
-  	language: "Taita",
-  	location: null,
-  	id: 4096,
-  	tag: "dav",
-  	version: "Release 10"
+    language: "Taita",
+    location: null,
+    id: 4096,
+    tag: "dav",
+    version: "Release 10"
   };
   var tg = {
-  	language: "Tajik (Cyrillic)",
-  	location: null,
-  	id: 40,
-  	tag: "tg",
-  	version: "Release 7"
+    language: "Tajik (Cyrillic)",
+    location: null,
+    id: 40,
+    tag: "tg",
+    version: "Release 7"
   };
   var tzm = {
-  	language: "Tamazight (Latin)",
-  	location: null,
-  	id: 95,
-  	tag: "tzm",
-  	version: "Release 7"
+    language: "Tamazight (Latin)",
+    location: null,
+    id: 95,
+    tag: "tzm",
+    version: "Release 7"
   };
   var ta = {
-  	language: "Tamil",
-  	location: null,
-  	id: 73,
-  	tag: "ta",
-  	version: "Release 7"
+    language: "Tamil",
+    location: null,
+    id: 73,
+    tag: "ta",
+    version: "Release 7"
   };
   var twq = {
-  	language: "Tasawaq",
-  	location: null,
-  	id: 4096,
-  	tag: "twq",
-  	version: "Release 10"
+    language: "Tasawaq",
+    location: null,
+    id: 4096,
+    tag: "twq",
+    version: "Release 10"
   };
   var tt = {
-  	language: "Tatar",
-  	location: null,
-  	id: 68,
-  	tag: "tt",
-  	version: "Release 7"
+    language: "Tatar",
+    location: null,
+    id: 68,
+    tag: "tt",
+    version: "Release 7"
   };
   var te = {
-  	language: "Telugu",
-  	location: null,
-  	id: 74,
-  	tag: "te",
-  	version: "Release 7"
+    language: "Telugu",
+    location: null,
+    id: 74,
+    tag: "te",
+    version: "Release 7"
   };
   var teo = {
-  	language: "Teso",
-  	location: null,
-  	id: 4096,
-  	tag: "teo",
-  	version: "Release 10"
+    language: "Teso",
+    location: null,
+    id: 4096,
+    tag: "teo",
+    version: "Release 10"
   };
   var th = {
-  	language: "Thai",
-  	location: null,
-  	id: 30,
-  	tag: "th",
-  	version: "Release 7"
+    language: "Thai",
+    location: null,
+    id: 30,
+    tag: "th",
+    version: "Release 7"
   };
   var bo = {
-  	language: "Tibetan",
-  	location: null,
-  	id: 81,
-  	tag: "bo",
-  	version: "Release 7"
+    language: "Tibetan",
+    location: null,
+    id: 81,
+    tag: "bo",
+    version: "Release 7"
   };
   var tig = {
-  	language: "Tigre",
-  	location: null,
-  	id: 4096,
-  	tag: "tig",
-  	version: "Release 10"
+    language: "Tigre",
+    location: null,
+    id: 4096,
+    tag: "tig",
+    version: "Release 10"
   };
   var ti = {
-  	language: "Tigrinya",
-  	location: null,
-  	id: 115,
-  	tag: "ti",
-  	version: "Release 8"
+    language: "Tigrinya",
+    location: null,
+    id: 115,
+    tag: "ti",
+    version: "Release 8"
   };
   var to = {
-  	language: "Tongan",
-  	location: null,
-  	id: 4096,
-  	tag: "to",
-  	version: "Release 10"
+    language: "Tongan",
+    location: null,
+    id: 4096,
+    tag: "to",
+    version: "Release 10"
   };
   var ts = {
-  	language: "Tsonga",
-  	location: null,
-  	id: 49,
-  	tag: "ts",
-  	version: "Release 8.1"
+    language: "Tsonga",
+    location: null,
+    id: 49,
+    tag: "ts",
+    version: "Release 8.1"
   };
   var tr = {
-  	language: "Turkish",
-  	location: null,
-  	id: 31,
-  	tag: "tr",
-  	version: "Release 7"
+    language: "Turkish",
+    location: null,
+    id: 31,
+    tag: "tr",
+    version: "Release 7"
   };
   var tk = {
-  	language: "Turkmen",
-  	location: null,
-  	id: 66,
-  	tag: "tk",
-  	version: "Release 7"
+    language: "Turkmen",
+    location: null,
+    id: 66,
+    tag: "tk",
+    version: "Release 7"
   };
   var uk = {
-  	language: "Ukrainian",
-  	location: null,
-  	id: 34,
-  	tag: "uk",
-  	version: "Release 7"
+    language: "Ukrainian",
+    location: null,
+    id: 34,
+    tag: "uk",
+    version: "Release 7"
   };
   var hsb = {
-  	language: "Upper Sorbian",
-  	location: null,
-  	id: 46,
-  	tag: "hsb",
-  	version: "Release 7"
+    language: "Upper Sorbian",
+    location: null,
+    id: 46,
+    tag: "hsb",
+    version: "Release 7"
   };
   var ur = {
-  	language: "Urdu",
-  	location: null,
-  	id: 32,
-  	tag: "ur",
-  	version: "Release 7"
+    language: "Urdu",
+    location: null,
+    id: 32,
+    tag: "ur",
+    version: "Release 7"
   };
   var ug = {
-  	language: "Uyghur",
-  	location: null,
-  	id: 128,
-  	tag: "ug",
-  	version: "Release 7"
+    language: "Uyghur",
+    location: null,
+    id: 128,
+    tag: "ug",
+    version: "Release 7"
   };
   var uz = {
-  	language: "Uzbek (Latin)",
-  	location: null,
-  	id: 67,
-  	tag: "uz",
-  	version: "Release 7"
+    language: "Uzbek (Latin)",
+    location: null,
+    id: 67,
+    tag: "uz",
+    version: "Release 7"
   };
   var vai = {
-  	language: "Vai",
-  	location: null,
-  	id: 4096,
-  	tag: "vai",
-  	version: "Release 10"
+    language: "Vai",
+    location: null,
+    id: 4096,
+    tag: "vai",
+    version: "Release 10"
   };
   var ve = {
-  	language: "Venda",
-  	location: null,
-  	id: 51,
-  	tag: "ve",
-  	version: "Release 10"
+    language: "Venda",
+    location: null,
+    id: 51,
+    tag: "ve",
+    version: "Release 10"
   };
   var vi = {
-  	language: "Vietnamese",
-  	location: null,
-  	id: 42,
-  	tag: "vi",
-  	version: "Release 7"
+    language: "Vietnamese",
+    location: null,
+    id: 42,
+    tag: "vi",
+    version: "Release 7"
   };
   var vo = {
-  	language: "Volapük",
-  	location: null,
-  	id: 4096,
-  	tag: "vo",
-  	version: "Release 10"
+    language: "Volapük",
+    location: null,
+    id: 4096,
+    tag: "vo",
+    version: "Release 10"
   };
   var vun = {
-  	language: "Vunjo",
-  	location: null,
-  	id: 4096,
-  	tag: "vun",
-  	version: "Release 10"
+    language: "Vunjo",
+    location: null,
+    id: 4096,
+    tag: "vun",
+    version: "Release 10"
   };
   var wae = {
-  	language: "Walser",
-  	location: null,
-  	id: 4096,
-  	tag: "wae",
-  	version: "Release 10"
+    language: "Walser",
+    location: null,
+    id: 4096,
+    tag: "wae",
+    version: "Release 10"
   };
   var cy = {
-  	language: "Welsh",
-  	location: null,
-  	id: 82,
-  	tag: "cy",
-  	version: "Release 7"
+    language: "Welsh",
+    location: null,
+    id: 82,
+    tag: "cy",
+    version: "Release 7"
   };
   var wal = {
-  	language: "Wolaytta",
-  	location: null,
-  	id: 4096,
-  	tag: "wal",
-  	version: "Release 10"
+    language: "Wolaytta",
+    location: null,
+    id: 4096,
+    tag: "wal",
+    version: "Release 10"
   };
   var wo = {
-  	language: "Wolof",
-  	location: null,
-  	id: 136,
-  	tag: "wo",
-  	version: "Release 7"
+    language: "Wolof",
+    location: null,
+    id: 136,
+    tag: "wo",
+    version: "Release 7"
   };
   var xh = {
-  	language: "Xhosa",
-  	location: null,
-  	id: 52,
-  	tag: "xh",
-  	version: "Release 7"
+    language: "Xhosa",
+    location: null,
+    id: 52,
+    tag: "xh",
+    version: "Release 7"
   };
   var yav = {
-  	language: "Yangben",
-  	location: null,
-  	id: 4096,
-  	tag: "yav",
-  	version: "Release 10"
+    language: "Yangben",
+    location: null,
+    id: 4096,
+    tag: "yav",
+    version: "Release 10"
   };
   var ii = {
-  	language: "Yi",
-  	location: null,
-  	id: 120,
-  	tag: "ii",
-  	version: "Release 7"
+    language: "Yi",
+    location: null,
+    id: 120,
+    tag: "ii",
+    version: "Release 7"
   };
   var yo = {
-  	language: "Yoruba",
-  	location: null,
-  	id: 106,
-  	tag: "yo",
-  	version: "Release 7"
+    language: "Yoruba",
+    location: null,
+    id: 106,
+    tag: "yo",
+    version: "Release 7"
   };
   var dje = {
-  	language: "Zarma",
-  	location: null,
-  	id: 4096,
-  	tag: "dje",
-  	version: "Release 10"
+    language: "Zarma",
+    location: null,
+    id: 4096,
+    tag: "dje",
+    version: "Release 10"
   };
   var zu = {
-  	language: "Zulu",
-  	location: null,
-  	id: 53,
-  	tag: "zu",
-  	version: "Release 7"
+    language: "Zulu",
+    location: null,
+    id: 53,
+    tag: "zu",
+    version: "Release 7"
   };
   var lcid = {
-  	aa: aa,
-  	"aa-dj": {
-  	language: "Afar",
-  	location: "Djibouti",
-  	id: 4096,
-  	tag: "aa-DJ",
-  	version: "Release 10"
-  },
-  	"aa-er": {
-  	language: "Afar",
-  	location: "Eritrea",
-  	id: 4096,
-  	tag: "aa-ER",
-  	version: "Release 10"
-  },
-  	"aa-et": {
-  	language: "Afar",
-  	location: "Ethiopia",
-  	id: 4096,
-  	tag: "aa-ET",
-  	version: "Release 10"
-  },
-  	af: af,
-  	"af-na": {
-  	language: "Afrikaans",
-  	location: "Namibia",
-  	id: 4096,
-  	tag: "af-NA",
-  	version: "Release 10"
-  },
-  	"af-za": {
-  	language: "Afrikaans",
-  	location: "South Africa",
-  	id: 1078,
-  	tag: "af-ZA",
-  	version: "Release B"
-  },
-  	agq: agq,
-  	"agq-cm": {
-  	language: "Aghem",
-  	location: "Cameroon",
-  	id: 4096,
-  	tag: "agq-CM",
-  	version: "Release 10"
-  },
-  	ak: ak,
-  	"ak-gh": {
-  	language: "Akan",
-  	location: "Ghana",
-  	id: 4096,
-  	tag: "ak-GH",
-  	version: "Release 10"
-  },
-  	sq: sq,
-  	"sq-al": {
-  	language: "Albanian",
-  	location: "Albania",
-  	id: 1052,
-  	tag: "sq-AL",
-  	version: "Release B"
-  },
-  	"sq-mk": {
-  	language: "Albanian",
-  	location: "North Macedonia",
-  	id: 4096,
-  	tag: "sq-MK",
-  	version: "Release 10"
-  },
-  	gsw: gsw,
-  	"gsw-fr": {
-  	language: "Alsatian",
-  	location: "France",
-  	id: 1156,
-  	tag: "gsw-FR",
-  	version: "Release V"
-  },
-  	"gsw-li": {
-  	language: "Alsatian",
-  	location: "Liechtenstein",
-  	id: 4096,
-  	tag: "gsw-LI",
-  	version: "Release 10"
-  },
-  	"gsw-ch": {
-  	language: "Alsatian",
-  	location: "Switzerland",
-  	id: 4096,
-  	tag: "gsw-CH",
-  	version: "Release 10"
-  },
-  	am: am,
-  	"am-et": {
-  	language: "Amharic",
-  	location: "Ethiopia",
-  	id: 1118,
-  	tag: "am-ET",
-  	version: "Release V"
-  },
-  	ar: ar,
-  	"ar-dz": {
-  	language: "Arabic",
-  	location: "Algeria",
-  	id: 5121,
-  	tag: "ar-DZ",
-  	version: "Release B"
-  },
-  	"ar-bh": {
-  	language: "Arabic",
-  	location: "Bahrain",
-  	id: 15361,
-  	tag: "ar-BH",
-  	version: "Release B"
-  },
-  	"ar-td": {
-  	language: "Arabic",
-  	location: "Chad",
-  	id: 4096,
-  	tag: "ar-TD",
-  	version: "Release 10"
-  },
-  	"ar-km": {
-  	language: "Arabic",
-  	location: "Comoros",
-  	id: 4096,
-  	tag: "ar-KM",
-  	version: "Release 10"
-  },
-  	"ar-dj": {
-  	language: "Arabic",
-  	location: "Djibouti",
-  	id: 4096,
-  	tag: "ar-DJ",
-  	version: "Release 10"
-  },
-  	"ar-eg": {
-  	language: "Arabic",
-  	location: "Egypt",
-  	id: 3073,
-  	tag: "ar-EG",
-  	version: "Release B"
-  },
-  	"ar-er": {
-  	language: "Arabic",
-  	location: "Eritrea",
-  	id: 4096,
-  	tag: "ar-ER",
-  	version: "Release 10"
-  },
-  	"ar-iq": {
-  	language: "Arabic",
-  	location: "Iraq",
-  	id: 2049,
-  	tag: "ar-IQ",
-  	version: "Release B"
-  },
-  	"ar-il": {
-  	language: "Arabic",
-  	location: "Israel",
-  	id: 4096,
-  	tag: "ar-IL",
-  	version: "Release 10"
-  },
-  	"ar-jo": {
-  	language: "Arabic",
-  	location: "Jordan",
-  	id: 11265,
-  	tag: "ar-JO",
-  	version: "Release B"
-  },
-  	"ar-kw": {
-  	language: "Arabic",
-  	location: "Kuwait",
-  	id: 13313,
-  	tag: "ar-KW",
-  	version: "Release B"
-  },
-  	"ar-lb": {
-  	language: "Arabic",
-  	location: "Lebanon",
-  	id: 12289,
-  	tag: "ar-LB",
-  	version: "Release B"
-  },
-  	"ar-ly": {
-  	language: "Arabic",
-  	location: "Libya",
-  	id: 4097,
-  	tag: "ar-LY",
-  	version: "Release B"
-  },
-  	"ar-mr": {
-  	language: "Arabic",
-  	location: "Mauritania",
-  	id: 4096,
-  	tag: "ar-MR",
-  	version: "Release 10"
-  },
-  	"ar-ma": {
-  	language: "Arabic",
-  	location: "Morocco",
-  	id: 6145,
-  	tag: "ar-MA",
-  	version: "Release B"
-  },
-  	"ar-om": {
-  	language: "Arabic",
-  	location: "Oman",
-  	id: 8193,
-  	tag: "ar-OM",
-  	version: "Release B"
-  },
-  	"ar-ps": {
-  	language: "Arabic",
-  	location: "Palestinian Authority",
-  	id: 4096,
-  	tag: "ar-PS",
-  	version: "Release 10"
-  },
-  	"ar-qa": {
-  	language: "Arabic",
-  	location: "Qatar",
-  	id: 16385,
-  	tag: "ar-QA",
-  	version: "Release B"
-  },
-  	"ar-sa": {
-  	language: "Arabic",
-  	location: "Saudi Arabia",
-  	id: 1025,
-  	tag: "ar-SA",
-  	version: "Release B"
-  },
-  	"ar-so": {
-  	language: "Arabic",
-  	location: "Somalia",
-  	id: 4096,
-  	tag: "ar-SO",
-  	version: "Release 10"
-  },
-  	"ar-ss": {
-  	language: "Arabic",
-  	location: "South Sudan",
-  	id: 4096,
-  	tag: "ar-SS",
-  	version: "Release 10"
-  },
-  	"ar-sd": {
-  	language: "Arabic",
-  	location: "Sudan",
-  	id: 4096,
-  	tag: "ar-SD",
-  	version: "Release 10"
-  },
-  	"ar-sy": {
-  	language: "Arabic",
-  	location: "Syria",
-  	id: 10241,
-  	tag: "ar-SY",
-  	version: "Release B"
-  },
-  	"ar-tn": {
-  	language: "Arabic",
-  	location: "Tunisia",
-  	id: 7169,
-  	tag: "ar-TN",
-  	version: "Release B"
-  },
-  	"ar-ae": {
-  	language: "Arabic",
-  	location: "U.A.E.",
-  	id: 14337,
-  	tag: "ar-AE",
-  	version: "Release B"
-  },
-  	"ar-001": {
-  	language: "Arabic",
-  	location: "World",
-  	id: 4096,
-  	tag: "ar-001",
-  	version: "Release 10"
-  },
-  	"ar-ye": {
-  	language: "Arabic",
-  	location: "Yemen",
-  	id: 9217,
-  	tag: "ar-YE",
-  	version: "Release B"
-  },
-  	hy: hy,
-  	"hy-am": {
-  	language: "Armenian",
-  	location: "Armenia",
-  	id: 1067,
-  	tag: "hy-AM",
-  	version: "Release C"
-  },
-  	as: as,
-  	"as-in": {
-  	language: "Assamese",
-  	location: "India",
-  	id: 1101,
-  	tag: "as-IN",
-  	version: "Release V"
-  },
-  	ast: ast,
-  	"ast-es": {
-  	language: "Asturian",
-  	location: "Spain",
-  	id: 4096,
-  	tag: "ast-ES",
-  	version: "Release 10"
-  },
-  	asa: asa,
-  	"asa-tz": {
-  	language: "Asu",
-  	location: "Tanzania",
-  	id: 4096,
-  	tag: "asa-TZ",
-  	version: "Release 10"
-  },
-  	"az-cyrl": {
-  	language: "Azerbaijani (Cyrillic)",
-  	location: null,
-  	id: 29740,
-  	tag: "az-Cyrl",
-  	version: "Windows 7"
-  },
-  	"az-cyrl-az": {
-  	language: "Azerbaijani (Cyrillic)",
-  	location: "Azerbaijan",
-  	id: 2092,
-  	tag: "az-Cyrl-AZ",
-  	version: "Release C"
-  },
-  	az: az,
-  	"az-latn": {
-  	language: "Azerbaijani (Latin)",
-  	location: null,
-  	id: 30764,
-  	tag: "az-Latn",
-  	version: "Windows 7"
-  },
-  	"az-latn-az": {
-  	language: "Azerbaijani (Latin)",
-  	location: "Azerbaijan",
-  	id: 1068,
-  	tag: "az-Latn-AZ",
-  	version: "Release C"
-  },
-  	ksf: ksf,
-  	"ksf-cm": {
-  	language: "Bafia",
-  	location: "Cameroon",
-  	id: 4096,
-  	tag: "ksf-CM",
-  	version: "Release 10"
-  },
-  	bm: bm,
-  	"bm-latn-ml": {
-  	language: "Bamanankan (Latin)",
-  	location: "Mali",
-  	id: 4096,
-  	tag: "bm-Latn-ML",
-  	version: "Release 10"
-  },
-  	bn: bn,
-  	"bn-bd": {
-  	language: "Bangla",
-  	location: "Bangladesh",
-  	id: 2117,
-  	tag: "bn-BD",
-  	version: "Release V"
-  },
-  	"bn-in": {
-  	language: "Bangla",
-  	location: "India",
-  	id: 1093,
-  	tag: "bn-IN",
-  	version: "Release E1"
-  },
-  	bas: bas,
-  	"bas-cm": {
-  	language: "Basaa",
-  	location: "Cameroon",
-  	id: 4096,
-  	tag: "bas-CM",
-  	version: "Release 10"
-  },
-  	ba: ba,
-  	"ba-ru": {
-  	language: "Bashkir",
-  	location: "Russia",
-  	id: 1133,
-  	tag: "ba-RU",
-  	version: "Release V"
-  },
-  	eu: eu,
-  	"eu-es": {
-  	language: "Basque",
-  	location: "Spain",
-  	id: 1069,
-  	tag: "eu-ES",
-  	version: "Release B"
-  },
-  	be: be,
-  	"be-by": {
-  	language: "Belarusian",
-  	location: "Belarus",
-  	id: 1059,
-  	tag: "be-BY",
-  	version: "Release B"
-  },
-  	bem: bem,
-  	"bem-zm": {
-  	language: "Bemba",
-  	location: "Zambia",
-  	id: 4096,
-  	tag: "bem-ZM",
-  	version: "Release 10"
-  },
-  	bez: bez,
-  	"bez-tz": {
-  	language: "Bena",
-  	location: "Tanzania",
-  	id: 4096,
-  	tag: "bez-TZ",
-  	version: "Release 10"
-  },
-  	byn: byn,
-  	"byn-er": {
-  	language: "Blin",
-  	location: "Eritrea",
-  	id: 4096,
-  	tag: "byn-ER",
-  	version: "Release 10"
-  },
-  	brx: brx,
-  	"brx-in": {
-  	language: "Bodo",
-  	location: "India",
-  	id: 4096,
-  	tag: "brx-IN",
-  	version: "Release 10"
-  },
-  	"bs-cyrl": {
-  	language: "Bosnian (Cyrillic)",
-  	location: null,
-  	id: 25626,
-  	tag: "bs-Cyrl",
-  	version: "Windows 7"
-  },
-  	"bs-cyrl-ba": {
-  	language: "Bosnian (Cyrillic)",
-  	location: "Bosnia and Herzegovina",
-  	id: 8218,
-  	tag: "bs-Cyrl-BA",
-  	version: "Release E1"
-  },
-  	"bs-latn": {
-  	language: "Bosnian (Latin)",
-  	location: null,
-  	id: 26650,
-  	tag: "bs-Latn",
-  	version: "Windows 7"
-  },
-  	bs: bs,
-  	"bs-latn-ba": {
-  	language: "Bosnian (Latin)",
-  	location: "Bosnia and Herzegovina",
-  	id: 5146,
-  	tag: "bs-Latn-BA",
-  	version: "Release E1"
-  },
-  	br: br,
-  	"br-fr": {
-  	language: "Breton",
-  	location: "France",
-  	id: 1150,
-  	tag: "br-FR",
-  	version: "Release V"
-  },
-  	bg: bg,
-  	"bg-bg": {
-  	language: "Bulgarian",
-  	location: "Bulgaria",
-  	id: 1026,
-  	tag: "bg-BG",
-  	version: "Release B"
-  },
-  	my: my,
-  	"my-mm": {
-  	language: "Burmese",
-  	location: "Myanmar",
-  	id: 1109,
-  	tag: "my-MM",
-  	version: "Release 8.1"
-  },
-  	ca: ca,
-  	"ca-ad": {
-  	language: "Catalan",
-  	location: "Andorra",
-  	id: 4096,
-  	tag: "ca-AD",
-  	version: "Release 10"
-  },
-  	"ca-fr": {
-  	language: "Catalan",
-  	location: "France",
-  	id: 4096,
-  	tag: "ca-FR",
-  	version: "Release 10"
-  },
-  	"ca-it": {
-  	language: "Catalan",
-  	location: "Italy",
-  	id: 4096,
-  	tag: "ca-IT",
-  	version: "Release 10"
-  },
-  	"ca-es": {
-  	language: "Catalan",
-  	location: "Spain",
-  	id: 1027,
-  	tag: "ca-ES",
-  	version: "Release B"
-  },
-  	ceb: ceb,
-  	"ceb-latn": {
-  	language: "Cebuan (Latin)",
-  	location: null,
-  	id: 4096,
-  	tag: "ceb-Latn",
-  	version: "Release 10.5"
-  },
-  	"ceb-latn-ph": {
-  	language: "Cebuan (Latin)",
-  	location: "Philippines",
-  	id: 4096,
-  	tag: "ceb-Latn-PH",
-  	version: "Release 10.5"
-  },
-  	"tzm-latn-": {
-  	language: "Central Atlas Tamazight (Latin)",
-  	location: "Morocco",
-  	id: 4096,
-  	tag: "tzm-Latn-",
-  	version: "Release 10"
-  },
-  	ku: ku,
-  	"ku-arab": {
-  	language: "Central Kurdish",
-  	location: null,
-  	id: 31890,
-  	tag: "ku-Arab",
-  	version: "Release 8"
-  },
-  	"ku-arab-iq": {
-  	language: "Central Kurdish",
-  	location: "Iraq",
-  	id: 1170,
-  	tag: "ku-Arab-IQ",
-  	version: "Release 8"
-  },
-  	ccp: ccp,
-  	"ccp-cakm": {
-  	language: "Chakma",
-  	location: "Chakma",
-  	id: 4096,
-  	tag: "ccp-Cakm",
-  	version: "Release 10.5"
-  },
-  	"ccp-cakm-": {
-  	language: "Chakma",
-  	location: "India",
-  	id: 4096,
-  	tag: "ccp-Cakm-",
-  	version: "Release 10.5"
-  },
-  	"cd-ru": {
-  	language: "Chechen",
-  	location: "Russia",
-  	id: 4096,
-  	tag: "cd-RU",
-  	version: "Release 10.1"
-  },
-  	chr: chr,
-  	"chr-cher": {
-  	language: "Cherokee",
-  	location: null,
-  	id: 31836,
-  	tag: "chr-Cher",
-  	version: "Release 8"
-  },
-  	"chr-cher-us": {
-  	language: "Cherokee",
-  	location: "United States",
-  	id: 1116,
-  	tag: "chr-Cher-US",
-  	version: "Release 8"
-  },
-  	cgg: cgg,
-  	"cgg-ug": {
-  	language: "Chiga",
-  	location: "Uganda",
-  	id: 4096,
-  	tag: "cgg-UG",
-  	version: "Release 10"
-  },
-  	"zh-hans": {
-  	language: "Chinese (Simplified)",
-  	location: null,
-  	id: 4,
-  	tag: "zh-Hans",
-  	version: "Release A"
-  },
-  	zh: zh,
-  	"zh-cn": {
-  	language: "Chinese (Simplified)",
-  	location: "People's Republic of China",
-  	id: 2052,
-  	tag: "zh-CN",
-  	version: "Release A"
-  },
-  	"zh-sg": {
-  	language: "Chinese (Simplified)",
-  	location: "Singapore",
-  	id: 4100,
-  	tag: "zh-SG",
-  	version: "Release A"
-  },
-  	"zh-hant": {
-  	language: "Chinese (Traditional)",
-  	location: null,
-  	id: 31748,
-  	tag: "zh-Hant",
-  	version: "Release A"
-  },
-  	"zh-hk": {
-  	language: "Chinese (Traditional)",
-  	location: "Hong Kong S.A.R.",
-  	id: 3076,
-  	tag: "zh-HK",
-  	version: "Release A"
-  },
-  	"zh-mo": {
-  	language: "Chinese (Traditional)",
-  	location: "Macao S.A.R.",
-  	id: 5124,
-  	tag: "zh-MO",
-  	version: "Release D"
-  },
-  	"zh-tw": {
-  	language: "Chinese (Traditional)",
-  	location: "Taiwan",
-  	id: 1028,
-  	tag: "zh-TW",
-  	version: "Release A"
-  },
-  	"cu-ru": {
-  	language: "Church Slavic",
-  	location: "Russia",
-  	id: 4096,
-  	tag: "cu-RU",
-  	version: "Release 10.1"
-  },
-  	swc: swc,
-  	"swc-cd": {
-  	language: "Congo Swahili",
-  	location: "Congo DRC",
-  	id: 4096,
-  	tag: "swc-CD",
-  	version: "Release 10"
-  },
-  	kw: kw,
-  	"kw-gb": {
-  	language: "Cornish",
-  	location: "United Kingdom",
-  	id: 4096,
-  	tag: "kw-GB",
-  	version: "Release 10"
-  },
-  	co: co,
-  	"co-fr": {
-  	language: "Corsican",
-  	location: "France",
-  	id: 1155,
-  	tag: "co-FR",
-  	version: "Release V"
-  },
-  	"hr,": {
-  	language: "Croatian",
-  	location: null,
-  	id: 26,
-  	tag: "hr,",
-  	version: "Release 7"
-  },
-  	"hr-hr": {
-  	language: "Croatian",
-  	location: "Croatia",
-  	id: 1050,
-  	tag: "hr-HR",
-  	version: "Release A"
-  },
-  	"hr-ba": {
-  	language: "Croatian (Latin)",
-  	location: "Bosnia and Herzegovina",
-  	id: 4122,
-  	tag: "hr-BA",
-  	version: "Release E1"
-  },
-  	cs: cs,
-  	"cs-cz": {
-  	language: "Czech",
-  	location: "Czech Republic",
-  	id: 1029,
-  	tag: "cs-CZ",
-  	version: "Release A"
-  },
-  	da: da,
-  	"da-dk": {
-  	language: "Danish",
-  	location: "Denmark",
-  	id: 1030,
-  	tag: "da-DK",
-  	version: "Release A"
-  },
-  	"da-gl": {
-  	language: "Danish",
-  	location: "Greenland",
-  	id: 4096,
-  	tag: "da-GL",
-  	version: "Release 10"
-  },
-  	prs: prs,
-  	"prs-af": {
-  	language: "Dari",
-  	location: "Afghanistan",
-  	id: 1164,
-  	tag: "prs-AF",
-  	version: "Release V"
-  },
-  	dv: dv,
-  	"dv-mv": {
-  	language: "Divehi",
-  	location: "Maldives",
-  	id: 1125,
-  	tag: "dv-MV",
-  	version: "Release D"
-  },
-  	dua: dua,
-  	"dua-cm": {
-  	language: "Duala",
-  	location: "Cameroon",
-  	id: 4096,
-  	tag: "dua-CM",
-  	version: "Release 10"
-  },
-  	nl: nl,
-  	"nl-aw": {
-  	language: "Dutch",
-  	location: "Aruba",
-  	id: 4096,
-  	tag: "nl-AW",
-  	version: "Release 10"
-  },
-  	"nl-be": {
-  	language: "Dutch",
-  	location: "Belgium",
-  	id: 2067,
-  	tag: "nl-BE",
-  	version: "Release A"
-  },
-  	"nl-bq": {
-  	language: "Dutch",
-  	location: "Bonaire, Sint Eustatius and Saba",
-  	id: 4096,
-  	tag: "nl-BQ",
-  	version: "Release 10"
-  },
-  	"nl-cw": {
-  	language: "Dutch",
-  	location: "Curaçao",
-  	id: 4096,
-  	tag: "nl-CW",
-  	version: "Release 10"
-  },
-  	"nl-nl": {
-  	language: "Dutch",
-  	location: "Netherlands",
-  	id: 1043,
-  	tag: "nl-NL",
-  	version: "Release A"
-  },
-  	"nl-sx": {
-  	language: "Dutch",
-  	location: "Sint Maarten",
-  	id: 4096,
-  	tag: "nl-SX",
-  	version: "Release 10"
-  },
-  	"nl-sr": {
-  	language: "Dutch",
-  	location: "Suriname",
-  	id: 4096,
-  	tag: "nl-SR",
-  	version: "Release 10"
-  },
-  	dz: dz,
-  	"dz-bt": {
-  	language: "Dzongkha",
-  	location: "Bhutan",
-  	id: 3153,
-  	tag: "dz-BT",
-  	version: "Release 10"
-  },
-  	ebu: ebu,
-  	"ebu-ke": {
-  	language: "Embu",
-  	location: "Kenya",
-  	id: 4096,
-  	tag: "ebu-KE",
-  	version: "Release 10"
-  },
-  	en: en,
-  	"en-as": {
-  	language: "English",
-  	location: "American Samoa",
-  	id: 4096,
-  	tag: "en-AS",
-  	version: "Release 10"
-  },
-  	"en-ai": {
-  	language: "English",
-  	location: "Anguilla",
-  	id: 4096,
-  	tag: "en-AI",
-  	version: "Release 10"
-  },
-  	"en-ag": {
-  	language: "English",
-  	location: "Antigua and Barbuda",
-  	id: 4096,
-  	tag: "en-AG",
-  	version: "Release 10"
-  },
-  	"en-au": {
-  	language: "English",
-  	location: "Australia",
-  	id: 3081,
-  	tag: "en-AU",
-  	version: "Release A"
-  },
-  	"en-at": {
-  	language: "English",
-  	location: "Austria",
-  	id: 4096,
-  	tag: "en-AT",
-  	version: "Release 10.1"
-  },
-  	"en-bs": {
-  	language: "English",
-  	location: "Bahamas",
-  	id: 4096,
-  	tag: "en-BS",
-  	version: "Release 10"
-  },
-  	"en-bb": {
-  	language: "English",
-  	location: "Barbados",
-  	id: 4096,
-  	tag: "en-BB",
-  	version: "Release 10"
-  },
-  	"en-be": {
-  	language: "English",
-  	location: "Belgium",
-  	id: 4096,
-  	tag: "en-BE",
-  	version: "Release 10"
-  },
-  	"en-bz": {
-  	language: "English",
-  	location: "Belize",
-  	id: 10249,
-  	tag: "en-BZ",
-  	version: "Release B"
-  },
-  	"en-bm": {
-  	language: "English",
-  	location: "Bermuda",
-  	id: 4096,
-  	tag: "en-BM",
-  	version: "Release 10"
-  },
-  	"en-bw": {
-  	language: "English",
-  	location: "Botswana",
-  	id: 4096,
-  	tag: "en-BW",
-  	version: "Release 10"
-  },
-  	"en-io": {
-  	language: "English",
-  	location: "British Indian Ocean Territory",
-  	id: 4096,
-  	tag: "en-IO",
-  	version: "Release 10"
-  },
-  	"en-vg": {
-  	language: "English",
-  	location: "British Virgin Islands",
-  	id: 4096,
-  	tag: "en-VG",
-  	version: "Release 10"
-  },
-  	"en-bi": {
-  	language: "English",
-  	location: "Burundi",
-  	id: 4096,
-  	tag: "en-BI",
-  	version: "Release 10.1"
-  },
-  	"en-cm": {
-  	language: "English",
-  	location: "Cameroon",
-  	id: 4096,
-  	tag: "en-CM",
-  	version: "Release 10"
-  },
-  	"en-ca": {
-  	language: "English",
-  	location: "Canada",
-  	id: 4105,
-  	tag: "en-CA",
-  	version: "Release A"
-  },
-  	"en-029": {
-  	language: "English",
-  	location: "Caribbean",
-  	id: 9225,
-  	tag: "en-029",
-  	version: "Release B"
-  },
-  	"en-ky": {
-  	language: "English",
-  	location: "Cayman Islands",
-  	id: 4096,
-  	tag: "en-KY",
-  	version: "Release 10"
-  },
-  	"en-cx": {
-  	language: "English",
-  	location: "Christmas Island",
-  	id: 4096,
-  	tag: "en-CX",
-  	version: "Release 10"
-  },
-  	"en-cc": {
-  	language: "English",
-  	location: "Cocos [Keeling] Islands",
-  	id: 4096,
-  	tag: "en-CC",
-  	version: "Release 10"
-  },
-  	"en-ck": {
-  	language: "English",
-  	location: "Cook Islands",
-  	id: 4096,
-  	tag: "en-CK",
-  	version: "Release 10"
-  },
-  	"en-cy": {
-  	language: "English",
-  	location: "Cyprus",
-  	id: 4096,
-  	tag: "en-CY",
-  	version: "Release 10.1"
-  },
-  	"en-dk": {
-  	language: "English",
-  	location: "Denmark",
-  	id: 4096,
-  	tag: "en-DK",
-  	version: "Release 10.1"
-  },
-  	"en-dm": {
-  	language: "English",
-  	location: "Dominica",
-  	id: 4096,
-  	tag: "en-DM",
-  	version: "Release 10"
-  },
-  	"en-er": {
-  	language: "English",
-  	location: "Eritrea",
-  	id: 4096,
-  	tag: "en-ER",
-  	version: "Release 10"
-  },
-  	"en-150": {
-  	language: "English",
-  	location: "Europe",
-  	id: 4096,
-  	tag: "en-150",
-  	version: "Release 10"
-  },
-  	"en-fk": {
-  	language: "English",
-  	location: "Falkland Islands",
-  	id: 4096,
-  	tag: "en-FK",
-  	version: "Release 10"
-  },
-  	"en-fi": {
-  	language: "English",
-  	location: "Finland",
-  	id: 4096,
-  	tag: "en-FI",
-  	version: "Release 10.1"
-  },
-  	"en-fj": {
-  	language: "English",
-  	location: "Fiji",
-  	id: 4096,
-  	tag: "en-FJ",
-  	version: "Release 10"
-  },
-  	"en-gm": {
-  	language: "English",
-  	location: "Gambia",
-  	id: 4096,
-  	tag: "en-GM",
-  	version: "Release 10"
-  },
-  	"en-de": {
-  	language: "English",
-  	location: "Germany",
-  	id: 4096,
-  	tag: "en-DE",
-  	version: "Release 10.1"
-  },
-  	"en-gh": {
-  	language: "English",
-  	location: "Ghana",
-  	id: 4096,
-  	tag: "en-GH",
-  	version: "Release 10"
-  },
-  	"en-gi": {
-  	language: "English",
-  	location: "Gibraltar",
-  	id: 4096,
-  	tag: "en-GI",
-  	version: "Release 10"
-  },
-  	"en-gd": {
-  	language: "English",
-  	location: "Grenada",
-  	id: 4096,
-  	tag: "en-GD",
-  	version: "Release 10"
-  },
-  	"en-gu": {
-  	language: "English",
-  	location: "Guam",
-  	id: 4096,
-  	tag: "en-GU",
-  	version: "Release 10"
-  },
-  	"en-gg": {
-  	language: "English",
-  	location: "Guernsey",
-  	id: 4096,
-  	tag: "en-GG",
-  	version: "Release 10"
-  },
-  	"en-gy": {
-  	language: "English",
-  	location: "Guyana",
-  	id: 4096,
-  	tag: "en-GY",
-  	version: "Release 10"
-  },
-  	"en-hk": {
-  	language: "English",
-  	location: "Hong Kong",
-  	id: 15369,
-  	tag: "en-HK",
-  	version: "Release 8.1"
-  },
-  	"en-in": {
-  	language: "English",
-  	location: "India",
-  	id: 16393,
-  	tag: "en-IN",
-  	version: "Release V"
-  },
-  	"en-ie": {
-  	language: "English",
-  	location: "Ireland",
-  	id: 6153,
-  	tag: "en-IE",
-  	version: "Release A"
-  },
-  	"en-im": {
-  	language: "English",
-  	location: "Isle of Man",
-  	id: 4096,
-  	tag: "en-IM",
-  	version: "Release 10"
-  },
-  	"en-il": {
-  	language: "English",
-  	location: "Israel",
-  	id: 4096,
-  	tag: "en-IL",
-  	version: "Release 10.1"
-  },
-  	"en-jm": {
-  	language: "English",
-  	location: "Jamaica",
-  	id: 8201,
-  	tag: "en-JM",
-  	version: "Release B"
-  },
-  	"en-je": {
-  	language: "English",
-  	location: "Jersey",
-  	id: 4096,
-  	tag: "en-JE",
-  	version: "Release 10"
-  },
-  	"en-ke": {
-  	language: "English",
-  	location: "Kenya",
-  	id: 4096,
-  	tag: "en-KE",
-  	version: "Release 10"
-  },
-  	"en-ki": {
-  	language: "English",
-  	location: "Kiribati",
-  	id: 4096,
-  	tag: "en-KI",
-  	version: "Release 10"
-  },
-  	"en-ls": {
-  	language: "English",
-  	location: "Lesotho",
-  	id: 4096,
-  	tag: "en-LS",
-  	version: "Release 10"
-  },
-  	"en-lr": {
-  	language: "English",
-  	location: "Liberia",
-  	id: 4096,
-  	tag: "en-LR",
-  	version: "Release 10"
-  },
-  	"en-mo": {
-  	language: "English",
-  	location: "Macao SAR",
-  	id: 4096,
-  	tag: "en-MO",
-  	version: "Release 10"
-  },
-  	"en-mg": {
-  	language: "English",
-  	location: "Madagascar",
-  	id: 4096,
-  	tag: "en-MG",
-  	version: "Release 10"
-  },
-  	"en-mw": {
-  	language: "English",
-  	location: "Malawi",
-  	id: 4096,
-  	tag: "en-MW",
-  	version: "Release 10"
-  },
-  	"en-my": {
-  	language: "English",
-  	location: "Malaysia",
-  	id: 17417,
-  	tag: "en-MY",
-  	version: "Release V"
-  },
-  	"en-mt": {
-  	language: "English",
-  	location: "Malta",
-  	id: 4096,
-  	tag: "en-MT",
-  	version: "Release 10"
-  },
-  	"en-mh": {
-  	language: "English",
-  	location: "Marshall Islands",
-  	id: 4096,
-  	tag: "en-MH",
-  	version: "Release 10"
-  },
-  	"en-mu": {
-  	language: "English",
-  	location: "Mauritius",
-  	id: 4096,
-  	tag: "en-MU",
-  	version: "Release 10"
-  },
-  	"en-fm": {
-  	language: "English",
-  	location: "Micronesia",
-  	id: 4096,
-  	tag: "en-FM",
-  	version: "Release 10"
-  },
-  	"en-ms": {
-  	language: "English",
-  	location: "Montserrat",
-  	id: 4096,
-  	tag: "en-MS",
-  	version: "Release 10"
-  },
-  	"en-na": {
-  	language: "English",
-  	location: "Namibia",
-  	id: 4096,
-  	tag: "en-NA",
-  	version: "Release 10"
-  },
-  	"en-nr": {
-  	language: "English",
-  	location: "Nauru",
-  	id: 4096,
-  	tag: "en-NR",
-  	version: "Release 10"
-  },
-  	"en-nl": {
-  	language: "English",
-  	location: "Netherlands",
-  	id: 4096,
-  	tag: "en-NL",
-  	version: "Release 10.1"
-  },
-  	"en-nz": {
-  	language: "English",
-  	location: "New Zealand",
-  	id: 5129,
-  	tag: "en-NZ",
-  	version: "Release A"
-  },
-  	"en-ng": {
-  	language: "English",
-  	location: "Nigeria",
-  	id: 4096,
-  	tag: "en-NG",
-  	version: "Release 10"
-  },
-  	"en-nu": {
-  	language: "English",
-  	location: "Niue",
-  	id: 4096,
-  	tag: "en-NU",
-  	version: "Release 10"
-  },
-  	"en-nf": {
-  	language: "English",
-  	location: "Norfolk Island",
-  	id: 4096,
-  	tag: "en-NF",
-  	version: "Release 10"
-  },
-  	"en-mp": {
-  	language: "English",
-  	location: "Northern Mariana Islands",
-  	id: 4096,
-  	tag: "en-MP",
-  	version: "Release 10"
-  },
-  	"en-pk": {
-  	language: "English",
-  	location: "Pakistan",
-  	id: 4096,
-  	tag: "en-PK",
-  	version: "Release 10"
-  },
-  	"en-pw": {
-  	language: "English",
-  	location: "Palau",
-  	id: 4096,
-  	tag: "en-PW",
-  	version: "Release 10"
-  },
-  	"en-pg": {
-  	language: "English",
-  	location: "Papua New Guinea",
-  	id: 4096,
-  	tag: "en-PG",
-  	version: "Release 10"
-  },
-  	"en-pn": {
-  	language: "English",
-  	location: "Pitcairn Islands",
-  	id: 4096,
-  	tag: "en-PN",
-  	version: "Release 10"
-  },
-  	"en-pr": {
-  	language: "English",
-  	location: "Puerto Rico",
-  	id: 4096,
-  	tag: "en-PR",
-  	version: "Release 10"
-  },
-  	"en-ph": {
-  	language: "English",
-  	location: "Republic of the Philippines",
-  	id: 13321,
-  	tag: "en-PH",
-  	version: "Release C"
-  },
-  	"en-rw": {
-  	language: "English",
-  	location: "Rwanda",
-  	id: 4096,
-  	tag: "en-RW",
-  	version: "Release 10"
-  },
-  	"en-kn": {
-  	language: "English",
-  	location: "Saint Kitts and Nevis",
-  	id: 4096,
-  	tag: "en-KN",
-  	version: "Release 10"
-  },
-  	"en-lc": {
-  	language: "English",
-  	location: "Saint Lucia",
-  	id: 4096,
-  	tag: "en-LC",
-  	version: "Release 10"
-  },
-  	"en-vc": {
-  	language: "English",
-  	location: "Saint Vincent and the Grenadines",
-  	id: 4096,
-  	tag: "en-VC",
-  	version: "Release 10"
-  },
-  	"en-ws": {
-  	language: "English",
-  	location: "Samoa",
-  	id: 4096,
-  	tag: "en-WS",
-  	version: "Release 10"
-  },
-  	"en-sc": {
-  	language: "English",
-  	location: "Seychelles",
-  	id: 4096,
-  	tag: "en-SC",
-  	version: "Release 10"
-  },
-  	"en-sl": {
-  	language: "English",
-  	location: "Sierra Leone",
-  	id: 4096,
-  	tag: "en-SL",
-  	version: "Release 10"
-  },
-  	"en-sg": {
-  	language: "English",
-  	location: "Singapore",
-  	id: 18441,
-  	tag: "en-SG",
-  	version: "Release V"
-  },
-  	"en-sx": {
-  	language: "English",
-  	location: "Sint Maarten",
-  	id: 4096,
-  	tag: "en-SX",
-  	version: "Release 10"
-  },
-  	"en-si": {
-  	language: "English",
-  	location: "Slovenia",
-  	id: 4096,
-  	tag: "en-SI",
-  	version: "Release 10.1"
-  },
-  	"en-sb": {
-  	language: "English",
-  	location: "Solomon Islands",
-  	id: 4096,
-  	tag: "en-SB",
-  	version: "Release 10"
-  },
-  	"en-za": {
-  	language: "English",
-  	location: "South Africa",
-  	id: 7177,
-  	tag: "en-ZA",
-  	version: "Release B"
-  },
-  	"en-ss": {
-  	language: "English",
-  	location: "South Sudan",
-  	id: 4096,
-  	tag: "en-SS",
-  	version: "Release 10"
-  },
-  	"en-sh": {
-  	language: "English",
-  	location: "St Helena, Ascension,  Tristan da Cunha",
-  	id: 4096,
-  	tag: "en-SH",
-  	version: "Release 10"
-  },
-  	"en-sd": {
-  	language: "English",
-  	location: "Sudan",
-  	id: 4096,
-  	tag: "en-SD",
-  	version: "Release 10"
-  },
-  	"en-sz": {
-  	language: "English",
-  	location: "Swaziland",
-  	id: 4096,
-  	tag: "en-SZ",
-  	version: "Release 10"
-  },
-  	"en-se": {
-  	language: "English",
-  	location: "Sweden",
-  	id: 4096,
-  	tag: "en-SE",
-  	version: "Release 10.1"
-  },
-  	"en-ch": {
-  	language: "English",
-  	location: "Switzerland",
-  	id: 4096,
-  	tag: "en-CH",
-  	version: "Release 10.1"
-  },
-  	"en-tz": {
-  	language: "English",
-  	location: "Tanzania",
-  	id: 4096,
-  	tag: "en-TZ",
-  	version: "Release 10"
-  },
-  	"en-tk": {
-  	language: "English",
-  	location: "Tokelau",
-  	id: 4096,
-  	tag: "en-TK",
-  	version: "Release 10"
-  },
-  	"en-to": {
-  	language: "English",
-  	location: "Tonga",
-  	id: 4096,
-  	tag: "en-TO",
-  	version: "Release 10"
-  },
-  	"en-tt": {
-  	language: "English",
-  	location: "Trinidad and Tobago",
-  	id: 11273,
-  	tag: "en-TT",
-  	version: "Release B"
-  },
-  	"en-tc": {
-  	language: "English",
-  	location: "Turks and Caicos Islands",
-  	id: 4096,
-  	tag: "en-TC",
-  	version: "Release 10"
-  },
-  	"en-tv": {
-  	language: "English",
-  	location: "Tuvalu",
-  	id: 4096,
-  	tag: "en-TV",
-  	version: "Release 10"
-  },
-  	"en-ug": {
-  	language: "English",
-  	location: "Uganda",
-  	id: 4096,
-  	tag: "en-UG",
-  	version: "Release 10"
-  },
-  	"en-ae": {
-  	language: "English",
-  	location: "United Arab Emirates",
-  	id: 19465,
-  	tag: "en-AE",
-  	version: "Release 10.5"
-  },
-  	"en-gb": {
-  	language: "English",
-  	location: "United Kingdom",
-  	id: 2057,
-  	tag: "en-GB",
-  	version: "Release A"
-  },
-  	"en-us": {
-  	language: "English",
-  	location: "United States",
-  	id: 1033,
-  	tag: "en-US",
-  	version: "Release A"
-  },
-  	"en-um": {
-  	language: "English",
-  	location: "US Minor Outlying Islands",
-  	id: 4096,
-  	tag: "en-UM",
-  	version: "Release 10"
-  },
-  	"en-vi": {
-  	language: "English",
-  	location: "US Virgin Islands",
-  	id: 4096,
-  	tag: "en-VI",
-  	version: "Release 10"
-  },
-  	"en-vu": {
-  	language: "English",
-  	location: "Vanuatu",
-  	id: 4096,
-  	tag: "en-VU",
-  	version: "Release 10"
-  },
-  	"en-001": {
-  	language: "English",
-  	location: "World",
-  	id: 4096,
-  	tag: "en-001",
-  	version: "Release 10"
-  },
-  	"en-zm": {
-  	language: "English",
-  	location: "Zambia",
-  	id: 4096,
-  	tag: "en-ZM",
-  	version: "Release 10"
-  },
-  	"en-zw": {
-  	language: "English",
-  	location: "Zimbabwe",
-  	id: 12297,
-  	tag: "en-ZW",
-  	version: "Release C"
-  },
-  	eo: eo,
-  	"eo-001": {
-  	language: "Esperanto",
-  	location: "World",
-  	id: 4096,
-  	tag: "eo-001",
-  	version: "Release 10"
-  },
-  	et: et,
-  	"et-ee": {
-  	language: "Estonian",
-  	location: "Estonia",
-  	id: 1061,
-  	tag: "et-EE",
-  	version: "Release B"
-  },
-  	ee: ee,
-  	"ee-gh": {
-  	language: "Ewe",
-  	location: "Ghana",
-  	id: 4096,
-  	tag: "ee-GH",
-  	version: "Release 10"
-  },
-  	"ee-tg": {
-  	language: "Ewe",
-  	location: "Togo",
-  	id: 4096,
-  	tag: "ee-TG",
-  	version: "Release 10"
-  },
-  	ewo: ewo,
-  	"ewo-cm": {
-  	language: "Ewondo",
-  	location: "Cameroon",
-  	id: 4096,
-  	tag: "ewo-CM",
-  	version: "Release 10"
-  },
-  	fo: fo,
-  	"fo-dk": {
-  	language: "Faroese",
-  	location: "Denmark",
-  	id: 4096,
-  	tag: "fo-DK",
-  	version: "Release 10.1"
-  },
-  	"fo-fo": {
-  	language: "Faroese",
-  	location: "Faroe Islands",
-  	id: 1080,
-  	tag: "fo-FO",
-  	version: "Release B"
-  },
-  	fil: fil,
-  	"fil-ph": {
-  	language: "Filipino",
-  	location: "Philippines",
-  	id: 1124,
-  	tag: "fil-PH",
-  	version: "Release E2"
-  },
-  	fi: fi,
-  	"fi-fi": {
-  	language: "Finnish",
-  	location: "Finland",
-  	id: 1035,
-  	tag: "fi-FI",
-  	version: "Release A"
-  },
-  	fr: fr,
-  	"fr-dz": {
-  	language: "French",
-  	location: "Algeria",
-  	id: 4096,
-  	tag: "fr-DZ",
-  	version: "Release 10"
-  },
-  	"fr-be": {
-  	language: "French",
-  	location: "Belgium",
-  	id: 2060,
-  	tag: "fr-BE",
-  	version: "Release A"
-  },
-  	"fr-bj": {
-  	language: "French",
-  	location: "Benin",
-  	id: 4096,
-  	tag: "fr-BJ",
-  	version: "Release 10"
-  },
-  	"fr-bf": {
-  	language: "French",
-  	location: "Burkina Faso",
-  	id: 4096,
-  	tag: "fr-BF",
-  	version: "Release 10"
-  },
-  	"fr-bi": {
-  	language: "French",
-  	location: "Burundi",
-  	id: 4096,
-  	tag: "fr-BI",
-  	version: "Release 10"
-  },
-  	"fr-cm": {
-  	language: "French",
-  	location: "Cameroon",
-  	id: 11276,
-  	tag: "fr-CM",
-  	version: "Release 8.1"
-  },
-  	"fr-ca": {
-  	language: "French",
-  	location: "Canada",
-  	id: 3084,
-  	tag: "fr-CA",
-  	version: "Release A"
-  },
-  	"fr-cf": {
-  	language: "French",
-  	location: "Central African Republic",
-  	id: 4096,
-  	tag: "fr-CF",
-  	version: "Release10"
-  },
-  	"fr-td": {
-  	language: "French",
-  	location: "Chad",
-  	id: 4096,
-  	tag: "fr-TD",
-  	version: "Release 10"
-  },
-  	"fr-km": {
-  	language: "French",
-  	location: "Comoros",
-  	id: 4096,
-  	tag: "fr-KM",
-  	version: "Release 10"
-  },
-  	"fr-cg": {
-  	language: "French",
-  	location: "Congo",
-  	id: 4096,
-  	tag: "fr-CG",
-  	version: "Release 10"
-  },
-  	"fr-cd": {
-  	language: "French",
-  	location: "Congo, DRC",
-  	id: 9228,
-  	tag: "fr-CD",
-  	version: "Release 8.1"
-  },
-  	"fr-ci": {
-  	language: "French",
-  	location: "Côte d'Ivoire",
-  	id: 12300,
-  	tag: "fr-CI",
-  	version: "Release 8.1"
-  },
-  	"fr-dj": {
-  	language: "French",
-  	location: "Djibouti",
-  	id: 4096,
-  	tag: "fr-DJ",
-  	version: "Release 10"
-  },
-  	"fr-gq": {
-  	language: "French",
-  	location: "Equatorial Guinea",
-  	id: 4096,
-  	tag: "fr-GQ",
-  	version: "Release 10"
-  },
-  	"fr-fr": {
-  	language: "French",
-  	location: "France",
-  	id: 1036,
-  	tag: "fr-FR",
-  	version: "Release A"
-  },
-  	"fr-gf": {
-  	language: "French",
-  	location: "French Guiana",
-  	id: 4096,
-  	tag: "fr-GF",
-  	version: "Release 10"
-  },
-  	"fr-pf": {
-  	language: "French",
-  	location: "French Polynesia",
-  	id: 4096,
-  	tag: "fr-PF",
-  	version: "Release 10"
-  },
-  	"fr-ga": {
-  	language: "French",
-  	location: "Gabon",
-  	id: 4096,
-  	tag: "fr-GA",
-  	version: "Release 10"
-  },
-  	"fr-gp": {
-  	language: "French",
-  	location: "Guadeloupe",
-  	id: 4096,
-  	tag: "fr-GP",
-  	version: "Release 10"
-  },
-  	"fr-gn": {
-  	language: "French",
-  	location: "Guinea",
-  	id: 4096,
-  	tag: "fr-GN",
-  	version: "Release 10"
-  },
-  	"fr-ht": {
-  	language: "French",
-  	location: "Haiti",
-  	id: 15372,
-  	tag: "fr-HT",
-  	version: "Release 8.1"
-  },
-  	"fr-lu": {
-  	language: "French",
-  	location: "Luxembourg",
-  	id: 5132,
-  	tag: "fr-LU",
-  	version: "Release A"
-  },
-  	"fr-mg": {
-  	language: "French",
-  	location: "Madagascar",
-  	id: 4096,
-  	tag: "fr-MG",
-  	version: "Release 10"
-  },
-  	"fr-ml": {
-  	language: "French",
-  	location: "Mali",
-  	id: 13324,
-  	tag: "fr-ML",
-  	version: "Release 8.1"
-  },
-  	"fr-mq": {
-  	language: "French",
-  	location: "Martinique",
-  	id: 4096,
-  	tag: "fr-MQ",
-  	version: "Release 10"
-  },
-  	"fr-mr": {
-  	language: "French",
-  	location: "Mauritania",
-  	id: 4096,
-  	tag: "fr-MR",
-  	version: "Release 10"
-  },
-  	"fr-mu": {
-  	language: "French",
-  	location: "Mauritius",
-  	id: 4096,
-  	tag: "fr-MU",
-  	version: "Release 10"
-  },
-  	"fr-yt": {
-  	language: "French",
-  	location: "Mayotte",
-  	id: 4096,
-  	tag: "fr-YT",
-  	version: "Release 10"
-  },
-  	"fr-ma": {
-  	language: "French",
-  	location: "Morocco",
-  	id: 14348,
-  	tag: "fr-MA",
-  	version: "Release 8.1"
-  },
-  	"fr-nc": {
-  	language: "French",
-  	location: "New Caledonia",
-  	id: 4096,
-  	tag: "fr-NC",
-  	version: "Release 10"
-  },
-  	"fr-ne": {
-  	language: "French",
-  	location: "Niger",
-  	id: 4096,
-  	tag: "fr-NE",
-  	version: "Release 10"
-  },
-  	"fr-mc": {
-  	language: "French",
-  	location: "Principality of Monaco",
-  	id: 6156,
-  	tag: "fr-MC",
-  	version: "Release A"
-  },
-  	"fr-re": {
-  	language: "French",
-  	location: "Reunion",
-  	id: 8204,
-  	tag: "fr-RE",
-  	version: "Release 8.1"
-  },
-  	"fr-rw": {
-  	language: "French",
-  	location: "Rwanda",
-  	id: 4096,
-  	tag: "fr-RW",
-  	version: "Release 10"
-  },
-  	"fr-bl": {
-  	language: "French",
-  	location: "Saint Barthélemy",
-  	id: 4096,
-  	tag: "fr-BL",
-  	version: "Release 10"
-  },
-  	"fr-mf": {
-  	language: "French",
-  	location: "Saint Martin",
-  	id: 4096,
-  	tag: "fr-MF",
-  	version: "Release 10"
-  },
-  	"fr-pm": {
-  	language: "French",
-  	location: "Saint Pierre and Miquelon",
-  	id: 4096,
-  	tag: "fr-PM",
-  	version: "Release 10"
-  },
-  	"fr-sn": {
-  	language: "French",
-  	location: "Senegal",
-  	id: 10252,
-  	tag: "fr-SN",
-  	version: "Release 8.1"
-  },
-  	"fr-sc": {
-  	language: "French",
-  	location: "Seychelles",
-  	id: 4096,
-  	tag: "fr-SC",
-  	version: "Release 10"
-  },
-  	"fr-ch": {
-  	language: "French",
-  	location: "Switzerland",
-  	id: 4108,
-  	tag: "fr-CH",
-  	version: "Release A"
-  },
-  	"fr-sy": {
-  	language: "French",
-  	location: "Syria",
-  	id: 4096,
-  	tag: "fr-SY",
-  	version: "Release 10"
-  },
-  	"fr-tg": {
-  	language: "French",
-  	location: "Togo",
-  	id: 4096,
-  	tag: "fr-TG",
-  	version: "Release 10"
-  },
-  	"fr-tn": {
-  	language: "French",
-  	location: "Tunisia",
-  	id: 4096,
-  	tag: "fr-TN",
-  	version: "Release 10"
-  },
-  	"fr-vu": {
-  	language: "French",
-  	location: "Vanuatu",
-  	id: 4096,
-  	tag: "fr-VU",
-  	version: "Release 10"
-  },
-  	"fr-wf": {
-  	language: "French",
-  	location: "Wallis and Futuna",
-  	id: 4096,
-  	tag: "fr-WF",
-  	version: "Release 10"
-  },
-  	fy: fy,
-  	"fy-nl": {
-  	language: "Frisian",
-  	location: "Netherlands",
-  	id: 1122,
-  	tag: "fy-NL",
-  	version: "Release E2"
-  },
-  	fur: fur,
-  	"fur-it": {
-  	language: "Friulian",
-  	location: "Italy",
-  	id: 4096,
-  	tag: "fur-IT",
-  	version: "Release 10"
-  },
-  	ff: ff,
-  	"ff-latn": {
-  	language: "Fulah (Latin)",
-  	location: null,
-  	id: 31847,
-  	tag: "ff-Latn",
-  	version: "Release 8"
-  },
-  	"ff-latn-bf": {
-  	language: "Fulah (Latin)",
-  	location: "Burkina Faso",
-  	id: 4096,
-  	tag: "ff-Latn-BF",
-  	version: "Release 10.4"
-  },
-  	"ff-cm": {
-  	language: "Fulah",
-  	location: "Cameroon",
-  	id: 4096,
-  	tag: "ff-CM",
-  	version: "Release 10"
-  },
-  	"ff-latn-cm": {
-  	language: "Fulah (Latin)",
-  	location: "Cameroon",
-  	id: 4096,
-  	tag: "ff-Latn-CM",
-  	version: "Release 10.4"
-  },
-  	"ff-latn-gm": {
-  	language: "Fulah (Latin)",
-  	location: "Gambia",
-  	id: 4096,
-  	tag: "ff-Latn-GM",
-  	version: "Release 10.4"
-  },
-  	"ff-latn-gh": {
-  	language: "Fulah (Latin)",
-  	location: "Ghana",
-  	id: 4096,
-  	tag: "ff-Latn-GH",
-  	version: "Release 10.4"
-  },
-  	"ff-gn": {
-  	language: "Fulah",
-  	location: "Guinea",
-  	id: 4096,
-  	tag: "ff-GN",
-  	version: "Release 10"
-  },
-  	"ff-latn-gn": {
-  	language: "Fulah (Latin)",
-  	location: "Guinea",
-  	id: 4096,
-  	tag: "ff-Latn-GN",
-  	version: "Release 10.4"
-  },
-  	"ff-latn-gw": {
-  	language: "Fulah (Latin)",
-  	location: "Guinea-Bissau",
-  	id: 4096,
-  	tag: "ff-Latn-GW",
-  	version: "Release 10.4"
-  },
-  	"ff-latn-lr": {
-  	language: "Fulah (Latin)",
-  	location: "Liberia",
-  	id: 4096,
-  	tag: "ff-Latn-LR",
-  	version: "Release 10.4"
-  },
-  	"ff-mr": {
-  	language: "Fulah",
-  	location: "Mauritania",
-  	id: 4096,
-  	tag: "ff-MR",
-  	version: "Release 10"
-  },
-  	"ff-latn-mr": {
-  	language: "Fulah (Latin)",
-  	location: "Mauritania",
-  	id: 4096,
-  	tag: "ff-Latn-MR",
-  	version: "Release 10.4"
-  },
-  	"ff-latn-ne": {
-  	language: "Fulah (Latin)",
-  	location: "Niger",
-  	id: 4096,
-  	tag: "ff-Latn-NE",
-  	version: "Release 10.4"
-  },
-  	"ff-ng": {
-  	language: "Fulah",
-  	location: "Nigeria",
-  	id: 4096,
-  	tag: "ff-NG",
-  	version: "Release 10"
-  },
-  	"ff-latn-ng": {
-  	language: "Fulah (Latin)",
-  	location: "Nigeria",
-  	id: 4096,
-  	tag: "ff-Latn-NG",
-  	version: "Release 10.4"
-  },
-  	"ff-latn-sn": {
-  	language: "Fulah",
-  	location: "Senegal",
-  	id: 2151,
-  	tag: "ff-Latn-SN",
-  	version: "Release 8"
-  },
-  	"ff-latn-sl": {
-  	language: "Fulah (Latin)",
-  	location: "Sierra Leone",
-  	id: 4096,
-  	tag: "ff-Latn-SL",
-  	version: "Release 10.4"
-  },
-  	gl: gl,
-  	"gl-es": {
-  	language: "Galician",
-  	location: "Spain",
-  	id: 1110,
-  	tag: "gl-ES",
-  	version: "Release D"
-  },
-  	lg: lg,
-  	"lg-ug": {
-  	language: "Ganda",
-  	location: "Uganda",
-  	id: 4096,
-  	tag: "lg-UG",
-  	version: "Release 10"
-  },
-  	ka: ka,
-  	"ka-ge": {
-  	language: "Georgian",
-  	location: "Georgia",
-  	id: 1079,
-  	tag: "ka-GE",
-  	version: "Release C"
-  },
-  	de: de,
-  	"de-at": {
-  	language: "German",
-  	location: "Austria",
-  	id: 3079,
-  	tag: "de-AT",
-  	version: "Release A"
-  },
-  	"de-be": {
-  	language: "German",
-  	location: "Belgium",
-  	id: 4096,
-  	tag: "de-BE",
-  	version: "Release 10"
-  },
-  	"de-de": {
-  	language: "German",
-  	location: "Germany",
-  	id: 1031,
-  	tag: "de-DE",
-  	version: "Release A"
-  },
-  	"de-it": {
-  	language: "German",
-  	location: "Italy",
-  	id: 4096,
-  	tag: "de-IT",
-  	version: "Release 10.2"
-  },
-  	"de-li": {
-  	language: "German",
-  	location: "Liechtenstein",
-  	id: 5127,
-  	tag: "de-LI",
-  	version: "Release B"
-  },
-  	"de-lu": {
-  	language: "German",
-  	location: "Luxembourg",
-  	id: 4103,
-  	tag: "de-LU",
-  	version: "Release B"
-  },
-  	"de-ch": {
-  	language: "German",
-  	location: "Switzerland",
-  	id: 2055,
-  	tag: "de-CH",
-  	version: "Release A"
-  },
-  	el: el,
-  	"el-cy": {
-  	language: "Greek",
-  	location: "Cyprus",
-  	id: 4096,
-  	tag: "el-CY",
-  	version: "Release 10"
-  },
-  	"el-gr": {
-  	language: "Greek",
-  	location: "Greece",
-  	id: 1032,
-  	tag: "el-GR",
-  	version: "Release A"
-  },
-  	kl: kl,
-  	"kl-gl": {
-  	language: "Greenlandic",
-  	location: "Greenland",
-  	id: 1135,
-  	tag: "kl-GL",
-  	version: "Release V"
-  },
-  	gn: gn,
-  	"gn-py": {
-  	language: "Guarani",
-  	location: "Paraguay",
-  	id: 1140,
-  	tag: "gn-PY",
-  	version: "Release 8.1"
-  },
-  	gu: gu,
-  	"gu-in": {
-  	language: "Gujarati",
-  	location: "India",
-  	id: 1095,
-  	tag: "gu-IN",
-  	version: "Release D"
-  },
-  	guz: guz,
-  	"guz-ke": {
-  	language: "Gusii",
-  	location: "Kenya",
-  	id: 4096,
-  	tag: "guz-KE",
-  	version: "Release 10"
-  },
-  	ha: ha,
-  	"ha-latn": {
-  	language: "Hausa (Latin)",
-  	location: null,
-  	id: 31848,
-  	tag: "ha-Latn",
-  	version: "Windows 7"
-  },
-  	"ha-latn-gh": {
-  	language: "Hausa (Latin)",
-  	location: "Ghana",
-  	id: 4096,
-  	tag: "ha-Latn-GH",
-  	version: "Release 10"
-  },
-  	"ha-latn-ne": {
-  	language: "Hausa (Latin)",
-  	location: "Niger",
-  	id: 4096,
-  	tag: "ha-Latn-NE",
-  	version: "Release 10"
-  },
-  	"ha-latn-ng": {
-  	language: "Hausa (Latin)",
-  	location: "Nigeria",
-  	id: 1128,
-  	tag: "ha-Latn-NG",
-  	version: "Release V"
-  },
-  	haw: haw,
-  	"haw-us": {
-  	language: "Hawaiian",
-  	location: "United States",
-  	id: 1141,
-  	tag: "haw-US",
-  	version: "Release 8"
-  },
-  	he: he,
-  	"he-il": {
-  	language: "Hebrew",
-  	location: "Israel",
-  	id: 1037,
-  	tag: "he-IL",
-  	version: "Release B"
-  },
-  	hi: hi,
-  	"hi-in": {
-  	language: "Hindi",
-  	location: "India",
-  	id: 1081,
-  	tag: "hi-IN",
-  	version: "Release C"
-  },
-  	hu: hu,
-  	"hu-hu": {
-  	language: "Hungarian",
-  	location: "Hungary",
-  	id: 1038,
-  	tag: "hu-HU",
-  	version: "Release A"
-  },
-  	is: is,
-  	"is-is": {
-  	language: "Icelandic",
-  	location: "Iceland",
-  	id: 1039,
-  	tag: "is-IS",
-  	version: "Release A"
-  },
-  	ig: ig,
-  	"ig-ng": {
-  	language: "Igbo",
-  	location: "Nigeria",
-  	id: 1136,
-  	tag: "ig-NG",
-  	version: "Release V"
-  },
-  	id: id$1,
-  	"id-id": {
-  	language: "Indonesian",
-  	location: "Indonesia",
-  	id: 1057,
-  	tag: "id-ID",
-  	version: "Release B"
-  },
-  	ia: ia,
-  	"ia-fr": {
-  	language: "Interlingua",
-  	location: "France",
-  	id: 4096,
-  	tag: "ia-FR",
-  	version: "Release 10"
-  },
-  	"ia-001": {
-  	language: "Interlingua",
-  	location: "World",
-  	id: 4096,
-  	tag: "ia-001",
-  	version: "Release 10"
-  },
-  	iu: iu,
-  	"iu-latn": {
-  	language: "Inuktitut (Latin)",
-  	location: null,
-  	id: 31837,
-  	tag: "iu-Latn",
-  	version: "Windows 7"
-  },
-  	"iu-latn-ca": {
-  	language: "Inuktitut (Latin)",
-  	location: "Canada",
-  	id: 2141,
-  	tag: "iu-Latn-CA",
-  	version: "Release E2"
-  },
-  	"iu-cans": {
-  	language: "Inuktitut (Syllabics)",
-  	location: null,
-  	id: 30813,
-  	tag: "iu-Cans",
-  	version: "Windows 7"
-  },
-  	"iu-cans-ca": {
-  	language: "Inuktitut (Syllabics)",
-  	location: "Canada",
-  	id: 1117,
-  	tag: "iu-Cans-CA",
-  	version: "Release V"
-  },
-  	ga: ga,
-  	"ga-ie": {
-  	language: "Irish",
-  	location: "Ireland",
-  	id: 2108,
-  	tag: "ga-IE",
-  	version: "Release E2"
-  },
-  	it: it,
-  	"it-it": {
-  	language: "Italian",
-  	location: "Italy",
-  	id: 1040,
-  	tag: "it-IT",
-  	version: "Release A"
-  },
-  	"it-sm": {
-  	language: "Italian",
-  	location: "San Marino",
-  	id: 4096,
-  	tag: "it-SM",
-  	version: "Release 10"
-  },
-  	"it-ch": {
-  	language: "Italian",
-  	location: "Switzerland",
-  	id: 2064,
-  	tag: "it-CH",
-  	version: "Release A"
-  },
-  	"it-va": {
-  	language: "Italian",
-  	location: "Vatican City",
-  	id: 4096,
-  	tag: "it-VA",
-  	version: "Release 10.3"
-  },
-  	ja: ja,
-  	"ja-jp": {
-  	language: "Japanese",
-  	location: "Japan",
-  	id: 1041,
-  	tag: "ja-JP",
-  	version: "Release A"
-  },
-  	jv: jv,
-  	"jv-latn": {
-  	language: "Javanese",
-  	location: "Latin",
-  	id: 4096,
-  	tag: "jv-Latn",
-  	version: "Release 8.1"
-  },
-  	"jv-latn-id": {
-  	language: "Javanese",
-  	location: "Latin, Indonesia",
-  	id: 4096,
-  	tag: "jv-Latn-ID",
-  	version: "Release 8.1"
-  },
-  	dyo: dyo,
-  	"dyo-sn": {
-  	language: "Jola-Fonyi",
-  	location: "Senegal",
-  	id: 4096,
-  	tag: "dyo-SN",
-  	version: "Release 10"
-  },
-  	kea: kea,
-  	"kea-cv": {
-  	language: "Kabuverdianu",
-  	location: "Cabo Verde",
-  	id: 4096,
-  	tag: "kea-CV",
-  	version: "Release 10"
-  },
-  	kab: kab,
-  	"kab-dz": {
-  	language: "Kabyle",
-  	location: "Algeria",
-  	id: 4096,
-  	tag: "kab-DZ",
-  	version: "Release 10"
-  },
-  	kkj: kkj,
-  	"kkj-cm": {
-  	language: "Kako",
-  	location: "Cameroon",
-  	id: 4096,
-  	tag: "kkj-CM",
-  	version: "Release 10"
-  },
-  	kln: kln,
-  	"kln-ke": {
-  	language: "Kalenjin",
-  	location: "Kenya",
-  	id: 4096,
-  	tag: "kln-KE",
-  	version: "Release 10"
-  },
-  	kam: kam,
-  	"kam-ke": {
-  	language: "Kamba",
-  	location: "Kenya",
-  	id: 4096,
-  	tag: "kam-KE",
-  	version: "Release 10"
-  },
-  	kn: kn,
-  	"kn-in": {
-  	language: "Kannada",
-  	location: "India",
-  	id: 1099,
-  	tag: "kn-IN",
-  	version: "Release D"
-  },
-  	ks: ks,
-  	"ks-arab": {
-  	language: "Kashmiri",
-  	location: "Perso-Arabic",
-  	id: 1120,
-  	tag: "ks-Arab",
-  	version: "Release 10"
-  },
-  	"ks-arab-in": {
-  	language: "Kashmiri",
-  	location: "Perso-Arabic",
-  	id: 4096,
-  	tag: "ks-Arab-IN",
-  	version: "Release 10"
-  },
-  	kk: kk,
-  	"kk-kz": {
-  	language: "Kazakh",
-  	location: "Kazakhstan",
-  	id: 1087,
-  	tag: "kk-KZ",
-  	version: "Release C"
-  },
-  	km: km,
-  	"km-kh": {
-  	language: "Khmer",
-  	location: "Cambodia",
-  	id: 1107,
-  	tag: "km-KH",
-  	version: "Release V"
-  },
-  	quc: quc,
-  	"quc-latn-gt": {
-  	language: "K'iche",
-  	location: "Guatemala",
-  	id: 1158,
-  	tag: "quc-Latn-GT",
-  	version: "Release 10"
-  },
-  	ki: ki,
-  	"ki-ke": {
-  	language: "Kikuyu",
-  	location: "Kenya",
-  	id: 4096,
-  	tag: "ki-KE",
-  	version: "Release 10"
-  },
-  	rw: rw,
-  	"rw-rw": {
-  	language: "Kinyarwanda",
-  	location: "Rwanda",
-  	id: 1159,
-  	tag: "rw-RW",
-  	version: "Release V"
-  },
-  	sw: sw,
-  	"sw-ke": {
-  	language: "Kiswahili",
-  	location: "Kenya",
-  	id: 1089,
-  	tag: "sw-KE",
-  	version: "Release C"
-  },
-  	"sw-tz": {
-  	language: "Kiswahili",
-  	location: "Tanzania",
-  	id: 4096,
-  	tag: "sw-TZ",
-  	version: "Release 10"
-  },
-  	"sw-ug": {
-  	language: "Kiswahili",
-  	location: "Uganda",
-  	id: 4096,
-  	tag: "sw-UG",
-  	version: "Release 10"
-  },
-  	kok: kok,
-  	"kok-in": {
-  	language: "Konkani",
-  	location: "India",
-  	id: 1111,
-  	tag: "kok-IN",
-  	version: "Release C"
-  },
-  	ko: ko,
-  	"ko-kr": {
-  	language: "Korean",
-  	location: "Korea",
-  	id: 1042,
-  	tag: "ko-KR",
-  	version: "Release A"
-  },
-  	"ko-kp": {
-  	language: "Korean",
-  	location: "North Korea",
-  	id: 4096,
-  	tag: "ko-KP",
-  	version: "Release 10.1"
-  },
-  	khq: khq,
-  	"khq-ml": {
-  	language: "Koyra Chiini",
-  	location: "Mali",
-  	id: 4096,
-  	tag: "khq-ML",
-  	version: "Release 10"
-  },
-  	ses: ses,
-  	"ses-ml": {
-  	language: "Koyraboro Senni",
-  	location: "Mali",
-  	id: 4096,
-  	tag: "ses-ML",
-  	version: "Release 10"
-  },
-  	nmg: nmg,
-  	"nmg-cm": {
-  	language: "Kwasio",
-  	location: "Cameroon",
-  	id: 4096,
-  	tag: "nmg-CM",
-  	version: "Release 10"
-  },
-  	ky: ky,
-  	"ky-kg": {
-  	language: "Kyrgyz",
-  	location: "Kyrgyzstan",
-  	id: 1088,
-  	tag: "ky-KG",
-  	version: "Release D"
-  },
-  	"ku-arab-ir": {
-  	language: "Kurdish",
-  	location: "Perso-Arabic, Iran",
-  	id: 4096,
-  	tag: "ku-Arab-IR",
-  	version: "Release 10.1"
-  },
-  	lkt: lkt,
-  	"lkt-us": {
-  	language: "Lakota",
-  	location: "United States",
-  	id: 4096,
-  	tag: "lkt-US",
-  	version: "Release 10"
-  },
-  	lag: lag,
-  	"lag-tz": {
-  	language: "Langi",
-  	location: "Tanzania",
-  	id: 4096,
-  	tag: "lag-TZ",
-  	version: "Release 10"
-  },
-  	lo: lo,
-  	"lo-la": {
-  	language: "Lao",
-  	location: "Lao P.D.R.",
-  	id: 1108,
-  	tag: "lo-LA",
-  	version: "Release V"
-  },
-  	lv: lv,
-  	"lv-lv": {
-  	language: "Latvian",
-  	location: "Latvia",
-  	id: 1062,
-  	tag: "lv-LV",
-  	version: "Release B"
-  },
-  	ln: ln,
-  	"ln-ao": {
-  	language: "Lingala",
-  	location: "Angola",
-  	id: 4096,
-  	tag: "ln-AO",
-  	version: "Release 10"
-  },
-  	"ln-cf": {
-  	language: "Lingala",
-  	location: "Central African Republic",
-  	id: 4096,
-  	tag: "ln-CF",
-  	version: "Release 10"
-  },
-  	"ln-cg": {
-  	language: "Lingala",
-  	location: "Congo",
-  	id: 4096,
-  	tag: "ln-CG",
-  	version: "Release 10"
-  },
-  	"ln-cd": {
-  	language: "Lingala",
-  	location: "Congo DRC",
-  	id: 4096,
-  	tag: "ln-CD",
-  	version: "Release 10"
-  },
-  	lt: lt,
-  	"lt-lt": {
-  	language: "Lithuanian",
-  	location: "Lithuania",
-  	id: 1063,
-  	tag: "lt-LT",
-  	version: "Release B"
-  },
-  	nds: nds,
-  	"nds-de": {
-  	language: "Low German",
-  	location: "Germany",
-  	id: 4096,
-  	tag: "nds-DE",
-  	version: "Release 10.2"
-  },
-  	"nds-nl": {
-  	language: "Low German",
-  	location: "Netherlands",
-  	id: 4096,
-  	tag: "nds-NL",
-  	version: "Release 10.2"
-  },
-  	dsb: dsb,
-  	"dsb-de": {
-  	language: "Lower Sorbian",
-  	location: "Germany",
-  	id: 2094,
-  	tag: "dsb-DE",
-  	version: "Release V"
-  },
-  	lu: lu,
-  	"lu-cd": {
-  	language: "Luba-Katanga",
-  	location: "Congo DRC",
-  	id: 4096,
-  	tag: "lu-CD",
-  	version: "Release 10"
-  },
-  	luo: luo,
-  	"luo-ke": {
-  	language: "Luo",
-  	location: "Kenya",
-  	id: 4096,
-  	tag: "luo-KE",
-  	version: "Release 10"
-  },
-  	lb: lb,
-  	"lb-lu": {
-  	language: "Luxembourgish",
-  	location: "Luxembourg",
-  	id: 1134,
-  	tag: "lb-LU",
-  	version: "Release E2"
-  },
-  	luy: luy,
-  	"luy-ke": {
-  	language: "Luyia",
-  	location: "Kenya",
-  	id: 4096,
-  	tag: "luy-KE",
-  	version: "Release 10"
-  },
-  	mk: mk,
-  	"mk-mk": {
-  	language: "Macedonian",
-  	location: "North Macedonia",
-  	id: 1071,
-  	tag: "mk-MK",
-  	version: "Release C"
-  },
-  	jmc: jmc,
-  	"jmc-tz": {
-  	language: "Machame",
-  	location: "Tanzania",
-  	id: 4096,
-  	tag: "jmc-TZ",
-  	version: "Release 10"
-  },
-  	mgh: mgh,
-  	"mgh-mz": {
-  	language: "Makhuwa-Meetto",
-  	location: "Mozambique",
-  	id: 4096,
-  	tag: "mgh-MZ",
-  	version: "Release 10"
-  },
-  	kde: kde,
-  	"kde-tz": {
-  	language: "Makonde",
-  	location: "Tanzania",
-  	id: 4096,
-  	tag: "kde-TZ",
-  	version: "Release 10"
-  },
-  	mg: mg,
-  	"mg-mg": {
-  	language: "Malagasy",
-  	location: "Madagascar",
-  	id: 4096,
-  	tag: "mg-MG",
-  	version: "Release 8.1"
-  },
-  	ms: ms,
-  	"ms-bn": {
-  	language: "Malay",
-  	location: "Brunei Darussalam",
-  	id: 2110,
-  	tag: "ms-BN",
-  	version: "Release C"
-  },
-  	"ms-my": {
-  	language: "Malay",
-  	location: "Malaysia",
-  	id: 1086,
-  	tag: "ms-MY",
-  	version: "Release C"
-  },
-  	ml: ml,
-  	"ml-in": {
-  	language: "Malayalam",
-  	location: "India",
-  	id: 1100,
-  	tag: "ml-IN",
-  	version: "Release E1"
-  },
-  	mt: mt,
-  	"mt-mt": {
-  	language: "Maltese",
-  	location: "Malta",
-  	id: 1082,
-  	tag: "mt-MT",
-  	version: "Release E1"
-  },
-  	gv: gv,
-  	"gv-im": {
-  	language: "Manx",
-  	location: "Isle of Man",
-  	id: 4096,
-  	tag: "gv-IM",
-  	version: "Release 10"
-  },
-  	mi: mi,
-  	"mi-nz": {
-  	language: "Maori",
-  	location: "New Zealand",
-  	id: 1153,
-  	tag: "mi-NZ",
-  	version: "Release E1"
-  },
-  	arn: arn,
-  	"arn-cl": {
-  	language: "Mapudungun",
-  	location: "Chile",
-  	id: 1146,
-  	tag: "arn-CL",
-  	version: "Release E2"
-  },
-  	mr: mr,
-  	"mr-in": {
-  	language: "Marathi",
-  	location: "India",
-  	id: 1102,
-  	tag: "mr-IN",
-  	version: "Release C"
-  },
-  	mas: mas,
-  	"mas-ke": {
-  	language: "Masai",
-  	location: "Kenya",
-  	id: 4096,
-  	tag: "mas-KE",
-  	version: "Release 10"
-  },
-  	"mas-tz": {
-  	language: "Masai",
-  	location: "Tanzania",
-  	id: 4096,
-  	tag: "mas-TZ",
-  	version: "Release 10"
-  },
-  	"mzn-ir": {
-  	language: "Mazanderani",
-  	location: "Iran",
-  	id: 4096,
-  	tag: "mzn-IR",
-  	version: "Release 10.1"
-  },
-  	mer: mer,
-  	"mer-ke": {
-  	language: "Meru",
-  	location: "Kenya",
-  	id: 4096,
-  	tag: "mer-KE",
-  	version: "Release 10"
-  },
-  	mgo: mgo,
-  	"mgo-cm": {
-  	language: "Meta'",
-  	location: "Cameroon",
-  	id: 4096,
-  	tag: "mgo-CM",
-  	version: "Release 10"
-  },
-  	moh: moh,
-  	"moh-ca": {
-  	language: "Mohawk",
-  	location: "Canada",
-  	id: 1148,
-  	tag: "moh-CA",
-  	version: "Release E2"
-  },
-  	mn: mn,
-  	"mn-cyrl": {
-  	language: "Mongolian (Cyrillic)",
-  	location: null,
-  	id: 30800,
-  	tag: "mn-Cyrl",
-  	version: "Windows 7"
-  },
-  	"mn-mn": {
-  	language: "Mongolian (Cyrillic)",
-  	location: "Mongolia",
-  	id: 1104,
-  	tag: "mn-MN",
-  	version: "Release D"
-  },
-  	"mn-mong": {
-  	language: "Mongolian (Traditional Mongolian)",
-  	location: null,
-  	id: 31824,
-  	tag: "mn-Mong",
-  	version: "Windows 7"
-  },
-  	"mn-mong-cn": {
-  	language: "Mongolian (Traditional Mongolian)",
-  	location: "People's Republic of China",
-  	id: 2128,
-  	tag: "mn-Mong-CN",
-  	version: "Windows V"
-  },
-  	"mn-mong-mn": {
-  	language: "Mongolian (Traditional Mongolian)",
-  	location: "Mongolia",
-  	id: 3152,
-  	tag: "mn-Mong-MN",
-  	version: "Windows 7"
-  },
-  	mfe: mfe,
-  	"mfe-mu": {
-  	language: "Morisyen",
-  	location: "Mauritius",
-  	id: 4096,
-  	tag: "mfe-MU",
-  	version: "Release 10"
-  },
-  	mua: mua,
-  	"mua-cm": {
-  	language: "Mundang",
-  	location: "Cameroon",
-  	id: 4096,
-  	tag: "mua-CM",
-  	version: "Release 10"
-  },
-  	nqo: nqo,
-  	"nqo-gn": {
-  	language: "N'ko",
-  	location: "Guinea",
-  	id: 4096,
-  	tag: "nqo-GN",
-  	version: "Release 8.1"
-  },
-  	naq: naq,
-  	"naq-na": {
-  	language: "Nama",
-  	location: "Namibia",
-  	id: 4096,
-  	tag: "naq-NA",
-  	version: "Release 10"
-  },
-  	ne: ne,
-  	"ne-in": {
-  	language: "Nepali",
-  	location: "India",
-  	id: 2145,
-  	tag: "ne-IN",
-  	version: "Release 8.1"
-  },
-  	"ne-np": {
-  	language: "Nepali",
-  	location: "Nepal",
-  	id: 1121,
-  	tag: "ne-NP",
-  	version: "Release E2"
-  },
-  	nnh: nnh,
-  	"nnh-cm": {
-  	language: "Ngiemboon",
-  	location: "Cameroon",
-  	id: 4096,
-  	tag: "nnh-CM",
-  	version: "Release 10"
-  },
-  	jgo: jgo,
-  	"jgo-cm": {
-  	language: "Ngomba",
-  	location: "Cameroon",
-  	id: 4096,
-  	tag: "jgo-CM",
-  	version: "Release 10"
-  },
-  	"lrc-iq": {
-  	language: "Northern Luri",
-  	location: "Iraq",
-  	id: 4096,
-  	tag: "lrc-IQ",
-  	version: "Release 10.1"
-  },
-  	"lrc-ir": {
-  	language: "Northern Luri",
-  	location: "Iran",
-  	id: 4096,
-  	tag: "lrc-IR",
-  	version: "Release 10.1"
-  },
-  	nd: nd,
-  	"nd-zw": {
-  	language: "North Ndebele",
-  	location: "Zimbabwe",
-  	id: 4096,
-  	tag: "nd-ZW",
-  	version: "Release 10"
-  },
-  	no: no,
-  	nb: nb,
-  	"nb-no": {
-  	language: "Norwegian (Bokmal)",
-  	location: "Norway",
-  	id: 1044,
-  	tag: "nb-NO",
-  	version: "Release A"
-  },
-  	nn: nn,
-  	"nn-no": {
-  	language: "Norwegian (Nynorsk)",
-  	location: "Norway",
-  	id: 2068,
-  	tag: "nn-NO",
-  	version: "Release A"
-  },
-  	"nb-sj": {
-  	language: "Norwegian Bokmål",
-  	location: "Svalbard and Jan Mayen",
-  	id: 4096,
-  	tag: "nb-SJ",
-  	version: "Release 10"
-  },
-  	nus: nus,
-  	"nus-sd": {
-  	language: "Nuer",
-  	location: "Sudan",
-  	id: 4096,
-  	tag: "nus-SD",
-  	version: "Release 10"
-  },
-  	"nus-ss": {
-  	language: "Nuer",
-  	location: "South Sudan",
-  	id: 4096,
-  	tag: "nus-SS",
-  	version: "Release 10.1"
-  },
-  	nyn: nyn,
-  	"nyn-ug": {
-  	language: "Nyankole",
-  	location: "Uganda",
-  	id: 4096,
-  	tag: "nyn-UG",
-  	version: "Release 10"
-  },
-  	oc: oc,
-  	"oc-fr": {
-  	language: "Occitan",
-  	location: "France",
-  	id: 1154,
-  	tag: "oc-FR",
-  	version: "Release V"
-  },
-  	or: or,
-  	"or-in": {
-  	language: "Odia",
-  	location: "India",
-  	id: 1096,
-  	tag: "or-IN",
-  	version: "Release V"
-  },
-  	om: om,
-  	"om-et": {
-  	language: "Oromo",
-  	location: "Ethiopia",
-  	id: 1138,
-  	tag: "om-ET",
-  	version: "Release 8.1"
-  },
-  	"om-ke": {
-  	language: "Oromo",
-  	location: "Kenya",
-  	id: 4096,
-  	tag: "om-KE",
-  	version: "Release 10"
-  },
-  	os: os,
-  	"os-ge": {
-  	language: "Ossetian",
-  	location: "Cyrillic, Georgia",
-  	id: 4096,
-  	tag: "os-GE",
-  	version: "Release 10"
-  },
-  	"os-ru": {
-  	language: "Ossetian",
-  	location: "Cyrillic, Russia",
-  	id: 4096,
-  	tag: "os-RU",
-  	version: "Release 10"
-  },
-  	ps: ps,
-  	"ps-af": {
-  	language: "Pashto",
-  	location: "Afghanistan",
-  	id: 1123,
-  	tag: "ps-AF",
-  	version: "Release E2"
-  },
-  	"ps-pk": {
-  	language: "Pashto",
-  	location: "Pakistan",
-  	id: 4096,
-  	tag: "ps-PK",
-  	version: "Release 10.5"
-  },
-  	fa: fa,
-  	"fa-af": {
-  	language: "Persian",
-  	location: "Afghanistan",
-  	id: 4096,
-  	tag: "fa-AF",
-  	version: "Release 10"
-  },
-  	"fa-ir": {
-  	language: "Persian",
-  	location: "Iran",
-  	id: 1065,
-  	tag: "fa-IR",
-  	version: "Release B"
-  },
-  	pl: pl,
-  	"pl-pl": {
-  	language: "Polish",
-  	location: "Poland",
-  	id: 1045,
-  	tag: "pl-PL",
-  	version: "Release A"
-  },
-  	pt: pt,
-  	"pt-ao": {
-  	language: "Portuguese",
-  	location: "Angola",
-  	id: 4096,
-  	tag: "pt-AO",
-  	version: "Release 8.1"
-  },
-  	"pt-br": {
-  	language: "Portuguese",
-  	location: "Brazil",
-  	id: 1046,
-  	tag: "pt-BR",
-  	version: "Release A"
-  },
-  	"pt-cv": {
-  	language: "Portuguese",
-  	location: "Cabo Verde",
-  	id: 4096,
-  	tag: "pt-CV",
-  	version: "Release 10"
-  },
-  	"pt-gq": {
-  	language: "Portuguese",
-  	location: "Equatorial Guinea",
-  	id: 4096,
-  	tag: "pt-GQ",
-  	version: "Release 10.2"
-  },
-  	"pt-gw": {
-  	language: "Portuguese",
-  	location: "Guinea-Bissau",
-  	id: 4096,
-  	tag: "pt-GW",
-  	version: "Release 10"
-  },
-  	"pt-lu": {
-  	language: "Portuguese",
-  	location: "Luxembourg",
-  	id: 4096,
-  	tag: "pt-LU",
-  	version: "Release 10.2"
-  },
-  	"pt-mo": {
-  	language: "Portuguese",
-  	location: "Macao SAR",
-  	id: 4096,
-  	tag: "pt-MO",
-  	version: "Release 10"
-  },
-  	"pt-mz": {
-  	language: "Portuguese",
-  	location: "Mozambique",
-  	id: 4096,
-  	tag: "pt-MZ",
-  	version: "Release 10"
-  },
-  	"pt-pt": {
-  	language: "Portuguese",
-  	location: "Portugal",
-  	id: 2070,
-  	tag: "pt-PT",
-  	version: "Release A"
-  },
-  	"pt-st": {
-  	language: "Portuguese",
-  	location: "São Tomé and Príncipe",
-  	id: 4096,
-  	tag: "pt-ST",
-  	version: "Release 10"
-  },
-  	"pt-ch": {
-  	language: "Portuguese",
-  	location: "Switzerland",
-  	id: 4096,
-  	tag: "pt-CH",
-  	version: "Release 10.2"
-  },
-  	"pt-tl": {
-  	language: "Portuguese",
-  	location: "Timor-Leste",
-  	id: 4096,
-  	tag: "pt-TL",
-  	version: "Release 10"
-  },
-  	"prg-001": {
-  	language: "Prussian",
-  	location: null,
-  	id: 4096,
-  	tag: "prg-001",
-  	version: "Release 10.1"
-  },
-  	"qps-ploca": {
-  	language: "Pseudo Language",
-  	location: "Pseudo locale for east Asian/complex script localization testing",
-  	id: 1534,
-  	tag: "qps-ploca",
-  	version: "Release 7"
-  },
-  	"qps-ploc": {
-  	language: "Pseudo Language",
-  	location: "Pseudo locale used for localization testing",
-  	id: 1281,
-  	tag: "qps-ploc",
-  	version: "Release 7"
-  },
-  	"qps-plocm": {
-  	language: "Pseudo Language",
-  	location: "Pseudo locale used for localization testing of mirrored locales",
-  	id: 2559,
-  	tag: "qps-plocm",
-  	version: "Release 7"
-  },
-  	pa: pa,
-  	"pa-arab": {
-  	language: "Punjabi",
-  	location: null,
-  	id: 31814,
-  	tag: "pa-Arab",
-  	version: "Release 8"
-  },
-  	"pa-in": {
-  	language: "Punjabi",
-  	location: "India",
-  	id: 1094,
-  	tag: "pa-IN",
-  	version: "Release D"
-  },
-  	"pa-arab-pk": {
-  	language: "Punjabi",
-  	location: "Islamic Republic of Pakistan",
-  	id: 2118,
-  	tag: "pa-Arab-PK",
-  	version: "Release 8"
-  },
-  	quz: quz,
-  	"quz-bo": {
-  	language: "Quechua",
-  	location: "Bolivia",
-  	id: 1131,
-  	tag: "quz-BO",
-  	version: "Release E1"
-  },
-  	"quz-ec": {
-  	language: "Quechua",
-  	location: "Ecuador",
-  	id: 2155,
-  	tag: "quz-EC",
-  	version: "Release E1"
-  },
-  	"quz-pe": {
-  	language: "Quechua",
-  	location: "Peru",
-  	id: 3179,
-  	tag: "quz-PE",
-  	version: "Release E1"
-  },
-  	ksh: ksh,
-  	"ksh-de": {
-  	language: "Ripuarian",
-  	location: "Germany",
-  	id: 4096,
-  	tag: "ksh-DE",
-  	version: "Release 10"
-  },
-  	ro: ro,
-  	"ro-md": {
-  	language: "Romanian",
-  	location: "Moldova",
-  	id: 2072,
-  	tag: "ro-MD",
-  	version: "Release 8.1"
-  },
-  	"ro-ro": {
-  	language: "Romanian",
-  	location: "Romania",
-  	id: 1048,
-  	tag: "ro-RO",
-  	version: "Release A"
-  },
-  	rm: rm,
-  	"rm-ch": {
-  	language: "Romansh",
-  	location: "Switzerland",
-  	id: 1047,
-  	tag: "rm-CH",
-  	version: "Release E2"
-  },
-  	rof: rof,
-  	"rof-tz": {
-  	language: "Rombo",
-  	location: "Tanzania",
-  	id: 4096,
-  	tag: "rof-TZ",
-  	version: "Release 10"
-  },
-  	rn: rn,
-  	"rn-bi": {
-  	language: "Rundi",
-  	location: "Burundi",
-  	id: 4096,
-  	tag: "rn-BI",
-  	version: "Release 10"
-  },
-  	ru: ru,
-  	"ru-by": {
-  	language: "Russian",
-  	location: "Belarus",
-  	id: 4096,
-  	tag: "ru-BY",
-  	version: "Release 10"
-  },
-  	"ru-kz": {
-  	language: "Russian",
-  	location: "Kazakhstan",
-  	id: 4096,
-  	tag: "ru-KZ",
-  	version: "Release 10"
-  },
-  	"ru-kg": {
-  	language: "Russian",
-  	location: "Kyrgyzstan",
-  	id: 4096,
-  	tag: "ru-KG",
-  	version: "Release 10"
-  },
-  	"ru-md": {
-  	language: "Russian",
-  	location: "Moldova",
-  	id: 2073,
-  	tag: "ru-MD",
-  	version: "Release 10"
-  },
-  	"ru-ru": {
-  	language: "Russian",
-  	location: "Russia",
-  	id: 1049,
-  	tag: "ru-RU",
-  	version: "Release A"
-  },
-  	"ru-ua": {
-  	language: "Russian",
-  	location: "Ukraine",
-  	id: 4096,
-  	tag: "ru-UA",
-  	version: "Release 10"
-  },
-  	rwk: rwk,
-  	"rwk-tz": {
-  	language: "Rwa",
-  	location: "Tanzania",
-  	id: 4096,
-  	tag: "rwk-TZ",
-  	version: "Release 10"
-  },
-  	ssy: ssy,
-  	"ssy-er": {
-  	language: "Saho",
-  	location: "Eritrea",
-  	id: 4096,
-  	tag: "ssy-ER",
-  	version: "Release 10"
-  },
-  	sah: sah,
-  	"sah-ru": {
-  	language: "Sakha",
-  	location: "Russia",
-  	id: 1157,
-  	tag: "sah-RU",
-  	version: "Release V"
-  },
-  	saq: saq,
-  	"saq-ke": {
-  	language: "Samburu",
-  	location: "Kenya",
-  	id: 4096,
-  	tag: "saq-KE",
-  	version: "Release 10"
-  },
-  	smn: smn,
-  	"smn-fi": {
-  	language: "Sami (Inari)",
-  	location: "Finland",
-  	id: 9275,
-  	tag: "smn-FI",
-  	version: "Release E1"
-  },
-  	smj: smj,
-  	"smj-no": {
-  	language: "Sami (Lule)",
-  	location: "Norway",
-  	id: 4155,
-  	tag: "smj-NO",
-  	version: "Release E1"
-  },
-  	"smj-se": {
-  	language: "Sami (Lule)",
-  	location: "Sweden",
-  	id: 5179,
-  	tag: "smj-SE",
-  	version: "Release E1"
-  },
-  	se: se,
-  	"se-fi": {
-  	language: "Sami (Northern)",
-  	location: "Finland",
-  	id: 3131,
-  	tag: "se-FI",
-  	version: "Release E1"
-  },
-  	"se-no": {
-  	language: "Sami (Northern)",
-  	location: "Norway",
-  	id: 1083,
-  	tag: "se-NO",
-  	version: "Release E1"
-  },
-  	"se-se": {
-  	language: "Sami (Northern)",
-  	location: "Sweden",
-  	id: 2107,
-  	tag: "se-SE",
-  	version: "Release E1"
-  },
-  	sms: sms,
-  	"sms-fi": {
-  	language: "Sami (Skolt)",
-  	location: "Finland",
-  	id: 8251,
-  	tag: "sms-FI",
-  	version: "Release E1"
-  },
-  	sma: sma,
-  	"sma-no": {
-  	language: "Sami (Southern)",
-  	location: "Norway",
-  	id: 6203,
-  	tag: "sma-NO",
-  	version: "Release E1"
-  },
-  	"sma-se": {
-  	language: "Sami (Southern)",
-  	location: "Sweden",
-  	id: 7227,
-  	tag: "sma-SE",
-  	version: "Release E1"
-  },
-  	sg: sg,
-  	"sg-cf": {
-  	language: "Sango",
-  	location: "Central African Republic",
-  	id: 4096,
-  	tag: "sg-CF",
-  	version: "Release 10"
-  },
-  	sbp: sbp,
-  	"sbp-tz": {
-  	language: "Sangu",
-  	location: "Tanzania",
-  	id: 4096,
-  	tag: "sbp-TZ",
-  	version: "Release 10"
-  },
-  	sa: sa,
-  	"sa-in": {
-  	language: "Sanskrit",
-  	location: "India",
-  	id: 1103,
-  	tag: "sa-IN",
-  	version: "Release C"
-  },
-  	gd: gd,
-  	"gd-gb": {
-  	language: "Scottish Gaelic",
-  	location: "United Kingdom",
-  	id: 1169,
-  	tag: "gd-GB",
-  	version: "Release 7"
-  },
-  	seh: seh,
-  	"seh-mz": {
-  	language: "Sena",
-  	location: "Mozambique",
-  	id: 4096,
-  	tag: "seh-MZ",
-  	version: "Release 10"
-  },
-  	"sr-cyrl": {
-  	language: "Serbian (Cyrillic)",
-  	location: null,
-  	id: 27674,
-  	tag: "sr-Cyrl",
-  	version: "Windows 7"
-  },
-  	"sr-cyrl-ba": {
-  	language: "Serbian (Cyrillic)",
-  	location: "Bosnia and Herzegovina",
-  	id: 7194,
-  	tag: "sr-Cyrl-BA",
-  	version: "Release E1"
-  },
-  	"sr-cyrl-me": {
-  	language: "Serbian (Cyrillic)",
-  	location: "Montenegro",
-  	id: 12314,
-  	tag: "sr-Cyrl-ME",
-  	version: "Release 7"
-  },
-  	"sr-cyrl-rs": {
-  	language: "Serbian (Cyrillic)",
-  	location: "Serbia",
-  	id: 10266,
-  	tag: "sr-Cyrl-RS",
-  	version: "Release 7"
-  },
-  	"sr-cyrl-cs": {
-  	language: "Serbian (Cyrillic)",
-  	location: "Serbia and Montenegro (Former)",
-  	id: 3098,
-  	tag: "sr-Cyrl-CS",
-  	version: "Release B"
-  },
-  	"sr-latn": {
-  	language: "Serbian (Latin)",
-  	location: null,
-  	id: 28698,
-  	tag: "sr-Latn",
-  	version: "Windows 7"
-  },
-  	sr: sr,
-  	"sr-latn-ba": {
-  	language: "Serbian (Latin)",
-  	location: "Bosnia and Herzegovina",
-  	id: 6170,
-  	tag: "sr-Latn-BA",
-  	version: "Release E1"
-  },
-  	"sr-latn-me": {
-  	language: "Serbian (Latin)",
-  	location: "Montenegro",
-  	id: 11290,
-  	tag: "sr-Latn-ME",
-  	version: "Release 7"
-  },
-  	"sr-latn-rs": {
-  	language: "Serbian (Latin)",
-  	location: "Serbia",
-  	id: 9242,
-  	tag: "sr-Latn-RS",
-  	version: "Release 7"
-  },
-  	"sr-latn-cs": {
-  	language: "Serbian (Latin)",
-  	location: "Serbia and Montenegro (Former)",
-  	id: 2074,
-  	tag: "sr-Latn-CS",
-  	version: "Release B"
-  },
-  	nso: nso,
-  	"nso-za": {
-  	language: "Sesotho sa Leboa",
-  	location: "South Africa",
-  	id: 1132,
-  	tag: "nso-ZA",
-  	version: "Release E1"
-  },
-  	tn: tn,
-  	"tn-bw": {
-  	language: "Setswana",
-  	location: "Botswana",
-  	id: 2098,
-  	tag: "tn-BW",
-  	version: "Release 8"
-  },
-  	"tn-za": {
-  	language: "Setswana",
-  	location: "South Africa",
-  	id: 1074,
-  	tag: "tn-ZA",
-  	version: "Release E1"
-  },
-  	ksb: ksb,
-  	"ksb-tz": {
-  	language: "Shambala",
-  	location: "Tanzania",
-  	id: 4096,
-  	tag: "ksb-TZ",
-  	version: "Release 10"
-  },
-  	sn: sn,
-  	"sn-latn": {
-  	language: "Shona",
-  	location: "Latin",
-  	id: 4096,
-  	tag: "sn-Latn",
-  	version: "Release 8.1"
-  },
-  	"sn-latn-zw": {
-  	language: "Shona",
-  	location: "Zimbabwe",
-  	id: 4096,
-  	tag: "sn-Latn-ZW",
-  	version: "Release 8.1"
-  },
-  	sd: sd,
-  	"sd-arab": {
-  	language: "Sindhi",
-  	location: null,
-  	id: 31833,
-  	tag: "sd-Arab",
-  	version: "Release 8"
-  },
-  	"sd-arab-pk": {
-  	language: "Sindhi",
-  	location: "Islamic Republic of Pakistan",
-  	id: 2137,
-  	tag: "sd-Arab-PK",
-  	version: "Release 8"
-  },
-  	si: si,
-  	"si-lk": {
-  	language: "Sinhala",
-  	location: "Sri Lanka",
-  	id: 1115,
-  	tag: "si-LK",
-  	version: "Release V"
-  },
-  	sk: sk,
-  	"sk-sk": {
-  	language: "Slovak",
-  	location: "Slovakia",
-  	id: 1051,
-  	tag: "sk-SK",
-  	version: "Release A"
-  },
-  	sl: sl,
-  	"sl-si": {
-  	language: "Slovenian",
-  	location: "Slovenia",
-  	id: 1060,
-  	tag: "sl-SI",
-  	version: "Release A"
-  },
-  	xog: xog,
-  	"xog-ug": {
-  	language: "Soga",
-  	location: "Uganda",
-  	id: 4096,
-  	tag: "xog-UG",
-  	version: "Release 10"
-  },
-  	so: so,
-  	"so-dj": {
-  	language: "Somali",
-  	location: "Djibouti",
-  	id: 4096,
-  	tag: "so-DJ",
-  	version: "Release 10"
-  },
-  	"so-et": {
-  	language: "Somali",
-  	location: "Ethiopia",
-  	id: 4096,
-  	tag: "so-ET",
-  	version: "Release 10"
-  },
-  	"so-ke": {
-  	language: "Somali",
-  	location: "Kenya",
-  	id: 4096,
-  	tag: "so-KE",
-  	version: "Release 10"
-  },
-  	"so-so": {
-  	language: "Somali",
-  	location: "Somalia",
-  	id: 1143,
-  	tag: "so-SO",
-  	version: "Release 8.1"
-  },
-  	st: st,
-  	"st-za": {
-  	language: "Sotho",
-  	location: "South Africa",
-  	id: 1072,
-  	tag: "st-ZA",
-  	version: "Release 8.1"
-  },
-  	nr: nr,
-  	"nr-za": {
-  	language: "South Ndebele",
-  	location: "South Africa",
-  	id: 4096,
-  	tag: "nr-ZA",
-  	version: "Release 10"
-  },
-  	"st-ls": {
-  	language: "Southern Sotho",
-  	location: "Lesotho",
-  	id: 4096,
-  	tag: "st-LS",
-  	version: "Release 10"
-  },
-  	es: es,
-  	"es-ar": {
-  	language: "Spanish",
-  	location: "Argentina",
-  	id: 11274,
-  	tag: "es-AR",
-  	version: "Release B"
-  },
-  	"es-bz": {
-  	language: "Spanish",
-  	location: "Belize",
-  	id: 4096,
-  	tag: "es-BZ",
-  	version: "Release 10.3"
-  },
-  	"es-ve": {
-  	language: "Spanish",
-  	location: "Bolivarian Republic of Venezuela",
-  	id: 8202,
-  	tag: "es-VE",
-  	version: "Release B"
-  },
-  	"es-bo": {
-  	language: "Spanish",
-  	location: "Bolivia",
-  	id: 16394,
-  	tag: "es-BO",
-  	version: "Release B"
-  },
-  	"es-br": {
-  	language: "Spanish",
-  	location: "Brazil",
-  	id: 4096,
-  	tag: "es-BR",
-  	version: "Release 10.2"
-  },
-  	"es-cl": {
-  	language: "Spanish",
-  	location: "Chile",
-  	id: 13322,
-  	tag: "es-CL",
-  	version: "Release B"
-  },
-  	"es-co": {
-  	language: "Spanish",
-  	location: "Colombia",
-  	id: 9226,
-  	tag: "es-CO",
-  	version: "Release B"
-  },
-  	"es-cr": {
-  	language: "Spanish",
-  	location: "Costa Rica",
-  	id: 5130,
-  	tag: "es-CR",
-  	version: "Release B"
-  },
-  	"es-cu": {
-  	language: "Spanish",
-  	location: "Cuba",
-  	id: 23562,
-  	tag: "es-CU",
-  	version: "Release 10"
-  },
-  	"es-do": {
-  	language: "Spanish",
-  	location: "Dominican Republic",
-  	id: 7178,
-  	tag: "es-DO",
-  	version: "Release B"
-  },
-  	"es-ec": {
-  	language: "Spanish",
-  	location: "Ecuador",
-  	id: 12298,
-  	tag: "es-EC",
-  	version: "Release B"
-  },
-  	"es-sv": {
-  	language: "Spanish",
-  	location: "El Salvador",
-  	id: 17418,
-  	tag: "es-SV",
-  	version: "Release B"
-  },
-  	"es-gq": {
-  	language: "Spanish",
-  	location: "Equatorial Guinea",
-  	id: 4096,
-  	tag: "es-GQ",
-  	version: "Release 10"
-  },
-  	"es-gt": {
-  	language: "Spanish",
-  	location: "Guatemala",
-  	id: 4106,
-  	tag: "es-GT",
-  	version: "Release B"
-  },
-  	"es-hn": {
-  	language: "Spanish",
-  	location: "Honduras",
-  	id: 18442,
-  	tag: "es-HN",
-  	version: "Release B"
-  },
-  	"es-419": {
-  	language: "Spanish",
-  	location: "Latin America",
-  	id: 22538,
-  	tag: "es-419",
-  	version: "Release 8.1"
-  },
-  	"es-mx": {
-  	language: "Spanish",
-  	location: "Mexico",
-  	id: 2058,
-  	tag: "es-MX",
-  	version: "Release A"
-  },
-  	"es-ni": {
-  	language: "Spanish",
-  	location: "Nicaragua",
-  	id: 19466,
-  	tag: "es-NI",
-  	version: "Release B"
-  },
-  	"es-pa": {
-  	language: "Spanish",
-  	location: "Panama",
-  	id: 6154,
-  	tag: "es-PA",
-  	version: "Release B"
-  },
-  	"es-py": {
-  	language: "Spanish",
-  	location: "Paraguay",
-  	id: 15370,
-  	tag: "es-PY",
-  	version: "Release B"
-  },
-  	"es-pe": {
-  	language: "Spanish",
-  	location: "Peru",
-  	id: 10250,
-  	tag: "es-PE",
-  	version: "Release B"
-  },
-  	"es-ph": {
-  	language: "Spanish",
-  	location: "Philippines",
-  	id: 4096,
-  	tag: "es-PH",
-  	version: "Release 10"
-  },
-  	"es-pr": {
-  	language: "Spanish",
-  	location: "Puerto Rico",
-  	id: 20490,
-  	tag: "es-PR",
-  	version: "Release B"
-  },
-  	"es-es_tradnl": {
-  	language: "Spanish",
-  	location: "Spain",
-  	id: 1034,
-  	tag: "es-ES_tradnl",
-  	version: "Release A"
-  },
-  	"es-es": {
-  	language: "Spanish",
-  	location: "Spain",
-  	id: 3082,
-  	tag: "es-ES",
-  	version: "Release A"
-  },
-  	"es-us": {
-  	language: "Spanish",
-  	location: "UnitedStates",
-  	id: 21514,
-  	tag: "es-US",
-  	version: "Release V"
-  },
-  	"es-uy": {
-  	language: "Spanish",
-  	location: "Uruguay",
-  	id: 14346,
-  	tag: "es-UY",
-  	version: "Release B"
-  },
-  	zgh: zgh,
-  	"zgh-tfng-ma": {
-  	language: "Standard Moroccan Tamazight",
-  	location: "Morocco",
-  	id: 4096,
-  	tag: "zgh-Tfng-MA",
-  	version: "Release 8.1"
-  },
-  	"zgh-tfng": {
-  	language: "Standard Moroccan Tamazight",
-  	location: "Tifinagh",
-  	id: 4096,
-  	tag: "zgh-Tfng",
-  	version: "Release 8.1"
-  },
-  	ss: ss,
-  	"ss-za": {
-  	language: "Swati",
-  	location: "South Africa",
-  	id: 4096,
-  	tag: "ss-ZA",
-  	version: "Release 10"
-  },
-  	"ss-sz": {
-  	language: "Swati",
-  	location: "Swaziland",
-  	id: 4096,
-  	tag: "ss-SZ",
-  	version: "Release 10"
-  },
-  	sv: sv,
-  	"sv-ax": {
-  	language: "Swedish",
-  	location: "Åland Islands",
-  	id: 4096,
-  	tag: "sv-AX",
-  	version: "Release 10"
-  },
-  	"sv-fi": {
-  	language: "Swedish",
-  	location: "Finland",
-  	id: 2077,
-  	tag: "sv-FI",
-  	version: "Release B"
-  },
-  	"sv-se": {
-  	language: "Swedish",
-  	location: "Sweden",
-  	id: 1053,
-  	tag: "sv-SE",
-  	version: "Release A"
-  },
-  	syr: syr,
-  	"syr-sy": {
-  	language: "Syriac",
-  	location: "Syria",
-  	id: 1114,
-  	tag: "syr-SY",
-  	version: "Release D"
-  },
-  	shi: shi,
-  	"shi-tfng": {
-  	language: "Tachelhit",
-  	location: "Tifinagh",
-  	id: 4096,
-  	tag: "shi-Tfng",
-  	version: "Release 10"
-  },
-  	"shi-tfng-ma": {
-  	language: "Tachelhit",
-  	location: "Tifinagh, Morocco",
-  	id: 4096,
-  	tag: "shi-Tfng-MA",
-  	version: "Release 10"
-  },
-  	"shi-latn": {
-  	language: "Tachelhit (Latin)",
-  	location: null,
-  	id: 4096,
-  	tag: "shi-Latn",
-  	version: "Release 10"
-  },
-  	"shi-latn-ma": {
-  	language: "Tachelhit (Latin)",
-  	location: "Morocco",
-  	id: 4096,
-  	tag: "shi-Latn-MA",
-  	version: "Release 10"
-  },
-  	dav: dav,
-  	"dav-ke": {
-  	language: "Taita",
-  	location: "Kenya",
-  	id: 4096,
-  	tag: "dav-KE",
-  	version: "Release 10"
-  },
-  	tg: tg,
-  	"tg-cyrl": {
-  	language: "Tajik (Cyrillic)",
-  	location: null,
-  	id: 31784,
-  	tag: "tg-Cyrl",
-  	version: "Windows 7"
-  },
-  	"tg-cyrl-tj": {
-  	language: "Tajik (Cyrillic)",
-  	location: "Tajikistan",
-  	id: 1064,
-  	tag: "tg-Cyrl-TJ",
-  	version: "Release V"
-  },
-  	tzm: tzm,
-  	"tzm-latn": {
-  	language: "Tamazight (Latin)",
-  	location: null,
-  	id: 31839,
-  	tag: "tzm-Latn",
-  	version: "Windows 7"
-  },
-  	"tzm-latn-dz": {
-  	language: "Tamazight (Latin)",
-  	location: "Algeria",
-  	id: 2143,
-  	tag: "tzm-Latn-DZ",
-  	version: "Release V"
-  },
-  	ta: ta,
-  	"ta-in": {
-  	language: "Tamil",
-  	location: "India",
-  	id: 1097,
-  	tag: "ta-IN",
-  	version: "Release C"
-  },
-  	"ta-my": {
-  	language: "Tamil",
-  	location: "Malaysia",
-  	id: 4096,
-  	tag: "ta-MY",
-  	version: "Release 10"
-  },
-  	"ta-sg": {
-  	language: "Tamil",
-  	location: "Singapore",
-  	id: 4096,
-  	tag: "ta-SG",
-  	version: "Release 10"
-  },
-  	"ta-lk": {
-  	language: "Tamil",
-  	location: "Sri Lanka",
-  	id: 2121,
-  	tag: "ta-LK",
-  	version: "Release 8"
-  },
-  	twq: twq,
-  	"twq-ne": {
-  	language: "Tasawaq",
-  	location: "Niger",
-  	id: 4096,
-  	tag: "twq-NE",
-  	version: "Release 10"
-  },
-  	tt: tt,
-  	"tt-ru": {
-  	language: "Tatar",
-  	location: "Russia",
-  	id: 1092,
-  	tag: "tt-RU",
-  	version: "Release D"
-  },
-  	te: te,
-  	"te-in": {
-  	language: "Telugu",
-  	location: "India",
-  	id: 1098,
-  	tag: "te-IN",
-  	version: "Release D"
-  },
-  	teo: teo,
-  	"teo-ke": {
-  	language: "Teso",
-  	location: "Kenya",
-  	id: 4096,
-  	tag: "teo-KE",
-  	version: "Release 10"
-  },
-  	"teo-ug": {
-  	language: "Teso",
-  	location: "Uganda",
-  	id: 4096,
-  	tag: "teo-UG",
-  	version: "Release 10"
-  },
-  	th: th,
-  	"th-th": {
-  	language: "Thai",
-  	location: "Thailand",
-  	id: 1054,
-  	tag: "th-TH",
-  	version: "Release B"
-  },
-  	bo: bo,
-  	"bo-in": {
-  	language: "Tibetan",
-  	location: "India",
-  	id: 4096,
-  	tag: "bo-IN",
-  	version: "Release 10"
-  },
-  	"bo-cn": {
-  	language: "Tibetan",
-  	location: "People's Republic of China",
-  	id: 1105,
-  	tag: "bo-CN",
-  	version: "Release V"
-  },
-  	tig: tig,
-  	"tig-er": {
-  	language: "Tigre",
-  	location: "Eritrea",
-  	id: 4096,
-  	tag: "tig-ER",
-  	version: "Release 10"
-  },
-  	ti: ti,
-  	"ti-er": {
-  	language: "Tigrinya",
-  	location: "Eritrea",
-  	id: 2163,
-  	tag: "ti-ER",
-  	version: "Release 8"
-  },
-  	"ti-et": {
-  	language: "Tigrinya",
-  	location: "Ethiopia",
-  	id: 1139,
-  	tag: "ti-ET",
-  	version: "Release 8"
-  },
-  	to: to,
-  	"to-to": {
-  	language: "Tongan",
-  	location: "Tonga",
-  	id: 4096,
-  	tag: "to-TO",
-  	version: "Release 10"
-  },
-  	ts: ts,
-  	"ts-za": {
-  	language: "Tsonga",
-  	location: "South Africa",
-  	id: 1073,
-  	tag: "ts-ZA",
-  	version: "Release 8.1"
-  },
-  	tr: tr,
-  	"tr-cy": {
-  	language: "Turkish",
-  	location: "Cyprus",
-  	id: 4096,
-  	tag: "tr-CY",
-  	version: "Release 10"
-  },
-  	"tr-tr": {
-  	language: "Turkish",
-  	location: "Turkey",
-  	id: 1055,
-  	tag: "tr-TR",
-  	version: "Release A"
-  },
-  	tk: tk,
-  	"tk-tm": {
-  	language: "Turkmen",
-  	location: "Turkmenistan",
-  	id: 1090,
-  	tag: "tk-TM",
-  	version: "Release V"
-  },
-  	uk: uk,
-  	"uk-ua": {
-  	language: "Ukrainian",
-  	location: "Ukraine",
-  	id: 1058,
-  	tag: "uk-UA",
-  	version: "Release B"
-  },
-  	hsb: hsb,
-  	"hsb-de": {
-  	language: "Upper Sorbian",
-  	location: "Germany",
-  	id: 1070,
-  	tag: "hsb-DE",
-  	version: "Release V"
-  },
-  	ur: ur,
-  	"ur-in": {
-  	language: "Urdu",
-  	location: "India",
-  	id: 2080,
-  	tag: "ur-IN",
-  	version: "Release 8.1"
-  },
-  	"ur-pk": {
-  	language: "Urdu",
-  	location: "Islamic Republic of Pakistan",
-  	id: 1056,
-  	tag: "ur-PK",
-  	version: "Release C"
-  },
-  	ug: ug,
-  	"ug-cn": {
-  	language: "Uyghur",
-  	location: "People's Republic of China",
-  	id: 1152,
-  	tag: "ug-CN",
-  	version: "Release V"
-  },
-  	"uz-arab": {
-  	language: "Uzbek",
-  	location: "Perso-Arabic",
-  	id: 4096,
-  	tag: "uz-Arab",
-  	version: "Release 10"
-  },
-  	"uz-arab-af": {
-  	language: "Uzbek",
-  	location: "Perso-Arabic, Afghanistan",
-  	id: 4096,
-  	tag: "uz-Arab-AF",
-  	version: "Release 10"
-  },
-  	"uz-cyrl": {
-  	language: "Uzbek (Cyrillic)",
-  	location: null,
-  	id: 30787,
-  	tag: "uz-Cyrl",
-  	version: "Windows 7"
-  },
-  	"uz-cyrl-uz": {
-  	language: "Uzbek (Cyrillic)",
-  	location: "Uzbekistan",
-  	id: 2115,
-  	tag: "uz-Cyrl-UZ",
-  	version: "Release C"
-  },
-  	uz: uz,
-  	"uz-latn": {
-  	language: "Uzbek (Latin)",
-  	location: null,
-  	id: 31811,
-  	tag: "uz-Latn",
-  	version: "Windows7"
-  },
-  	"uz-latn-uz": {
-  	language: "Uzbek (Latin)",
-  	location: "Uzbekistan",
-  	id: 1091,
-  	tag: "uz-Latn-UZ",
-  	version: "Release C"
-  },
-  	vai: vai,
-  	"vai-vaii": {
-  	language: "Vai",
-  	location: null,
-  	id: 4096,
-  	tag: "vai-Vaii",
-  	version: "Release 10"
-  },
-  	"vai-vaii-lr": {
-  	language: "Vai",
-  	location: "Liberia",
-  	id: 4096,
-  	tag: "vai-Vaii-LR",
-  	version: "Release 10"
-  },
-  	"vai-latn-lr": {
-  	language: "Vai (Latin)",
-  	location: "Liberia",
-  	id: 4096,
-  	tag: "vai-Latn-LR",
-  	version: "Release 10"
-  },
-  	"vai-latn": {
-  	language: "Vai (Latin)",
-  	location: null,
-  	id: 4096,
-  	tag: "vai-Latn",
-  	version: "Release 10"
-  },
-  	"ca-es-": {
-  	language: "Valencian",
-  	location: "Spain",
-  	id: 2051,
-  	tag: "ca-ES-",
-  	version: "Release 8"
-  },
-  	ve: ve,
-  	"ve-za": {
-  	language: "Venda",
-  	location: "South Africa",
-  	id: 1075,
-  	tag: "ve-ZA",
-  	version: "Release 10"
-  },
-  	vi: vi,
-  	"vi-vn": {
-  	language: "Vietnamese",
-  	location: "Vietnam",
-  	id: 1066,
-  	tag: "vi-VN",
-  	version: "Release B"
-  },
-  	vo: vo,
-  	"vo-001": {
-  	language: "Volapük",
-  	location: "World",
-  	id: 4096,
-  	tag: "vo-001",
-  	version: "Release 10"
-  },
-  	vun: vun,
-  	"vun-tz": {
-  	language: "Vunjo",
-  	location: "Tanzania",
-  	id: 4096,
-  	tag: "vun-TZ",
-  	version: "Release 10"
-  },
-  	wae: wae,
-  	"wae-ch": {
-  	language: "Walser",
-  	location: "Switzerland",
-  	id: 4096,
-  	tag: "wae-CH",
-  	version: "Release 10"
-  },
-  	cy: cy,
-  	"cy-gb": {
-  	language: "Welsh",
-  	location: "United Kingdom",
-  	id: 1106,
-  	tag: "cy-GB",
-  	version: "ReleaseE1"
-  },
-  	wal: wal,
-  	"wal-et": {
-  	language: "Wolaytta",
-  	location: "Ethiopia",
-  	id: 4096,
-  	tag: "wal-ET",
-  	version: "Release 10"
-  },
-  	wo: wo,
-  	"wo-sn": {
-  	language: "Wolof",
-  	location: "Senegal",
-  	id: 1160,
-  	tag: "wo-SN",
-  	version: "Release V"
-  },
-  	xh: xh,
-  	"xh-za": {
-  	language: "Xhosa",
-  	location: "South Africa",
-  	id: 1076,
-  	tag: "xh-ZA",
-  	version: "Release E1"
-  },
-  	yav: yav,
-  	"yav-cm": {
-  	language: "Yangben",
-  	location: "Cameroon",
-  	id: 4096,
-  	tag: "yav-CM",
-  	version: "Release 10"
-  },
-  	ii: ii,
-  	"ii-cn": {
-  	language: "Yi",
-  	location: "People's Republic of China",
-  	id: 1144,
-  	tag: "ii-CN",
-  	version: "Release V"
-  },
-  	yo: yo,
-  	"yo-bj": {
-  	language: "Yoruba",
-  	location: "Benin",
-  	id: 4096,
-  	tag: "yo-BJ",
-  	version: "Release 10"
-  },
-  	"yo-ng": {
-  	language: "Yoruba",
-  	location: "Nigeria",
-  	id: 1130,
-  	tag: "yo-NG",
-  	version: "Release V"
-  },
-  	dje: dje,
-  	"dje-ne": {
-  	language: "Zarma",
-  	location: "Niger",
-  	id: 4096,
-  	tag: "dje-NE",
-  	version: "Release 10"
-  },
-  	zu: zu,
-  	"zu-za": {
-  	language: "Zulu",
-  	location: "South Africa",
-  	id: 1077,
-  	tag: "zu-ZA",
-  	version: "Release E1"
-  }
+    aa: aa,
+    "aa-dj": {
+      language: "Afar",
+      location: "Djibouti",
+      id: 4096,
+      tag: "aa-DJ",
+      version: "Release 10"
+    },
+    "aa-er": {
+      language: "Afar",
+      location: "Eritrea",
+      id: 4096,
+      tag: "aa-ER",
+      version: "Release 10"
+    },
+    "aa-et": {
+      language: "Afar",
+      location: "Ethiopia",
+      id: 4096,
+      tag: "aa-ET",
+      version: "Release 10"
+    },
+    af: af,
+    "af-na": {
+      language: "Afrikaans",
+      location: "Namibia",
+      id: 4096,
+      tag: "af-NA",
+      version: "Release 10"
+    },
+    "af-za": {
+      language: "Afrikaans",
+      location: "South Africa",
+      id: 1078,
+      tag: "af-ZA",
+      version: "Release B"
+    },
+    agq: agq,
+    "agq-cm": {
+      language: "Aghem",
+      location: "Cameroon",
+      id: 4096,
+      tag: "agq-CM",
+      version: "Release 10"
+    },
+    ak: ak,
+    "ak-gh": {
+      language: "Akan",
+      location: "Ghana",
+      id: 4096,
+      tag: "ak-GH",
+      version: "Release 10"
+    },
+    sq: sq,
+    "sq-al": {
+      language: "Albanian",
+      location: "Albania",
+      id: 1052,
+      tag: "sq-AL",
+      version: "Release B"
+    },
+    "sq-mk": {
+      language: "Albanian",
+      location: "North Macedonia",
+      id: 4096,
+      tag: "sq-MK",
+      version: "Release 10"
+    },
+    gsw: gsw,
+    "gsw-fr": {
+      language: "Alsatian",
+      location: "France",
+      id: 1156,
+      tag: "gsw-FR",
+      version: "Release V"
+    },
+    "gsw-li": {
+      language: "Alsatian",
+      location: "Liechtenstein",
+      id: 4096,
+      tag: "gsw-LI",
+      version: "Release 10"
+    },
+    "gsw-ch": {
+      language: "Alsatian",
+      location: "Switzerland",
+      id: 4096,
+      tag: "gsw-CH",
+      version: "Release 10"
+    },
+    am: am,
+    "am-et": {
+      language: "Amharic",
+      location: "Ethiopia",
+      id: 1118,
+      tag: "am-ET",
+      version: "Release V"
+    },
+    ar: ar,
+    "ar-dz": {
+      language: "Arabic",
+      location: "Algeria",
+      id: 5121,
+      tag: "ar-DZ",
+      version: "Release B"
+    },
+    "ar-bh": {
+      language: "Arabic",
+      location: "Bahrain",
+      id: 15361,
+      tag: "ar-BH",
+      version: "Release B"
+    },
+    "ar-td": {
+      language: "Arabic",
+      location: "Chad",
+      id: 4096,
+      tag: "ar-TD",
+      version: "Release 10"
+    },
+    "ar-km": {
+      language: "Arabic",
+      location: "Comoros",
+      id: 4096,
+      tag: "ar-KM",
+      version: "Release 10"
+    },
+    "ar-dj": {
+      language: "Arabic",
+      location: "Djibouti",
+      id: 4096,
+      tag: "ar-DJ",
+      version: "Release 10"
+    },
+    "ar-eg": {
+      language: "Arabic",
+      location: "Egypt",
+      id: 3073,
+      tag: "ar-EG",
+      version: "Release B"
+    },
+    "ar-er": {
+      language: "Arabic",
+      location: "Eritrea",
+      id: 4096,
+      tag: "ar-ER",
+      version: "Release 10"
+    },
+    "ar-iq": {
+      language: "Arabic",
+      location: "Iraq",
+      id: 2049,
+      tag: "ar-IQ",
+      version: "Release B"
+    },
+    "ar-il": {
+      language: "Arabic",
+      location: "Israel",
+      id: 4096,
+      tag: "ar-IL",
+      version: "Release 10"
+    },
+    "ar-jo": {
+      language: "Arabic",
+      location: "Jordan",
+      id: 11265,
+      tag: "ar-JO",
+      version: "Release B"
+    },
+    "ar-kw": {
+      language: "Arabic",
+      location: "Kuwait",
+      id: 13313,
+      tag: "ar-KW",
+      version: "Release B"
+    },
+    "ar-lb": {
+      language: "Arabic",
+      location: "Lebanon",
+      id: 12289,
+      tag: "ar-LB",
+      version: "Release B"
+    },
+    "ar-ly": {
+      language: "Arabic",
+      location: "Libya",
+      id: 4097,
+      tag: "ar-LY",
+      version: "Release B"
+    },
+    "ar-mr": {
+      language: "Arabic",
+      location: "Mauritania",
+      id: 4096,
+      tag: "ar-MR",
+      version: "Release 10"
+    },
+    "ar-ma": {
+      language: "Arabic",
+      location: "Morocco",
+      id: 6145,
+      tag: "ar-MA",
+      version: "Release B"
+    },
+    "ar-om": {
+      language: "Arabic",
+      location: "Oman",
+      id: 8193,
+      tag: "ar-OM",
+      version: "Release B"
+    },
+    "ar-ps": {
+      language: "Arabic",
+      location: "Palestinian Authority",
+      id: 4096,
+      tag: "ar-PS",
+      version: "Release 10"
+    },
+    "ar-qa": {
+      language: "Arabic",
+      location: "Qatar",
+      id: 16385,
+      tag: "ar-QA",
+      version: "Release B"
+    },
+    "ar-sa": {
+      language: "Arabic",
+      location: "Saudi Arabia",
+      id: 1025,
+      tag: "ar-SA",
+      version: "Release B"
+    },
+    "ar-so": {
+      language: "Arabic",
+      location: "Somalia",
+      id: 4096,
+      tag: "ar-SO",
+      version: "Release 10"
+    },
+    "ar-ss": {
+      language: "Arabic",
+      location: "South Sudan",
+      id: 4096,
+      tag: "ar-SS",
+      version: "Release 10"
+    },
+    "ar-sd": {
+      language: "Arabic",
+      location: "Sudan",
+      id: 4096,
+      tag: "ar-SD",
+      version: "Release 10"
+    },
+    "ar-sy": {
+      language: "Arabic",
+      location: "Syria",
+      id: 10241,
+      tag: "ar-SY",
+      version: "Release B"
+    },
+    "ar-tn": {
+      language: "Arabic",
+      location: "Tunisia",
+      id: 7169,
+      tag: "ar-TN",
+      version: "Release B"
+    },
+    "ar-ae": {
+      language: "Arabic",
+      location: "U.A.E.",
+      id: 14337,
+      tag: "ar-AE",
+      version: "Release B"
+    },
+    "ar-001": {
+      language: "Arabic",
+      location: "World",
+      id: 4096,
+      tag: "ar-001",
+      version: "Release 10"
+    },
+    "ar-ye": {
+      language: "Arabic",
+      location: "Yemen",
+      id: 9217,
+      tag: "ar-YE",
+      version: "Release B"
+    },
+    hy: hy,
+    "hy-am": {
+      language: "Armenian",
+      location: "Armenia",
+      id: 1067,
+      tag: "hy-AM",
+      version: "Release C"
+    },
+    as: as,
+    "as-in": {
+      language: "Assamese",
+      location: "India",
+      id: 1101,
+      tag: "as-IN",
+      version: "Release V"
+    },
+    ast: ast,
+    "ast-es": {
+      language: "Asturian",
+      location: "Spain",
+      id: 4096,
+      tag: "ast-ES",
+      version: "Release 10"
+    },
+    asa: asa,
+    "asa-tz": {
+      language: "Asu",
+      location: "Tanzania",
+      id: 4096,
+      tag: "asa-TZ",
+      version: "Release 10"
+    },
+    "az-cyrl": {
+      language: "Azerbaijani (Cyrillic)",
+      location: null,
+      id: 29740,
+      tag: "az-Cyrl",
+      version: "Windows 7"
+    },
+    "az-cyrl-az": {
+      language: "Azerbaijani (Cyrillic)",
+      location: "Azerbaijan",
+      id: 2092,
+      tag: "az-Cyrl-AZ",
+      version: "Release C"
+    },
+    az: az,
+    "az-latn": {
+      language: "Azerbaijani (Latin)",
+      location: null,
+      id: 30764,
+      tag: "az-Latn",
+      version: "Windows 7"
+    },
+    "az-latn-az": {
+      language: "Azerbaijani (Latin)",
+      location: "Azerbaijan",
+      id: 1068,
+      tag: "az-Latn-AZ",
+      version: "Release C"
+    },
+    ksf: ksf,
+    "ksf-cm": {
+      language: "Bafia",
+      location: "Cameroon",
+      id: 4096,
+      tag: "ksf-CM",
+      version: "Release 10"
+    },
+    bm: bm,
+    "bm-latn-ml": {
+      language: "Bamanankan (Latin)",
+      location: "Mali",
+      id: 4096,
+      tag: "bm-Latn-ML",
+      version: "Release 10"
+    },
+    bn: bn,
+    "bn-bd": {
+      language: "Bangla",
+      location: "Bangladesh",
+      id: 2117,
+      tag: "bn-BD",
+      version: "Release V"
+    },
+    "bn-in": {
+      language: "Bangla",
+      location: "India",
+      id: 1093,
+      tag: "bn-IN",
+      version: "Release E1"
+    },
+    bas: bas,
+    "bas-cm": {
+      language: "Basaa",
+      location: "Cameroon",
+      id: 4096,
+      tag: "bas-CM",
+      version: "Release 10"
+    },
+    ba: ba,
+    "ba-ru": {
+      language: "Bashkir",
+      location: "Russia",
+      id: 1133,
+      tag: "ba-RU",
+      version: "Release V"
+    },
+    eu: eu,
+    "eu-es": {
+      language: "Basque",
+      location: "Spain",
+      id: 1069,
+      tag: "eu-ES",
+      version: "Release B"
+    },
+    be: be,
+    "be-by": {
+      language: "Belarusian",
+      location: "Belarus",
+      id: 1059,
+      tag: "be-BY",
+      version: "Release B"
+    },
+    bem: bem,
+    "bem-zm": {
+      language: "Bemba",
+      location: "Zambia",
+      id: 4096,
+      tag: "bem-ZM",
+      version: "Release 10"
+    },
+    bez: bez,
+    "bez-tz": {
+      language: "Bena",
+      location: "Tanzania",
+      id: 4096,
+      tag: "bez-TZ",
+      version: "Release 10"
+    },
+    byn: byn,
+    "byn-er": {
+      language: "Blin",
+      location: "Eritrea",
+      id: 4096,
+      tag: "byn-ER",
+      version: "Release 10"
+    },
+    brx: brx,
+    "brx-in": {
+      language: "Bodo",
+      location: "India",
+      id: 4096,
+      tag: "brx-IN",
+      version: "Release 10"
+    },
+    "bs-cyrl": {
+      language: "Bosnian (Cyrillic)",
+      location: null,
+      id: 25626,
+      tag: "bs-Cyrl",
+      version: "Windows 7"
+    },
+    "bs-cyrl-ba": {
+      language: "Bosnian (Cyrillic)",
+      location: "Bosnia and Herzegovina",
+      id: 8218,
+      tag: "bs-Cyrl-BA",
+      version: "Release E1"
+    },
+    "bs-latn": {
+      language: "Bosnian (Latin)",
+      location: null,
+      id: 26650,
+      tag: "bs-Latn",
+      version: "Windows 7"
+    },
+    bs: bs,
+    "bs-latn-ba": {
+      language: "Bosnian (Latin)",
+      location: "Bosnia and Herzegovina",
+      id: 5146,
+      tag: "bs-Latn-BA",
+      version: "Release E1"
+    },
+    br: br,
+    "br-fr": {
+      language: "Breton",
+      location: "France",
+      id: 1150,
+      tag: "br-FR",
+      version: "Release V"
+    },
+    bg: bg,
+    "bg-bg": {
+      language: "Bulgarian",
+      location: "Bulgaria",
+      id: 1026,
+      tag: "bg-BG",
+      version: "Release B"
+    },
+    my: my,
+    "my-mm": {
+      language: "Burmese",
+      location: "Myanmar",
+      id: 1109,
+      tag: "my-MM",
+      version: "Release 8.1"
+    },
+    ca: ca,
+    "ca-ad": {
+      language: "Catalan",
+      location: "Andorra",
+      id: 4096,
+      tag: "ca-AD",
+      version: "Release 10"
+    },
+    "ca-fr": {
+      language: "Catalan",
+      location: "France",
+      id: 4096,
+      tag: "ca-FR",
+      version: "Release 10"
+    },
+    "ca-it": {
+      language: "Catalan",
+      location: "Italy",
+      id: 4096,
+      tag: "ca-IT",
+      version: "Release 10"
+    },
+    "ca-es": {
+      language: "Catalan",
+      location: "Spain",
+      id: 1027,
+      tag: "ca-ES",
+      version: "Release B"
+    },
+    ceb: ceb,
+    "ceb-latn": {
+      language: "Cebuan (Latin)",
+      location: null,
+      id: 4096,
+      tag: "ceb-Latn",
+      version: "Release 10.5"
+    },
+    "ceb-latn-ph": {
+      language: "Cebuan (Latin)",
+      location: "Philippines",
+      id: 4096,
+      tag: "ceb-Latn-PH",
+      version: "Release 10.5"
+    },
+    "tzm-latn-": {
+      language: "Central Atlas Tamazight (Latin)",
+      location: "Morocco",
+      id: 4096,
+      tag: "tzm-Latn-",
+      version: "Release 10"
+    },
+    ku: ku,
+    "ku-arab": {
+      language: "Central Kurdish",
+      location: null,
+      id: 31890,
+      tag: "ku-Arab",
+      version: "Release 8"
+    },
+    "ku-arab-iq": {
+      language: "Central Kurdish",
+      location: "Iraq",
+      id: 1170,
+      tag: "ku-Arab-IQ",
+      version: "Release 8"
+    },
+    ccp: ccp,
+    "ccp-cakm": {
+      language: "Chakma",
+      location: "Chakma",
+      id: 4096,
+      tag: "ccp-Cakm",
+      version: "Release 10.5"
+    },
+    "ccp-cakm-": {
+      language: "Chakma",
+      location: "India",
+      id: 4096,
+      tag: "ccp-Cakm-",
+      version: "Release 10.5"
+    },
+    "cd-ru": {
+      language: "Chechen",
+      location: "Russia",
+      id: 4096,
+      tag: "cd-RU",
+      version: "Release 10.1"
+    },
+    chr: chr,
+    "chr-cher": {
+      language: "Cherokee",
+      location: null,
+      id: 31836,
+      tag: "chr-Cher",
+      version: "Release 8"
+    },
+    "chr-cher-us": {
+      language: "Cherokee",
+      location: "United States",
+      id: 1116,
+      tag: "chr-Cher-US",
+      version: "Release 8"
+    },
+    cgg: cgg,
+    "cgg-ug": {
+      language: "Chiga",
+      location: "Uganda",
+      id: 4096,
+      tag: "cgg-UG",
+      version: "Release 10"
+    },
+    "zh-hans": {
+      language: "Chinese (Simplified)",
+      location: null,
+      id: 4,
+      tag: "zh-Hans",
+      version: "Release A"
+    },
+    zh: zh,
+    "zh-cn": {
+      language: "Chinese (Simplified)",
+      location: "People's Republic of China",
+      id: 2052,
+      tag: "zh-CN",
+      version: "Release A"
+    },
+    "zh-sg": {
+      language: "Chinese (Simplified)",
+      location: "Singapore",
+      id: 4100,
+      tag: "zh-SG",
+      version: "Release A"
+    },
+    "zh-hant": {
+      language: "Chinese (Traditional)",
+      location: null,
+      id: 31748,
+      tag: "zh-Hant",
+      version: "Release A"
+    },
+    "zh-hk": {
+      language: "Chinese (Traditional)",
+      location: "Hong Kong S.A.R.",
+      id: 3076,
+      tag: "zh-HK",
+      version: "Release A"
+    },
+    "zh-mo": {
+      language: "Chinese (Traditional)",
+      location: "Macao S.A.R.",
+      id: 5124,
+      tag: "zh-MO",
+      version: "Release D"
+    },
+    "zh-tw": {
+      language: "Chinese (Traditional)",
+      location: "Taiwan",
+      id: 1028,
+      tag: "zh-TW",
+      version: "Release A"
+    },
+    "cu-ru": {
+      language: "Church Slavic",
+      location: "Russia",
+      id: 4096,
+      tag: "cu-RU",
+      version: "Release 10.1"
+    },
+    swc: swc,
+    "swc-cd": {
+      language: "Congo Swahili",
+      location: "Congo DRC",
+      id: 4096,
+      tag: "swc-CD",
+      version: "Release 10"
+    },
+    kw: kw,
+    "kw-gb": {
+      language: "Cornish",
+      location: "United Kingdom",
+      id: 4096,
+      tag: "kw-GB",
+      version: "Release 10"
+    },
+    co: co,
+    "co-fr": {
+      language: "Corsican",
+      location: "France",
+      id: 1155,
+      tag: "co-FR",
+      version: "Release V"
+    },
+    "hr,": {
+      language: "Croatian",
+      location: null,
+      id: 26,
+      tag: "hr,",
+      version: "Release 7"
+    },
+    "hr-hr": {
+      language: "Croatian",
+      location: "Croatia",
+      id: 1050,
+      tag: "hr-HR",
+      version: "Release A"
+    },
+    "hr-ba": {
+      language: "Croatian (Latin)",
+      location: "Bosnia and Herzegovina",
+      id: 4122,
+      tag: "hr-BA",
+      version: "Release E1"
+    },
+    cs: cs,
+    "cs-cz": {
+      language: "Czech",
+      location: "Czech Republic",
+      id: 1029,
+      tag: "cs-CZ",
+      version: "Release A"
+    },
+    da: da,
+    "da-dk": {
+      language: "Danish",
+      location: "Denmark",
+      id: 1030,
+      tag: "da-DK",
+      version: "Release A"
+    },
+    "da-gl": {
+      language: "Danish",
+      location: "Greenland",
+      id: 4096,
+      tag: "da-GL",
+      version: "Release 10"
+    },
+    prs: prs,
+    "prs-af": {
+      language: "Dari",
+      location: "Afghanistan",
+      id: 1164,
+      tag: "prs-AF",
+      version: "Release V"
+    },
+    dv: dv,
+    "dv-mv": {
+      language: "Divehi",
+      location: "Maldives",
+      id: 1125,
+      tag: "dv-MV",
+      version: "Release D"
+    },
+    dua: dua,
+    "dua-cm": {
+      language: "Duala",
+      location: "Cameroon",
+      id: 4096,
+      tag: "dua-CM",
+      version: "Release 10"
+    },
+    nl: nl,
+    "nl-aw": {
+      language: "Dutch",
+      location: "Aruba",
+      id: 4096,
+      tag: "nl-AW",
+      version: "Release 10"
+    },
+    "nl-be": {
+      language: "Dutch",
+      location: "Belgium",
+      id: 2067,
+      tag: "nl-BE",
+      version: "Release A"
+    },
+    "nl-bq": {
+      language: "Dutch",
+      location: "Bonaire, Sint Eustatius and Saba",
+      id: 4096,
+      tag: "nl-BQ",
+      version: "Release 10"
+    },
+    "nl-cw": {
+      language: "Dutch",
+      location: "Curaçao",
+      id: 4096,
+      tag: "nl-CW",
+      version: "Release 10"
+    },
+    "nl-nl": {
+      language: "Dutch",
+      location: "Netherlands",
+      id: 1043,
+      tag: "nl-NL",
+      version: "Release A"
+    },
+    "nl-sx": {
+      language: "Dutch",
+      location: "Sint Maarten",
+      id: 4096,
+      tag: "nl-SX",
+      version: "Release 10"
+    },
+    "nl-sr": {
+      language: "Dutch",
+      location: "Suriname",
+      id: 4096,
+      tag: "nl-SR",
+      version: "Release 10"
+    },
+    dz: dz,
+    "dz-bt": {
+      language: "Dzongkha",
+      location: "Bhutan",
+      id: 3153,
+      tag: "dz-BT",
+      version: "Release 10"
+    },
+    ebu: ebu,
+    "ebu-ke": {
+      language: "Embu",
+      location: "Kenya",
+      id: 4096,
+      tag: "ebu-KE",
+      version: "Release 10"
+    },
+    en: en,
+    "en-as": {
+      language: "English",
+      location: "American Samoa",
+      id: 4096,
+      tag: "en-AS",
+      version: "Release 10"
+    },
+    "en-ai": {
+      language: "English",
+      location: "Anguilla",
+      id: 4096,
+      tag: "en-AI",
+      version: "Release 10"
+    },
+    "en-ag": {
+      language: "English",
+      location: "Antigua and Barbuda",
+      id: 4096,
+      tag: "en-AG",
+      version: "Release 10"
+    },
+    "en-au": {
+      language: "English",
+      location: "Australia",
+      id: 3081,
+      tag: "en-AU",
+      version: "Release A"
+    },
+    "en-at": {
+      language: "English",
+      location: "Austria",
+      id: 4096,
+      tag: "en-AT",
+      version: "Release 10.1"
+    },
+    "en-bs": {
+      language: "English",
+      location: "Bahamas",
+      id: 4096,
+      tag: "en-BS",
+      version: "Release 10"
+    },
+    "en-bb": {
+      language: "English",
+      location: "Barbados",
+      id: 4096,
+      tag: "en-BB",
+      version: "Release 10"
+    },
+    "en-be": {
+      language: "English",
+      location: "Belgium",
+      id: 4096,
+      tag: "en-BE",
+      version: "Release 10"
+    },
+    "en-bz": {
+      language: "English",
+      location: "Belize",
+      id: 10249,
+      tag: "en-BZ",
+      version: "Release B"
+    },
+    "en-bm": {
+      language: "English",
+      location: "Bermuda",
+      id: 4096,
+      tag: "en-BM",
+      version: "Release 10"
+    },
+    "en-bw": {
+      language: "English",
+      location: "Botswana",
+      id: 4096,
+      tag: "en-BW",
+      version: "Release 10"
+    },
+    "en-io": {
+      language: "English",
+      location: "British Indian Ocean Territory",
+      id: 4096,
+      tag: "en-IO",
+      version: "Release 10"
+    },
+    "en-vg": {
+      language: "English",
+      location: "British Virgin Islands",
+      id: 4096,
+      tag: "en-VG",
+      version: "Release 10"
+    },
+    "en-bi": {
+      language: "English",
+      location: "Burundi",
+      id: 4096,
+      tag: "en-BI",
+      version: "Release 10.1"
+    },
+    "en-cm": {
+      language: "English",
+      location: "Cameroon",
+      id: 4096,
+      tag: "en-CM",
+      version: "Release 10"
+    },
+    "en-ca": {
+      language: "English",
+      location: "Canada",
+      id: 4105,
+      tag: "en-CA",
+      version: "Release A"
+    },
+    "en-029": {
+      language: "English",
+      location: "Caribbean",
+      id: 9225,
+      tag: "en-029",
+      version: "Release B"
+    },
+    "en-ky": {
+      language: "English",
+      location: "Cayman Islands",
+      id: 4096,
+      tag: "en-KY",
+      version: "Release 10"
+    },
+    "en-cx": {
+      language: "English",
+      location: "Christmas Island",
+      id: 4096,
+      tag: "en-CX",
+      version: "Release 10"
+    },
+    "en-cc": {
+      language: "English",
+      location: "Cocos [Keeling] Islands",
+      id: 4096,
+      tag: "en-CC",
+      version: "Release 10"
+    },
+    "en-ck": {
+      language: "English",
+      location: "Cook Islands",
+      id: 4096,
+      tag: "en-CK",
+      version: "Release 10"
+    },
+    "en-cy": {
+      language: "English",
+      location: "Cyprus",
+      id: 4096,
+      tag: "en-CY",
+      version: "Release 10.1"
+    },
+    "en-dk": {
+      language: "English",
+      location: "Denmark",
+      id: 4096,
+      tag: "en-DK",
+      version: "Release 10.1"
+    },
+    "en-dm": {
+      language: "English",
+      location: "Dominica",
+      id: 4096,
+      tag: "en-DM",
+      version: "Release 10"
+    },
+    "en-er": {
+      language: "English",
+      location: "Eritrea",
+      id: 4096,
+      tag: "en-ER",
+      version: "Release 10"
+    },
+    "en-150": {
+      language: "English",
+      location: "Europe",
+      id: 4096,
+      tag: "en-150",
+      version: "Release 10"
+    },
+    "en-fk": {
+      language: "English",
+      location: "Falkland Islands",
+      id: 4096,
+      tag: "en-FK",
+      version: "Release 10"
+    },
+    "en-fi": {
+      language: "English",
+      location: "Finland",
+      id: 4096,
+      tag: "en-FI",
+      version: "Release 10.1"
+    },
+    "en-fj": {
+      language: "English",
+      location: "Fiji",
+      id: 4096,
+      tag: "en-FJ",
+      version: "Release 10"
+    },
+    "en-gm": {
+      language: "English",
+      location: "Gambia",
+      id: 4096,
+      tag: "en-GM",
+      version: "Release 10"
+    },
+    "en-de": {
+      language: "English",
+      location: "Germany",
+      id: 4096,
+      tag: "en-DE",
+      version: "Release 10.1"
+    },
+    "en-gh": {
+      language: "English",
+      location: "Ghana",
+      id: 4096,
+      tag: "en-GH",
+      version: "Release 10"
+    },
+    "en-gi": {
+      language: "English",
+      location: "Gibraltar",
+      id: 4096,
+      tag: "en-GI",
+      version: "Release 10"
+    },
+    "en-gd": {
+      language: "English",
+      location: "Grenada",
+      id: 4096,
+      tag: "en-GD",
+      version: "Release 10"
+    },
+    "en-gu": {
+      language: "English",
+      location: "Guam",
+      id: 4096,
+      tag: "en-GU",
+      version: "Release 10"
+    },
+    "en-gg": {
+      language: "English",
+      location: "Guernsey",
+      id: 4096,
+      tag: "en-GG",
+      version: "Release 10"
+    },
+    "en-gy": {
+      language: "English",
+      location: "Guyana",
+      id: 4096,
+      tag: "en-GY",
+      version: "Release 10"
+    },
+    "en-hk": {
+      language: "English",
+      location: "Hong Kong",
+      id: 15369,
+      tag: "en-HK",
+      version: "Release 8.1"
+    },
+    "en-in": {
+      language: "English",
+      location: "India",
+      id: 16393,
+      tag: "en-IN",
+      version: "Release V"
+    },
+    "en-ie": {
+      language: "English",
+      location: "Ireland",
+      id: 6153,
+      tag: "en-IE",
+      version: "Release A"
+    },
+    "en-im": {
+      language: "English",
+      location: "Isle of Man",
+      id: 4096,
+      tag: "en-IM",
+      version: "Release 10"
+    },
+    "en-il": {
+      language: "English",
+      location: "Israel",
+      id: 4096,
+      tag: "en-IL",
+      version: "Release 10.1"
+    },
+    "en-jm": {
+      language: "English",
+      location: "Jamaica",
+      id: 8201,
+      tag: "en-JM",
+      version: "Release B"
+    },
+    "en-je": {
+      language: "English",
+      location: "Jersey",
+      id: 4096,
+      tag: "en-JE",
+      version: "Release 10"
+    },
+    "en-ke": {
+      language: "English",
+      location: "Kenya",
+      id: 4096,
+      tag: "en-KE",
+      version: "Release 10"
+    },
+    "en-ki": {
+      language: "English",
+      location: "Kiribati",
+      id: 4096,
+      tag: "en-KI",
+      version: "Release 10"
+    },
+    "en-ls": {
+      language: "English",
+      location: "Lesotho",
+      id: 4096,
+      tag: "en-LS",
+      version: "Release 10"
+    },
+    "en-lr": {
+      language: "English",
+      location: "Liberia",
+      id: 4096,
+      tag: "en-LR",
+      version: "Release 10"
+    },
+    "en-mo": {
+      language: "English",
+      location: "Macao SAR",
+      id: 4096,
+      tag: "en-MO",
+      version: "Release 10"
+    },
+    "en-mg": {
+      language: "English",
+      location: "Madagascar",
+      id: 4096,
+      tag: "en-MG",
+      version: "Release 10"
+    },
+    "en-mw": {
+      language: "English",
+      location: "Malawi",
+      id: 4096,
+      tag: "en-MW",
+      version: "Release 10"
+    },
+    "en-my": {
+      language: "English",
+      location: "Malaysia",
+      id: 17417,
+      tag: "en-MY",
+      version: "Release V"
+    },
+    "en-mt": {
+      language: "English",
+      location: "Malta",
+      id: 4096,
+      tag: "en-MT",
+      version: "Release 10"
+    },
+    "en-mh": {
+      language: "English",
+      location: "Marshall Islands",
+      id: 4096,
+      tag: "en-MH",
+      version: "Release 10"
+    },
+    "en-mu": {
+      language: "English",
+      location: "Mauritius",
+      id: 4096,
+      tag: "en-MU",
+      version: "Release 10"
+    },
+    "en-fm": {
+      language: "English",
+      location: "Micronesia",
+      id: 4096,
+      tag: "en-FM",
+      version: "Release 10"
+    },
+    "en-ms": {
+      language: "English",
+      location: "Montserrat",
+      id: 4096,
+      tag: "en-MS",
+      version: "Release 10"
+    },
+    "en-na": {
+      language: "English",
+      location: "Namibia",
+      id: 4096,
+      tag: "en-NA",
+      version: "Release 10"
+    },
+    "en-nr": {
+      language: "English",
+      location: "Nauru",
+      id: 4096,
+      tag: "en-NR",
+      version: "Release 10"
+    },
+    "en-nl": {
+      language: "English",
+      location: "Netherlands",
+      id: 4096,
+      tag: "en-NL",
+      version: "Release 10.1"
+    },
+    "en-nz": {
+      language: "English",
+      location: "New Zealand",
+      id: 5129,
+      tag: "en-NZ",
+      version: "Release A"
+    },
+    "en-ng": {
+      language: "English",
+      location: "Nigeria",
+      id: 4096,
+      tag: "en-NG",
+      version: "Release 10"
+    },
+    "en-nu": {
+      language: "English",
+      location: "Niue",
+      id: 4096,
+      tag: "en-NU",
+      version: "Release 10"
+    },
+    "en-nf": {
+      language: "English",
+      location: "Norfolk Island",
+      id: 4096,
+      tag: "en-NF",
+      version: "Release 10"
+    },
+    "en-mp": {
+      language: "English",
+      location: "Northern Mariana Islands",
+      id: 4096,
+      tag: "en-MP",
+      version: "Release 10"
+    },
+    "en-pk": {
+      language: "English",
+      location: "Pakistan",
+      id: 4096,
+      tag: "en-PK",
+      version: "Release 10"
+    },
+    "en-pw": {
+      language: "English",
+      location: "Palau",
+      id: 4096,
+      tag: "en-PW",
+      version: "Release 10"
+    },
+    "en-pg": {
+      language: "English",
+      location: "Papua New Guinea",
+      id: 4096,
+      tag: "en-PG",
+      version: "Release 10"
+    },
+    "en-pn": {
+      language: "English",
+      location: "Pitcairn Islands",
+      id: 4096,
+      tag: "en-PN",
+      version: "Release 10"
+    },
+    "en-pr": {
+      language: "English",
+      location: "Puerto Rico",
+      id: 4096,
+      tag: "en-PR",
+      version: "Release 10"
+    },
+    "en-ph": {
+      language: "English",
+      location: "Republic of the Philippines",
+      id: 13321,
+      tag: "en-PH",
+      version: "Release C"
+    },
+    "en-rw": {
+      language: "English",
+      location: "Rwanda",
+      id: 4096,
+      tag: "en-RW",
+      version: "Release 10"
+    },
+    "en-kn": {
+      language: "English",
+      location: "Saint Kitts and Nevis",
+      id: 4096,
+      tag: "en-KN",
+      version: "Release 10"
+    },
+    "en-lc": {
+      language: "English",
+      location: "Saint Lucia",
+      id: 4096,
+      tag: "en-LC",
+      version: "Release 10"
+    },
+    "en-vc": {
+      language: "English",
+      location: "Saint Vincent and the Grenadines",
+      id: 4096,
+      tag: "en-VC",
+      version: "Release 10"
+    },
+    "en-ws": {
+      language: "English",
+      location: "Samoa",
+      id: 4096,
+      tag: "en-WS",
+      version: "Release 10"
+    },
+    "en-sc": {
+      language: "English",
+      location: "Seychelles",
+      id: 4096,
+      tag: "en-SC",
+      version: "Release 10"
+    },
+    "en-sl": {
+      language: "English",
+      location: "Sierra Leone",
+      id: 4096,
+      tag: "en-SL",
+      version: "Release 10"
+    },
+    "en-sg": {
+      language: "English",
+      location: "Singapore",
+      id: 18441,
+      tag: "en-SG",
+      version: "Release V"
+    },
+    "en-sx": {
+      language: "English",
+      location: "Sint Maarten",
+      id: 4096,
+      tag: "en-SX",
+      version: "Release 10"
+    },
+    "en-si": {
+      language: "English",
+      location: "Slovenia",
+      id: 4096,
+      tag: "en-SI",
+      version: "Release 10.1"
+    },
+    "en-sb": {
+      language: "English",
+      location: "Solomon Islands",
+      id: 4096,
+      tag: "en-SB",
+      version: "Release 10"
+    },
+    "en-za": {
+      language: "English",
+      location: "South Africa",
+      id: 7177,
+      tag: "en-ZA",
+      version: "Release B"
+    },
+    "en-ss": {
+      language: "English",
+      location: "South Sudan",
+      id: 4096,
+      tag: "en-SS",
+      version: "Release 10"
+    },
+    "en-sh": {
+      language: "English",
+      location: "St Helena, Ascension,  Tristan da Cunha",
+      id: 4096,
+      tag: "en-SH",
+      version: "Release 10"
+    },
+    "en-sd": {
+      language: "English",
+      location: "Sudan",
+      id: 4096,
+      tag: "en-SD",
+      version: "Release 10"
+    },
+    "en-sz": {
+      language: "English",
+      location: "Swaziland",
+      id: 4096,
+      tag: "en-SZ",
+      version: "Release 10"
+    },
+    "en-se": {
+      language: "English",
+      location: "Sweden",
+      id: 4096,
+      tag: "en-SE",
+      version: "Release 10.1"
+    },
+    "en-ch": {
+      language: "English",
+      location: "Switzerland",
+      id: 4096,
+      tag: "en-CH",
+      version: "Release 10.1"
+    },
+    "en-tz": {
+      language: "English",
+      location: "Tanzania",
+      id: 4096,
+      tag: "en-TZ",
+      version: "Release 10"
+    },
+    "en-tk": {
+      language: "English",
+      location: "Tokelau",
+      id: 4096,
+      tag: "en-TK",
+      version: "Release 10"
+    },
+    "en-to": {
+      language: "English",
+      location: "Tonga",
+      id: 4096,
+      tag: "en-TO",
+      version: "Release 10"
+    },
+    "en-tt": {
+      language: "English",
+      location: "Trinidad and Tobago",
+      id: 11273,
+      tag: "en-TT",
+      version: "Release B"
+    },
+    "en-tc": {
+      language: "English",
+      location: "Turks and Caicos Islands",
+      id: 4096,
+      tag: "en-TC",
+      version: "Release 10"
+    },
+    "en-tv": {
+      language: "English",
+      location: "Tuvalu",
+      id: 4096,
+      tag: "en-TV",
+      version: "Release 10"
+    },
+    "en-ug": {
+      language: "English",
+      location: "Uganda",
+      id: 4096,
+      tag: "en-UG",
+      version: "Release 10"
+    },
+    "en-ae": {
+      language: "English",
+      location: "United Arab Emirates",
+      id: 19465,
+      tag: "en-AE",
+      version: "Release 10.5"
+    },
+    "en-gb": {
+      language: "English",
+      location: "United Kingdom",
+      id: 2057,
+      tag: "en-GB",
+      version: "Release A"
+    },
+    "en-us": {
+      language: "English",
+      location: "United States",
+      id: 1033,
+      tag: "en-US",
+      version: "Release A"
+    },
+    "en-um": {
+      language: "English",
+      location: "US Minor Outlying Islands",
+      id: 4096,
+      tag: "en-UM",
+      version: "Release 10"
+    },
+    "en-vi": {
+      language: "English",
+      location: "US Virgin Islands",
+      id: 4096,
+      tag: "en-VI",
+      version: "Release 10"
+    },
+    "en-vu": {
+      language: "English",
+      location: "Vanuatu",
+      id: 4096,
+      tag: "en-VU",
+      version: "Release 10"
+    },
+    "en-001": {
+      language: "English",
+      location: "World",
+      id: 4096,
+      tag: "en-001",
+      version: "Release 10"
+    },
+    "en-zm": {
+      language: "English",
+      location: "Zambia",
+      id: 4096,
+      tag: "en-ZM",
+      version: "Release 10"
+    },
+    "en-zw": {
+      language: "English",
+      location: "Zimbabwe",
+      id: 12297,
+      tag: "en-ZW",
+      version: "Release C"
+    },
+    eo: eo,
+    "eo-001": {
+      language: "Esperanto",
+      location: "World",
+      id: 4096,
+      tag: "eo-001",
+      version: "Release 10"
+    },
+    et: et,
+    "et-ee": {
+      language: "Estonian",
+      location: "Estonia",
+      id: 1061,
+      tag: "et-EE",
+      version: "Release B"
+    },
+    ee: ee,
+    "ee-gh": {
+      language: "Ewe",
+      location: "Ghana",
+      id: 4096,
+      tag: "ee-GH",
+      version: "Release 10"
+    },
+    "ee-tg": {
+      language: "Ewe",
+      location: "Togo",
+      id: 4096,
+      tag: "ee-TG",
+      version: "Release 10"
+    },
+    ewo: ewo,
+    "ewo-cm": {
+      language: "Ewondo",
+      location: "Cameroon",
+      id: 4096,
+      tag: "ewo-CM",
+      version: "Release 10"
+    },
+    fo: fo,
+    "fo-dk": {
+      language: "Faroese",
+      location: "Denmark",
+      id: 4096,
+      tag: "fo-DK",
+      version: "Release 10.1"
+    },
+    "fo-fo": {
+      language: "Faroese",
+      location: "Faroe Islands",
+      id: 1080,
+      tag: "fo-FO",
+      version: "Release B"
+    },
+    fil: fil,
+    "fil-ph": {
+      language: "Filipino",
+      location: "Philippines",
+      id: 1124,
+      tag: "fil-PH",
+      version: "Release E2"
+    },
+    fi: fi,
+    "fi-fi": {
+      language: "Finnish",
+      location: "Finland",
+      id: 1035,
+      tag: "fi-FI",
+      version: "Release A"
+    },
+    fr: fr,
+    "fr-dz": {
+      language: "French",
+      location: "Algeria",
+      id: 4096,
+      tag: "fr-DZ",
+      version: "Release 10"
+    },
+    "fr-be": {
+      language: "French",
+      location: "Belgium",
+      id: 2060,
+      tag: "fr-BE",
+      version: "Release A"
+    },
+    "fr-bj": {
+      language: "French",
+      location: "Benin",
+      id: 4096,
+      tag: "fr-BJ",
+      version: "Release 10"
+    },
+    "fr-bf": {
+      language: "French",
+      location: "Burkina Faso",
+      id: 4096,
+      tag: "fr-BF",
+      version: "Release 10"
+    },
+    "fr-bi": {
+      language: "French",
+      location: "Burundi",
+      id: 4096,
+      tag: "fr-BI",
+      version: "Release 10"
+    },
+    "fr-cm": {
+      language: "French",
+      location: "Cameroon",
+      id: 11276,
+      tag: "fr-CM",
+      version: "Release 8.1"
+    },
+    "fr-ca": {
+      language: "French",
+      location: "Canada",
+      id: 3084,
+      tag: "fr-CA",
+      version: "Release A"
+    },
+    "fr-cf": {
+      language: "French",
+      location: "Central African Republic",
+      id: 4096,
+      tag: "fr-CF",
+      version: "Release10"
+    },
+    "fr-td": {
+      language: "French",
+      location: "Chad",
+      id: 4096,
+      tag: "fr-TD",
+      version: "Release 10"
+    },
+    "fr-km": {
+      language: "French",
+      location: "Comoros",
+      id: 4096,
+      tag: "fr-KM",
+      version: "Release 10"
+    },
+    "fr-cg": {
+      language: "French",
+      location: "Congo",
+      id: 4096,
+      tag: "fr-CG",
+      version: "Release 10"
+    },
+    "fr-cd": {
+      language: "French",
+      location: "Congo, DRC",
+      id: 9228,
+      tag: "fr-CD",
+      version: "Release 8.1"
+    },
+    "fr-ci": {
+      language: "French",
+      location: "Côte d'Ivoire",
+      id: 12300,
+      tag: "fr-CI",
+      version: "Release 8.1"
+    },
+    "fr-dj": {
+      language: "French",
+      location: "Djibouti",
+      id: 4096,
+      tag: "fr-DJ",
+      version: "Release 10"
+    },
+    "fr-gq": {
+      language: "French",
+      location: "Equatorial Guinea",
+      id: 4096,
+      tag: "fr-GQ",
+      version: "Release 10"
+    },
+    "fr-fr": {
+      language: "French",
+      location: "France",
+      id: 1036,
+      tag: "fr-FR",
+      version: "Release A"
+    },
+    "fr-gf": {
+      language: "French",
+      location: "French Guiana",
+      id: 4096,
+      tag: "fr-GF",
+      version: "Release 10"
+    },
+    "fr-pf": {
+      language: "French",
+      location: "French Polynesia",
+      id: 4096,
+      tag: "fr-PF",
+      version: "Release 10"
+    },
+    "fr-ga": {
+      language: "French",
+      location: "Gabon",
+      id: 4096,
+      tag: "fr-GA",
+      version: "Release 10"
+    },
+    "fr-gp": {
+      language: "French",
+      location: "Guadeloupe",
+      id: 4096,
+      tag: "fr-GP",
+      version: "Release 10"
+    },
+    "fr-gn": {
+      language: "French",
+      location: "Guinea",
+      id: 4096,
+      tag: "fr-GN",
+      version: "Release 10"
+    },
+    "fr-ht": {
+      language: "French",
+      location: "Haiti",
+      id: 15372,
+      tag: "fr-HT",
+      version: "Release 8.1"
+    },
+    "fr-lu": {
+      language: "French",
+      location: "Luxembourg",
+      id: 5132,
+      tag: "fr-LU",
+      version: "Release A"
+    },
+    "fr-mg": {
+      language: "French",
+      location: "Madagascar",
+      id: 4096,
+      tag: "fr-MG",
+      version: "Release 10"
+    },
+    "fr-ml": {
+      language: "French",
+      location: "Mali",
+      id: 13324,
+      tag: "fr-ML",
+      version: "Release 8.1"
+    },
+    "fr-mq": {
+      language: "French",
+      location: "Martinique",
+      id: 4096,
+      tag: "fr-MQ",
+      version: "Release 10"
+    },
+    "fr-mr": {
+      language: "French",
+      location: "Mauritania",
+      id: 4096,
+      tag: "fr-MR",
+      version: "Release 10"
+    },
+    "fr-mu": {
+      language: "French",
+      location: "Mauritius",
+      id: 4096,
+      tag: "fr-MU",
+      version: "Release 10"
+    },
+    "fr-yt": {
+      language: "French",
+      location: "Mayotte",
+      id: 4096,
+      tag: "fr-YT",
+      version: "Release 10"
+    },
+    "fr-ma": {
+      language: "French",
+      location: "Morocco",
+      id: 14348,
+      tag: "fr-MA",
+      version: "Release 8.1"
+    },
+    "fr-nc": {
+      language: "French",
+      location: "New Caledonia",
+      id: 4096,
+      tag: "fr-NC",
+      version: "Release 10"
+    },
+    "fr-ne": {
+      language: "French",
+      location: "Niger",
+      id: 4096,
+      tag: "fr-NE",
+      version: "Release 10"
+    },
+    "fr-mc": {
+      language: "French",
+      location: "Principality of Monaco",
+      id: 6156,
+      tag: "fr-MC",
+      version: "Release A"
+    },
+    "fr-re": {
+      language: "French",
+      location: "Reunion",
+      id: 8204,
+      tag: "fr-RE",
+      version: "Release 8.1"
+    },
+    "fr-rw": {
+      language: "French",
+      location: "Rwanda",
+      id: 4096,
+      tag: "fr-RW",
+      version: "Release 10"
+    },
+    "fr-bl": {
+      language: "French",
+      location: "Saint Barthélemy",
+      id: 4096,
+      tag: "fr-BL",
+      version: "Release 10"
+    },
+    "fr-mf": {
+      language: "French",
+      location: "Saint Martin",
+      id: 4096,
+      tag: "fr-MF",
+      version: "Release 10"
+    },
+    "fr-pm": {
+      language: "French",
+      location: "Saint Pierre and Miquelon",
+      id: 4096,
+      tag: "fr-PM",
+      version: "Release 10"
+    },
+    "fr-sn": {
+      language: "French",
+      location: "Senegal",
+      id: 10252,
+      tag: "fr-SN",
+      version: "Release 8.1"
+    },
+    "fr-sc": {
+      language: "French",
+      location: "Seychelles",
+      id: 4096,
+      tag: "fr-SC",
+      version: "Release 10"
+    },
+    "fr-ch": {
+      language: "French",
+      location: "Switzerland",
+      id: 4108,
+      tag: "fr-CH",
+      version: "Release A"
+    },
+    "fr-sy": {
+      language: "French",
+      location: "Syria",
+      id: 4096,
+      tag: "fr-SY",
+      version: "Release 10"
+    },
+    "fr-tg": {
+      language: "French",
+      location: "Togo",
+      id: 4096,
+      tag: "fr-TG",
+      version: "Release 10"
+    },
+    "fr-tn": {
+      language: "French",
+      location: "Tunisia",
+      id: 4096,
+      tag: "fr-TN",
+      version: "Release 10"
+    },
+    "fr-vu": {
+      language: "French",
+      location: "Vanuatu",
+      id: 4096,
+      tag: "fr-VU",
+      version: "Release 10"
+    },
+    "fr-wf": {
+      language: "French",
+      location: "Wallis and Futuna",
+      id: 4096,
+      tag: "fr-WF",
+      version: "Release 10"
+    },
+    fy: fy,
+    "fy-nl": {
+      language: "Frisian",
+      location: "Netherlands",
+      id: 1122,
+      tag: "fy-NL",
+      version: "Release E2"
+    },
+    fur: fur,
+    "fur-it": {
+      language: "Friulian",
+      location: "Italy",
+      id: 4096,
+      tag: "fur-IT",
+      version: "Release 10"
+    },
+    ff: ff,
+    "ff-latn": {
+      language: "Fulah (Latin)",
+      location: null,
+      id: 31847,
+      tag: "ff-Latn",
+      version: "Release 8"
+    },
+    "ff-latn-bf": {
+      language: "Fulah (Latin)",
+      location: "Burkina Faso",
+      id: 4096,
+      tag: "ff-Latn-BF",
+      version: "Release 10.4"
+    },
+    "ff-cm": {
+      language: "Fulah",
+      location: "Cameroon",
+      id: 4096,
+      tag: "ff-CM",
+      version: "Release 10"
+    },
+    "ff-latn-cm": {
+      language: "Fulah (Latin)",
+      location: "Cameroon",
+      id: 4096,
+      tag: "ff-Latn-CM",
+      version: "Release 10.4"
+    },
+    "ff-latn-gm": {
+      language: "Fulah (Latin)",
+      location: "Gambia",
+      id: 4096,
+      tag: "ff-Latn-GM",
+      version: "Release 10.4"
+    },
+    "ff-latn-gh": {
+      language: "Fulah (Latin)",
+      location: "Ghana",
+      id: 4096,
+      tag: "ff-Latn-GH",
+      version: "Release 10.4"
+    },
+    "ff-gn": {
+      language: "Fulah",
+      location: "Guinea",
+      id: 4096,
+      tag: "ff-GN",
+      version: "Release 10"
+    },
+    "ff-latn-gn": {
+      language: "Fulah (Latin)",
+      location: "Guinea",
+      id: 4096,
+      tag: "ff-Latn-GN",
+      version: "Release 10.4"
+    },
+    "ff-latn-gw": {
+      language: "Fulah (Latin)",
+      location: "Guinea-Bissau",
+      id: 4096,
+      tag: "ff-Latn-GW",
+      version: "Release 10.4"
+    },
+    "ff-latn-lr": {
+      language: "Fulah (Latin)",
+      location: "Liberia",
+      id: 4096,
+      tag: "ff-Latn-LR",
+      version: "Release 10.4"
+    },
+    "ff-mr": {
+      language: "Fulah",
+      location: "Mauritania",
+      id: 4096,
+      tag: "ff-MR",
+      version: "Release 10"
+    },
+    "ff-latn-mr": {
+      language: "Fulah (Latin)",
+      location: "Mauritania",
+      id: 4096,
+      tag: "ff-Latn-MR",
+      version: "Release 10.4"
+    },
+    "ff-latn-ne": {
+      language: "Fulah (Latin)",
+      location: "Niger",
+      id: 4096,
+      tag: "ff-Latn-NE",
+      version: "Release 10.4"
+    },
+    "ff-ng": {
+      language: "Fulah",
+      location: "Nigeria",
+      id: 4096,
+      tag: "ff-NG",
+      version: "Release 10"
+    },
+    "ff-latn-ng": {
+      language: "Fulah (Latin)",
+      location: "Nigeria",
+      id: 4096,
+      tag: "ff-Latn-NG",
+      version: "Release 10.4"
+    },
+    "ff-latn-sn": {
+      language: "Fulah",
+      location: "Senegal",
+      id: 2151,
+      tag: "ff-Latn-SN",
+      version: "Release 8"
+    },
+    "ff-latn-sl": {
+      language: "Fulah (Latin)",
+      location: "Sierra Leone",
+      id: 4096,
+      tag: "ff-Latn-SL",
+      version: "Release 10.4"
+    },
+    gl: gl,
+    "gl-es": {
+      language: "Galician",
+      location: "Spain",
+      id: 1110,
+      tag: "gl-ES",
+      version: "Release D"
+    },
+    lg: lg,
+    "lg-ug": {
+      language: "Ganda",
+      location: "Uganda",
+      id: 4096,
+      tag: "lg-UG",
+      version: "Release 10"
+    },
+    ka: ka,
+    "ka-ge": {
+      language: "Georgian",
+      location: "Georgia",
+      id: 1079,
+      tag: "ka-GE",
+      version: "Release C"
+    },
+    de: de,
+    "de-at": {
+      language: "German",
+      location: "Austria",
+      id: 3079,
+      tag: "de-AT",
+      version: "Release A"
+    },
+    "de-be": {
+      language: "German",
+      location: "Belgium",
+      id: 4096,
+      tag: "de-BE",
+      version: "Release 10"
+    },
+    "de-de": {
+      language: "German",
+      location: "Germany",
+      id: 1031,
+      tag: "de-DE",
+      version: "Release A"
+    },
+    "de-it": {
+      language: "German",
+      location: "Italy",
+      id: 4096,
+      tag: "de-IT",
+      version: "Release 10.2"
+    },
+    "de-li": {
+      language: "German",
+      location: "Liechtenstein",
+      id: 5127,
+      tag: "de-LI",
+      version: "Release B"
+    },
+    "de-lu": {
+      language: "German",
+      location: "Luxembourg",
+      id: 4103,
+      tag: "de-LU",
+      version: "Release B"
+    },
+    "de-ch": {
+      language: "German",
+      location: "Switzerland",
+      id: 2055,
+      tag: "de-CH",
+      version: "Release A"
+    },
+    el: el,
+    "el-cy": {
+      language: "Greek",
+      location: "Cyprus",
+      id: 4096,
+      tag: "el-CY",
+      version: "Release 10"
+    },
+    "el-gr": {
+      language: "Greek",
+      location: "Greece",
+      id: 1032,
+      tag: "el-GR",
+      version: "Release A"
+    },
+    kl: kl,
+    "kl-gl": {
+      language: "Greenlandic",
+      location: "Greenland",
+      id: 1135,
+      tag: "kl-GL",
+      version: "Release V"
+    },
+    gn: gn,
+    "gn-py": {
+      language: "Guarani",
+      location: "Paraguay",
+      id: 1140,
+      tag: "gn-PY",
+      version: "Release 8.1"
+    },
+    gu: gu,
+    "gu-in": {
+      language: "Gujarati",
+      location: "India",
+      id: 1095,
+      tag: "gu-IN",
+      version: "Release D"
+    },
+    guz: guz,
+    "guz-ke": {
+      language: "Gusii",
+      location: "Kenya",
+      id: 4096,
+      tag: "guz-KE",
+      version: "Release 10"
+    },
+    ha: ha,
+    "ha-latn": {
+      language: "Hausa (Latin)",
+      location: null,
+      id: 31848,
+      tag: "ha-Latn",
+      version: "Windows 7"
+    },
+    "ha-latn-gh": {
+      language: "Hausa (Latin)",
+      location: "Ghana",
+      id: 4096,
+      tag: "ha-Latn-GH",
+      version: "Release 10"
+    },
+    "ha-latn-ne": {
+      language: "Hausa (Latin)",
+      location: "Niger",
+      id: 4096,
+      tag: "ha-Latn-NE",
+      version: "Release 10"
+    },
+    "ha-latn-ng": {
+      language: "Hausa (Latin)",
+      location: "Nigeria",
+      id: 1128,
+      tag: "ha-Latn-NG",
+      version: "Release V"
+    },
+    haw: haw,
+    "haw-us": {
+      language: "Hawaiian",
+      location: "United States",
+      id: 1141,
+      tag: "haw-US",
+      version: "Release 8"
+    },
+    he: he,
+    "he-il": {
+      language: "Hebrew",
+      location: "Israel",
+      id: 1037,
+      tag: "he-IL",
+      version: "Release B"
+    },
+    hi: hi,
+    "hi-in": {
+      language: "Hindi",
+      location: "India",
+      id: 1081,
+      tag: "hi-IN",
+      version: "Release C"
+    },
+    hu: hu,
+    "hu-hu": {
+      language: "Hungarian",
+      location: "Hungary",
+      id: 1038,
+      tag: "hu-HU",
+      version: "Release A"
+    },
+    is: is,
+    "is-is": {
+      language: "Icelandic",
+      location: "Iceland",
+      id: 1039,
+      tag: "is-IS",
+      version: "Release A"
+    },
+    ig: ig,
+    "ig-ng": {
+      language: "Igbo",
+      location: "Nigeria",
+      id: 1136,
+      tag: "ig-NG",
+      version: "Release V"
+    },
+    id: id$1,
+    "id-id": {
+      language: "Indonesian",
+      location: "Indonesia",
+      id: 1057,
+      tag: "id-ID",
+      version: "Release B"
+    },
+    ia: ia,
+    "ia-fr": {
+      language: "Interlingua",
+      location: "France",
+      id: 4096,
+      tag: "ia-FR",
+      version: "Release 10"
+    },
+    "ia-001": {
+      language: "Interlingua",
+      location: "World",
+      id: 4096,
+      tag: "ia-001",
+      version: "Release 10"
+    },
+    iu: iu,
+    "iu-latn": {
+      language: "Inuktitut (Latin)",
+      location: null,
+      id: 31837,
+      tag: "iu-Latn",
+      version: "Windows 7"
+    },
+    "iu-latn-ca": {
+      language: "Inuktitut (Latin)",
+      location: "Canada",
+      id: 2141,
+      tag: "iu-Latn-CA",
+      version: "Release E2"
+    },
+    "iu-cans": {
+      language: "Inuktitut (Syllabics)",
+      location: null,
+      id: 30813,
+      tag: "iu-Cans",
+      version: "Windows 7"
+    },
+    "iu-cans-ca": {
+      language: "Inuktitut (Syllabics)",
+      location: "Canada",
+      id: 1117,
+      tag: "iu-Cans-CA",
+      version: "Release V"
+    },
+    ga: ga,
+    "ga-ie": {
+      language: "Irish",
+      location: "Ireland",
+      id: 2108,
+      tag: "ga-IE",
+      version: "Release E2"
+    },
+    it: it,
+    "it-it": {
+      language: "Italian",
+      location: "Italy",
+      id: 1040,
+      tag: "it-IT",
+      version: "Release A"
+    },
+    "it-sm": {
+      language: "Italian",
+      location: "San Marino",
+      id: 4096,
+      tag: "it-SM",
+      version: "Release 10"
+    },
+    "it-ch": {
+      language: "Italian",
+      location: "Switzerland",
+      id: 2064,
+      tag: "it-CH",
+      version: "Release A"
+    },
+    "it-va": {
+      language: "Italian",
+      location: "Vatican City",
+      id: 4096,
+      tag: "it-VA",
+      version: "Release 10.3"
+    },
+    ja: ja,
+    "ja-jp": {
+      language: "Japanese",
+      location: "Japan",
+      id: 1041,
+      tag: "ja-JP",
+      version: "Release A"
+    },
+    jv: jv,
+    "jv-latn": {
+      language: "Javanese",
+      location: "Latin",
+      id: 4096,
+      tag: "jv-Latn",
+      version: "Release 8.1"
+    },
+    "jv-latn-id": {
+      language: "Javanese",
+      location: "Latin, Indonesia",
+      id: 4096,
+      tag: "jv-Latn-ID",
+      version: "Release 8.1"
+    },
+    dyo: dyo,
+    "dyo-sn": {
+      language: "Jola-Fonyi",
+      location: "Senegal",
+      id: 4096,
+      tag: "dyo-SN",
+      version: "Release 10"
+    },
+    kea: kea,
+    "kea-cv": {
+      language: "Kabuverdianu",
+      location: "Cabo Verde",
+      id: 4096,
+      tag: "kea-CV",
+      version: "Release 10"
+    },
+    kab: kab,
+    "kab-dz": {
+      language: "Kabyle",
+      location: "Algeria",
+      id: 4096,
+      tag: "kab-DZ",
+      version: "Release 10"
+    },
+    kkj: kkj,
+    "kkj-cm": {
+      language: "Kako",
+      location: "Cameroon",
+      id: 4096,
+      tag: "kkj-CM",
+      version: "Release 10"
+    },
+    kln: kln,
+    "kln-ke": {
+      language: "Kalenjin",
+      location: "Kenya",
+      id: 4096,
+      tag: "kln-KE",
+      version: "Release 10"
+    },
+    kam: kam,
+    "kam-ke": {
+      language: "Kamba",
+      location: "Kenya",
+      id: 4096,
+      tag: "kam-KE",
+      version: "Release 10"
+    },
+    kn: kn,
+    "kn-in": {
+      language: "Kannada",
+      location: "India",
+      id: 1099,
+      tag: "kn-IN",
+      version: "Release D"
+    },
+    ks: ks,
+    "ks-arab": {
+      language: "Kashmiri",
+      location: "Perso-Arabic",
+      id: 1120,
+      tag: "ks-Arab",
+      version: "Release 10"
+    },
+    "ks-arab-in": {
+      language: "Kashmiri",
+      location: "Perso-Arabic",
+      id: 4096,
+      tag: "ks-Arab-IN",
+      version: "Release 10"
+    },
+    kk: kk,
+    "kk-kz": {
+      language: "Kazakh",
+      location: "Kazakhstan",
+      id: 1087,
+      tag: "kk-KZ",
+      version: "Release C"
+    },
+    km: km,
+    "km-kh": {
+      language: "Khmer",
+      location: "Cambodia",
+      id: 1107,
+      tag: "km-KH",
+      version: "Release V"
+    },
+    quc: quc,
+    "quc-latn-gt": {
+      language: "K'iche",
+      location: "Guatemala",
+      id: 1158,
+      tag: "quc-Latn-GT",
+      version: "Release 10"
+    },
+    ki: ki,
+    "ki-ke": {
+      language: "Kikuyu",
+      location: "Kenya",
+      id: 4096,
+      tag: "ki-KE",
+      version: "Release 10"
+    },
+    rw: rw,
+    "rw-rw": {
+      language: "Kinyarwanda",
+      location: "Rwanda",
+      id: 1159,
+      tag: "rw-RW",
+      version: "Release V"
+    },
+    sw: sw,
+    "sw-ke": {
+      language: "Kiswahili",
+      location: "Kenya",
+      id: 1089,
+      tag: "sw-KE",
+      version: "Release C"
+    },
+    "sw-tz": {
+      language: "Kiswahili",
+      location: "Tanzania",
+      id: 4096,
+      tag: "sw-TZ",
+      version: "Release 10"
+    },
+    "sw-ug": {
+      language: "Kiswahili",
+      location: "Uganda",
+      id: 4096,
+      tag: "sw-UG",
+      version: "Release 10"
+    },
+    kok: kok,
+    "kok-in": {
+      language: "Konkani",
+      location: "India",
+      id: 1111,
+      tag: "kok-IN",
+      version: "Release C"
+    },
+    ko: ko,
+    "ko-kr": {
+      language: "Korean",
+      location: "Korea",
+      id: 1042,
+      tag: "ko-KR",
+      version: "Release A"
+    },
+    "ko-kp": {
+      language: "Korean",
+      location: "North Korea",
+      id: 4096,
+      tag: "ko-KP",
+      version: "Release 10.1"
+    },
+    khq: khq,
+    "khq-ml": {
+      language: "Koyra Chiini",
+      location: "Mali",
+      id: 4096,
+      tag: "khq-ML",
+      version: "Release 10"
+    },
+    ses: ses,
+    "ses-ml": {
+      language: "Koyraboro Senni",
+      location: "Mali",
+      id: 4096,
+      tag: "ses-ML",
+      version: "Release 10"
+    },
+    nmg: nmg,
+    "nmg-cm": {
+      language: "Kwasio",
+      location: "Cameroon",
+      id: 4096,
+      tag: "nmg-CM",
+      version: "Release 10"
+    },
+    ky: ky,
+    "ky-kg": {
+      language: "Kyrgyz",
+      location: "Kyrgyzstan",
+      id: 1088,
+      tag: "ky-KG",
+      version: "Release D"
+    },
+    "ku-arab-ir": {
+      language: "Kurdish",
+      location: "Perso-Arabic, Iran",
+      id: 4096,
+      tag: "ku-Arab-IR",
+      version: "Release 10.1"
+    },
+    lkt: lkt,
+    "lkt-us": {
+      language: "Lakota",
+      location: "United States",
+      id: 4096,
+      tag: "lkt-US",
+      version: "Release 10"
+    },
+    lag: lag,
+    "lag-tz": {
+      language: "Langi",
+      location: "Tanzania",
+      id: 4096,
+      tag: "lag-TZ",
+      version: "Release 10"
+    },
+    lo: lo,
+    "lo-la": {
+      language: "Lao",
+      location: "Lao P.D.R.",
+      id: 1108,
+      tag: "lo-LA",
+      version: "Release V"
+    },
+    lv: lv,
+    "lv-lv": {
+      language: "Latvian",
+      location: "Latvia",
+      id: 1062,
+      tag: "lv-LV",
+      version: "Release B"
+    },
+    ln: ln,
+    "ln-ao": {
+      language: "Lingala",
+      location: "Angola",
+      id: 4096,
+      tag: "ln-AO",
+      version: "Release 10"
+    },
+    "ln-cf": {
+      language: "Lingala",
+      location: "Central African Republic",
+      id: 4096,
+      tag: "ln-CF",
+      version: "Release 10"
+    },
+    "ln-cg": {
+      language: "Lingala",
+      location: "Congo",
+      id: 4096,
+      tag: "ln-CG",
+      version: "Release 10"
+    },
+    "ln-cd": {
+      language: "Lingala",
+      location: "Congo DRC",
+      id: 4096,
+      tag: "ln-CD",
+      version: "Release 10"
+    },
+    lt: lt,
+    "lt-lt": {
+      language: "Lithuanian",
+      location: "Lithuania",
+      id: 1063,
+      tag: "lt-LT",
+      version: "Release B"
+    },
+    nds: nds,
+    "nds-de": {
+      language: "Low German",
+      location: "Germany",
+      id: 4096,
+      tag: "nds-DE",
+      version: "Release 10.2"
+    },
+    "nds-nl": {
+      language: "Low German",
+      location: "Netherlands",
+      id: 4096,
+      tag: "nds-NL",
+      version: "Release 10.2"
+    },
+    dsb: dsb,
+    "dsb-de": {
+      language: "Lower Sorbian",
+      location: "Germany",
+      id: 2094,
+      tag: "dsb-DE",
+      version: "Release V"
+    },
+    lu: lu,
+    "lu-cd": {
+      language: "Luba-Katanga",
+      location: "Congo DRC",
+      id: 4096,
+      tag: "lu-CD",
+      version: "Release 10"
+    },
+    luo: luo,
+    "luo-ke": {
+      language: "Luo",
+      location: "Kenya",
+      id: 4096,
+      tag: "luo-KE",
+      version: "Release 10"
+    },
+    lb: lb,
+    "lb-lu": {
+      language: "Luxembourgish",
+      location: "Luxembourg",
+      id: 1134,
+      tag: "lb-LU",
+      version: "Release E2"
+    },
+    luy: luy,
+    "luy-ke": {
+      language: "Luyia",
+      location: "Kenya",
+      id: 4096,
+      tag: "luy-KE",
+      version: "Release 10"
+    },
+    mk: mk,
+    "mk-mk": {
+      language: "Macedonian",
+      location: "North Macedonia",
+      id: 1071,
+      tag: "mk-MK",
+      version: "Release C"
+    },
+    jmc: jmc,
+    "jmc-tz": {
+      language: "Machame",
+      location: "Tanzania",
+      id: 4096,
+      tag: "jmc-TZ",
+      version: "Release 10"
+    },
+    mgh: mgh,
+    "mgh-mz": {
+      language: "Makhuwa-Meetto",
+      location: "Mozambique",
+      id: 4096,
+      tag: "mgh-MZ",
+      version: "Release 10"
+    },
+    kde: kde,
+    "kde-tz": {
+      language: "Makonde",
+      location: "Tanzania",
+      id: 4096,
+      tag: "kde-TZ",
+      version: "Release 10"
+    },
+    mg: mg,
+    "mg-mg": {
+      language: "Malagasy",
+      location: "Madagascar",
+      id: 4096,
+      tag: "mg-MG",
+      version: "Release 8.1"
+    },
+    ms: ms,
+    "ms-bn": {
+      language: "Malay",
+      location: "Brunei Darussalam",
+      id: 2110,
+      tag: "ms-BN",
+      version: "Release C"
+    },
+    "ms-my": {
+      language: "Malay",
+      location: "Malaysia",
+      id: 1086,
+      tag: "ms-MY",
+      version: "Release C"
+    },
+    ml: ml,
+    "ml-in": {
+      language: "Malayalam",
+      location: "India",
+      id: 1100,
+      tag: "ml-IN",
+      version: "Release E1"
+    },
+    mt: mt,
+    "mt-mt": {
+      language: "Maltese",
+      location: "Malta",
+      id: 1082,
+      tag: "mt-MT",
+      version: "Release E1"
+    },
+    gv: gv,
+    "gv-im": {
+      language: "Manx",
+      location: "Isle of Man",
+      id: 4096,
+      tag: "gv-IM",
+      version: "Release 10"
+    },
+    mi: mi,
+    "mi-nz": {
+      language: "Maori",
+      location: "New Zealand",
+      id: 1153,
+      tag: "mi-NZ",
+      version: "Release E1"
+    },
+    arn: arn,
+    "arn-cl": {
+      language: "Mapudungun",
+      location: "Chile",
+      id: 1146,
+      tag: "arn-CL",
+      version: "Release E2"
+    },
+    mr: mr,
+    "mr-in": {
+      language: "Marathi",
+      location: "India",
+      id: 1102,
+      tag: "mr-IN",
+      version: "Release C"
+    },
+    mas: mas,
+    "mas-ke": {
+      language: "Masai",
+      location: "Kenya",
+      id: 4096,
+      tag: "mas-KE",
+      version: "Release 10"
+    },
+    "mas-tz": {
+      language: "Masai",
+      location: "Tanzania",
+      id: 4096,
+      tag: "mas-TZ",
+      version: "Release 10"
+    },
+    "mzn-ir": {
+      language: "Mazanderani",
+      location: "Iran",
+      id: 4096,
+      tag: "mzn-IR",
+      version: "Release 10.1"
+    },
+    mer: mer,
+    "mer-ke": {
+      language: "Meru",
+      location: "Kenya",
+      id: 4096,
+      tag: "mer-KE",
+      version: "Release 10"
+    },
+    mgo: mgo,
+    "mgo-cm": {
+      language: "Meta'",
+      location: "Cameroon",
+      id: 4096,
+      tag: "mgo-CM",
+      version: "Release 10"
+    },
+    moh: moh,
+    "moh-ca": {
+      language: "Mohawk",
+      location: "Canada",
+      id: 1148,
+      tag: "moh-CA",
+      version: "Release E2"
+    },
+    mn: mn,
+    "mn-cyrl": {
+      language: "Mongolian (Cyrillic)",
+      location: null,
+      id: 30800,
+      tag: "mn-Cyrl",
+      version: "Windows 7"
+    },
+    "mn-mn": {
+      language: "Mongolian (Cyrillic)",
+      location: "Mongolia",
+      id: 1104,
+      tag: "mn-MN",
+      version: "Release D"
+    },
+    "mn-mong": {
+      language: "Mongolian (Traditional Mongolian)",
+      location: null,
+      id: 31824,
+      tag: "mn-Mong",
+      version: "Windows 7"
+    },
+    "mn-mong-cn": {
+      language: "Mongolian (Traditional Mongolian)",
+      location: "People's Republic of China",
+      id: 2128,
+      tag: "mn-Mong-CN",
+      version: "Windows V"
+    },
+    "mn-mong-mn": {
+      language: "Mongolian (Traditional Mongolian)",
+      location: "Mongolia",
+      id: 3152,
+      tag: "mn-Mong-MN",
+      version: "Windows 7"
+    },
+    mfe: mfe,
+    "mfe-mu": {
+      language: "Morisyen",
+      location: "Mauritius",
+      id: 4096,
+      tag: "mfe-MU",
+      version: "Release 10"
+    },
+    mua: mua,
+    "mua-cm": {
+      language: "Mundang",
+      location: "Cameroon",
+      id: 4096,
+      tag: "mua-CM",
+      version: "Release 10"
+    },
+    nqo: nqo,
+    "nqo-gn": {
+      language: "N'ko",
+      location: "Guinea",
+      id: 4096,
+      tag: "nqo-GN",
+      version: "Release 8.1"
+    },
+    naq: naq,
+    "naq-na": {
+      language: "Nama",
+      location: "Namibia",
+      id: 4096,
+      tag: "naq-NA",
+      version: "Release 10"
+    },
+    ne: ne,
+    "ne-in": {
+      language: "Nepali",
+      location: "India",
+      id: 2145,
+      tag: "ne-IN",
+      version: "Release 8.1"
+    },
+    "ne-np": {
+      language: "Nepali",
+      location: "Nepal",
+      id: 1121,
+      tag: "ne-NP",
+      version: "Release E2"
+    },
+    nnh: nnh,
+    "nnh-cm": {
+      language: "Ngiemboon",
+      location: "Cameroon",
+      id: 4096,
+      tag: "nnh-CM",
+      version: "Release 10"
+    },
+    jgo: jgo,
+    "jgo-cm": {
+      language: "Ngomba",
+      location: "Cameroon",
+      id: 4096,
+      tag: "jgo-CM",
+      version: "Release 10"
+    },
+    "lrc-iq": {
+      language: "Northern Luri",
+      location: "Iraq",
+      id: 4096,
+      tag: "lrc-IQ",
+      version: "Release 10.1"
+    },
+    "lrc-ir": {
+      language: "Northern Luri",
+      location: "Iran",
+      id: 4096,
+      tag: "lrc-IR",
+      version: "Release 10.1"
+    },
+    nd: nd,
+    "nd-zw": {
+      language: "North Ndebele",
+      location: "Zimbabwe",
+      id: 4096,
+      tag: "nd-ZW",
+      version: "Release 10"
+    },
+    no: no,
+    nb: nb,
+    "nb-no": {
+      language: "Norwegian (Bokmal)",
+      location: "Norway",
+      id: 1044,
+      tag: "nb-NO",
+      version: "Release A"
+    },
+    nn: nn,
+    "nn-no": {
+      language: "Norwegian (Nynorsk)",
+      location: "Norway",
+      id: 2068,
+      tag: "nn-NO",
+      version: "Release A"
+    },
+    "nb-sj": {
+      language: "Norwegian Bokmål",
+      location: "Svalbard and Jan Mayen",
+      id: 4096,
+      tag: "nb-SJ",
+      version: "Release 10"
+    },
+    nus: nus,
+    "nus-sd": {
+      language: "Nuer",
+      location: "Sudan",
+      id: 4096,
+      tag: "nus-SD",
+      version: "Release 10"
+    },
+    "nus-ss": {
+      language: "Nuer",
+      location: "South Sudan",
+      id: 4096,
+      tag: "nus-SS",
+      version: "Release 10.1"
+    },
+    nyn: nyn,
+    "nyn-ug": {
+      language: "Nyankole",
+      location: "Uganda",
+      id: 4096,
+      tag: "nyn-UG",
+      version: "Release 10"
+    },
+    oc: oc,
+    "oc-fr": {
+      language: "Occitan",
+      location: "France",
+      id: 1154,
+      tag: "oc-FR",
+      version: "Release V"
+    },
+    or: or,
+    "or-in": {
+      language: "Odia",
+      location: "India",
+      id: 1096,
+      tag: "or-IN",
+      version: "Release V"
+    },
+    om: om,
+    "om-et": {
+      language: "Oromo",
+      location: "Ethiopia",
+      id: 1138,
+      tag: "om-ET",
+      version: "Release 8.1"
+    },
+    "om-ke": {
+      language: "Oromo",
+      location: "Kenya",
+      id: 4096,
+      tag: "om-KE",
+      version: "Release 10"
+    },
+    os: os,
+    "os-ge": {
+      language: "Ossetian",
+      location: "Cyrillic, Georgia",
+      id: 4096,
+      tag: "os-GE",
+      version: "Release 10"
+    },
+    "os-ru": {
+      language: "Ossetian",
+      location: "Cyrillic, Russia",
+      id: 4096,
+      tag: "os-RU",
+      version: "Release 10"
+    },
+    ps: ps,
+    "ps-af": {
+      language: "Pashto",
+      location: "Afghanistan",
+      id: 1123,
+      tag: "ps-AF",
+      version: "Release E2"
+    },
+    "ps-pk": {
+      language: "Pashto",
+      location: "Pakistan",
+      id: 4096,
+      tag: "ps-PK",
+      version: "Release 10.5"
+    },
+    fa: fa,
+    "fa-af": {
+      language: "Persian",
+      location: "Afghanistan",
+      id: 4096,
+      tag: "fa-AF",
+      version: "Release 10"
+    },
+    "fa-ir": {
+      language: "Persian",
+      location: "Iran",
+      id: 1065,
+      tag: "fa-IR",
+      version: "Release B"
+    },
+    pl: pl,
+    "pl-pl": {
+      language: "Polish",
+      location: "Poland",
+      id: 1045,
+      tag: "pl-PL",
+      version: "Release A"
+    },
+    pt: pt,
+    "pt-ao": {
+      language: "Portuguese",
+      location: "Angola",
+      id: 4096,
+      tag: "pt-AO",
+      version: "Release 8.1"
+    },
+    "pt-br": {
+      language: "Portuguese",
+      location: "Brazil",
+      id: 1046,
+      tag: "pt-BR",
+      version: "Release A"
+    },
+    "pt-cv": {
+      language: "Portuguese",
+      location: "Cabo Verde",
+      id: 4096,
+      tag: "pt-CV",
+      version: "Release 10"
+    },
+    "pt-gq": {
+      language: "Portuguese",
+      location: "Equatorial Guinea",
+      id: 4096,
+      tag: "pt-GQ",
+      version: "Release 10.2"
+    },
+    "pt-gw": {
+      language: "Portuguese",
+      location: "Guinea-Bissau",
+      id: 4096,
+      tag: "pt-GW",
+      version: "Release 10"
+    },
+    "pt-lu": {
+      language: "Portuguese",
+      location: "Luxembourg",
+      id: 4096,
+      tag: "pt-LU",
+      version: "Release 10.2"
+    },
+    "pt-mo": {
+      language: "Portuguese",
+      location: "Macao SAR",
+      id: 4096,
+      tag: "pt-MO",
+      version: "Release 10"
+    },
+    "pt-mz": {
+      language: "Portuguese",
+      location: "Mozambique",
+      id: 4096,
+      tag: "pt-MZ",
+      version: "Release 10"
+    },
+    "pt-pt": {
+      language: "Portuguese",
+      location: "Portugal",
+      id: 2070,
+      tag: "pt-PT",
+      version: "Release A"
+    },
+    "pt-st": {
+      language: "Portuguese",
+      location: "São Tomé and Príncipe",
+      id: 4096,
+      tag: "pt-ST",
+      version: "Release 10"
+    },
+    "pt-ch": {
+      language: "Portuguese",
+      location: "Switzerland",
+      id: 4096,
+      tag: "pt-CH",
+      version: "Release 10.2"
+    },
+    "pt-tl": {
+      language: "Portuguese",
+      location: "Timor-Leste",
+      id: 4096,
+      tag: "pt-TL",
+      version: "Release 10"
+    },
+    "prg-001": {
+      language: "Prussian",
+      location: null,
+      id: 4096,
+      tag: "prg-001",
+      version: "Release 10.1"
+    },
+    "qps-ploca": {
+      language: "Pseudo Language",
+      location: "Pseudo locale for east Asian/complex script localization testing",
+      id: 1534,
+      tag: "qps-ploca",
+      version: "Release 7"
+    },
+    "qps-ploc": {
+      language: "Pseudo Language",
+      location: "Pseudo locale used for localization testing",
+      id: 1281,
+      tag: "qps-ploc",
+      version: "Release 7"
+    },
+    "qps-plocm": {
+      language: "Pseudo Language",
+      location: "Pseudo locale used for localization testing of mirrored locales",
+      id: 2559,
+      tag: "qps-plocm",
+      version: "Release 7"
+    },
+    pa: pa,
+    "pa-arab": {
+      language: "Punjabi",
+      location: null,
+      id: 31814,
+      tag: "pa-Arab",
+      version: "Release 8"
+    },
+    "pa-in": {
+      language: "Punjabi",
+      location: "India",
+      id: 1094,
+      tag: "pa-IN",
+      version: "Release D"
+    },
+    "pa-arab-pk": {
+      language: "Punjabi",
+      location: "Islamic Republic of Pakistan",
+      id: 2118,
+      tag: "pa-Arab-PK",
+      version: "Release 8"
+    },
+    quz: quz,
+    "quz-bo": {
+      language: "Quechua",
+      location: "Bolivia",
+      id: 1131,
+      tag: "quz-BO",
+      version: "Release E1"
+    },
+    "quz-ec": {
+      language: "Quechua",
+      location: "Ecuador",
+      id: 2155,
+      tag: "quz-EC",
+      version: "Release E1"
+    },
+    "quz-pe": {
+      language: "Quechua",
+      location: "Peru",
+      id: 3179,
+      tag: "quz-PE",
+      version: "Release E1"
+    },
+    ksh: ksh,
+    "ksh-de": {
+      language: "Ripuarian",
+      location: "Germany",
+      id: 4096,
+      tag: "ksh-DE",
+      version: "Release 10"
+    },
+    ro: ro,
+    "ro-md": {
+      language: "Romanian",
+      location: "Moldova",
+      id: 2072,
+      tag: "ro-MD",
+      version: "Release 8.1"
+    },
+    "ro-ro": {
+      language: "Romanian",
+      location: "Romania",
+      id: 1048,
+      tag: "ro-RO",
+      version: "Release A"
+    },
+    rm: rm,
+    "rm-ch": {
+      language: "Romansh",
+      location: "Switzerland",
+      id: 1047,
+      tag: "rm-CH",
+      version: "Release E2"
+    },
+    rof: rof,
+    "rof-tz": {
+      language: "Rombo",
+      location: "Tanzania",
+      id: 4096,
+      tag: "rof-TZ",
+      version: "Release 10"
+    },
+    rn: rn,
+    "rn-bi": {
+      language: "Rundi",
+      location: "Burundi",
+      id: 4096,
+      tag: "rn-BI",
+      version: "Release 10"
+    },
+    ru: ru,
+    "ru-by": {
+      language: "Russian",
+      location: "Belarus",
+      id: 4096,
+      tag: "ru-BY",
+      version: "Release 10"
+    },
+    "ru-kz": {
+      language: "Russian",
+      location: "Kazakhstan",
+      id: 4096,
+      tag: "ru-KZ",
+      version: "Release 10"
+    },
+    "ru-kg": {
+      language: "Russian",
+      location: "Kyrgyzstan",
+      id: 4096,
+      tag: "ru-KG",
+      version: "Release 10"
+    },
+    "ru-md": {
+      language: "Russian",
+      location: "Moldova",
+      id: 2073,
+      tag: "ru-MD",
+      version: "Release 10"
+    },
+    "ru-ru": {
+      language: "Russian",
+      location: "Russia",
+      id: 1049,
+      tag: "ru-RU",
+      version: "Release A"
+    },
+    "ru-ua": {
+      language: "Russian",
+      location: "Ukraine",
+      id: 4096,
+      tag: "ru-UA",
+      version: "Release 10"
+    },
+    rwk: rwk,
+    "rwk-tz": {
+      language: "Rwa",
+      location: "Tanzania",
+      id: 4096,
+      tag: "rwk-TZ",
+      version: "Release 10"
+    },
+    ssy: ssy,
+    "ssy-er": {
+      language: "Saho",
+      location: "Eritrea",
+      id: 4096,
+      tag: "ssy-ER",
+      version: "Release 10"
+    },
+    sah: sah,
+    "sah-ru": {
+      language: "Sakha",
+      location: "Russia",
+      id: 1157,
+      tag: "sah-RU",
+      version: "Release V"
+    },
+    saq: saq,
+    "saq-ke": {
+      language: "Samburu",
+      location: "Kenya",
+      id: 4096,
+      tag: "saq-KE",
+      version: "Release 10"
+    },
+    smn: smn,
+    "smn-fi": {
+      language: "Sami (Inari)",
+      location: "Finland",
+      id: 9275,
+      tag: "smn-FI",
+      version: "Release E1"
+    },
+    smj: smj,
+    "smj-no": {
+      language: "Sami (Lule)",
+      location: "Norway",
+      id: 4155,
+      tag: "smj-NO",
+      version: "Release E1"
+    },
+    "smj-se": {
+      language: "Sami (Lule)",
+      location: "Sweden",
+      id: 5179,
+      tag: "smj-SE",
+      version: "Release E1"
+    },
+    se: se,
+    "se-fi": {
+      language: "Sami (Northern)",
+      location: "Finland",
+      id: 3131,
+      tag: "se-FI",
+      version: "Release E1"
+    },
+    "se-no": {
+      language: "Sami (Northern)",
+      location: "Norway",
+      id: 1083,
+      tag: "se-NO",
+      version: "Release E1"
+    },
+    "se-se": {
+      language: "Sami (Northern)",
+      location: "Sweden",
+      id: 2107,
+      tag: "se-SE",
+      version: "Release E1"
+    },
+    sms: sms,
+    "sms-fi": {
+      language: "Sami (Skolt)",
+      location: "Finland",
+      id: 8251,
+      tag: "sms-FI",
+      version: "Release E1"
+    },
+    sma: sma,
+    "sma-no": {
+      language: "Sami (Southern)",
+      location: "Norway",
+      id: 6203,
+      tag: "sma-NO",
+      version: "Release E1"
+    },
+    "sma-se": {
+      language: "Sami (Southern)",
+      location: "Sweden",
+      id: 7227,
+      tag: "sma-SE",
+      version: "Release E1"
+    },
+    sg: sg,
+    "sg-cf": {
+      language: "Sango",
+      location: "Central African Republic",
+      id: 4096,
+      tag: "sg-CF",
+      version: "Release 10"
+    },
+    sbp: sbp,
+    "sbp-tz": {
+      language: "Sangu",
+      location: "Tanzania",
+      id: 4096,
+      tag: "sbp-TZ",
+      version: "Release 10"
+    },
+    sa: sa,
+    "sa-in": {
+      language: "Sanskrit",
+      location: "India",
+      id: 1103,
+      tag: "sa-IN",
+      version: "Release C"
+    },
+    gd: gd,
+    "gd-gb": {
+      language: "Scottish Gaelic",
+      location: "United Kingdom",
+      id: 1169,
+      tag: "gd-GB",
+      version: "Release 7"
+    },
+    seh: seh,
+    "seh-mz": {
+      language: "Sena",
+      location: "Mozambique",
+      id: 4096,
+      tag: "seh-MZ",
+      version: "Release 10"
+    },
+    "sr-cyrl": {
+      language: "Serbian (Cyrillic)",
+      location: null,
+      id: 27674,
+      tag: "sr-Cyrl",
+      version: "Windows 7"
+    },
+    "sr-cyrl-ba": {
+      language: "Serbian (Cyrillic)",
+      location: "Bosnia and Herzegovina",
+      id: 7194,
+      tag: "sr-Cyrl-BA",
+      version: "Release E1"
+    },
+    "sr-cyrl-me": {
+      language: "Serbian (Cyrillic)",
+      location: "Montenegro",
+      id: 12314,
+      tag: "sr-Cyrl-ME",
+      version: "Release 7"
+    },
+    "sr-cyrl-rs": {
+      language: "Serbian (Cyrillic)",
+      location: "Serbia",
+      id: 10266,
+      tag: "sr-Cyrl-RS",
+      version: "Release 7"
+    },
+    "sr-cyrl-cs": {
+      language: "Serbian (Cyrillic)",
+      location: "Serbia and Montenegro (Former)",
+      id: 3098,
+      tag: "sr-Cyrl-CS",
+      version: "Release B"
+    },
+    "sr-latn": {
+      language: "Serbian (Latin)",
+      location: null,
+      id: 28698,
+      tag: "sr-Latn",
+      version: "Windows 7"
+    },
+    sr: sr,
+    "sr-latn-ba": {
+      language: "Serbian (Latin)",
+      location: "Bosnia and Herzegovina",
+      id: 6170,
+      tag: "sr-Latn-BA",
+      version: "Release E1"
+    },
+    "sr-latn-me": {
+      language: "Serbian (Latin)",
+      location: "Montenegro",
+      id: 11290,
+      tag: "sr-Latn-ME",
+      version: "Release 7"
+    },
+    "sr-latn-rs": {
+      language: "Serbian (Latin)",
+      location: "Serbia",
+      id: 9242,
+      tag: "sr-Latn-RS",
+      version: "Release 7"
+    },
+    "sr-latn-cs": {
+      language: "Serbian (Latin)",
+      location: "Serbia and Montenegro (Former)",
+      id: 2074,
+      tag: "sr-Latn-CS",
+      version: "Release B"
+    },
+    nso: nso,
+    "nso-za": {
+      language: "Sesotho sa Leboa",
+      location: "South Africa",
+      id: 1132,
+      tag: "nso-ZA",
+      version: "Release E1"
+    },
+    tn: tn,
+    "tn-bw": {
+      language: "Setswana",
+      location: "Botswana",
+      id: 2098,
+      tag: "tn-BW",
+      version: "Release 8"
+    },
+    "tn-za": {
+      language: "Setswana",
+      location: "South Africa",
+      id: 1074,
+      tag: "tn-ZA",
+      version: "Release E1"
+    },
+    ksb: ksb,
+    "ksb-tz": {
+      language: "Shambala",
+      location: "Tanzania",
+      id: 4096,
+      tag: "ksb-TZ",
+      version: "Release 10"
+    },
+    sn: sn,
+    "sn-latn": {
+      language: "Shona",
+      location: "Latin",
+      id: 4096,
+      tag: "sn-Latn",
+      version: "Release 8.1"
+    },
+    "sn-latn-zw": {
+      language: "Shona",
+      location: "Zimbabwe",
+      id: 4096,
+      tag: "sn-Latn-ZW",
+      version: "Release 8.1"
+    },
+    sd: sd,
+    "sd-arab": {
+      language: "Sindhi",
+      location: null,
+      id: 31833,
+      tag: "sd-Arab",
+      version: "Release 8"
+    },
+    "sd-arab-pk": {
+      language: "Sindhi",
+      location: "Islamic Republic of Pakistan",
+      id: 2137,
+      tag: "sd-Arab-PK",
+      version: "Release 8"
+    },
+    si: si,
+    "si-lk": {
+      language: "Sinhala",
+      location: "Sri Lanka",
+      id: 1115,
+      tag: "si-LK",
+      version: "Release V"
+    },
+    sk: sk,
+    "sk-sk": {
+      language: "Slovak",
+      location: "Slovakia",
+      id: 1051,
+      tag: "sk-SK",
+      version: "Release A"
+    },
+    sl: sl,
+    "sl-si": {
+      language: "Slovenian",
+      location: "Slovenia",
+      id: 1060,
+      tag: "sl-SI",
+      version: "Release A"
+    },
+    xog: xog,
+    "xog-ug": {
+      language: "Soga",
+      location: "Uganda",
+      id: 4096,
+      tag: "xog-UG",
+      version: "Release 10"
+    },
+    so: so,
+    "so-dj": {
+      language: "Somali",
+      location: "Djibouti",
+      id: 4096,
+      tag: "so-DJ",
+      version: "Release 10"
+    },
+    "so-et": {
+      language: "Somali",
+      location: "Ethiopia",
+      id: 4096,
+      tag: "so-ET",
+      version: "Release 10"
+    },
+    "so-ke": {
+      language: "Somali",
+      location: "Kenya",
+      id: 4096,
+      tag: "so-KE",
+      version: "Release 10"
+    },
+    "so-so": {
+      language: "Somali",
+      location: "Somalia",
+      id: 1143,
+      tag: "so-SO",
+      version: "Release 8.1"
+    },
+    st: st,
+    "st-za": {
+      language: "Sotho",
+      location: "South Africa",
+      id: 1072,
+      tag: "st-ZA",
+      version: "Release 8.1"
+    },
+    nr: nr,
+    "nr-za": {
+      language: "South Ndebele",
+      location: "South Africa",
+      id: 4096,
+      tag: "nr-ZA",
+      version: "Release 10"
+    },
+    "st-ls": {
+      language: "Southern Sotho",
+      location: "Lesotho",
+      id: 4096,
+      tag: "st-LS",
+      version: "Release 10"
+    },
+    es: es,
+    "es-ar": {
+      language: "Spanish",
+      location: "Argentina",
+      id: 11274,
+      tag: "es-AR",
+      version: "Release B"
+    },
+    "es-bz": {
+      language: "Spanish",
+      location: "Belize",
+      id: 4096,
+      tag: "es-BZ",
+      version: "Release 10.3"
+    },
+    "es-ve": {
+      language: "Spanish",
+      location: "Bolivarian Republic of Venezuela",
+      id: 8202,
+      tag: "es-VE",
+      version: "Release B"
+    },
+    "es-bo": {
+      language: "Spanish",
+      location: "Bolivia",
+      id: 16394,
+      tag: "es-BO",
+      version: "Release B"
+    },
+    "es-br": {
+      language: "Spanish",
+      location: "Brazil",
+      id: 4096,
+      tag: "es-BR",
+      version: "Release 10.2"
+    },
+    "es-cl": {
+      language: "Spanish",
+      location: "Chile",
+      id: 13322,
+      tag: "es-CL",
+      version: "Release B"
+    },
+    "es-co": {
+      language: "Spanish",
+      location: "Colombia",
+      id: 9226,
+      tag: "es-CO",
+      version: "Release B"
+    },
+    "es-cr": {
+      language: "Spanish",
+      location: "Costa Rica",
+      id: 5130,
+      tag: "es-CR",
+      version: "Release B"
+    },
+    "es-cu": {
+      language: "Spanish",
+      location: "Cuba",
+      id: 23562,
+      tag: "es-CU",
+      version: "Release 10"
+    },
+    "es-do": {
+      language: "Spanish",
+      location: "Dominican Republic",
+      id: 7178,
+      tag: "es-DO",
+      version: "Release B"
+    },
+    "es-ec": {
+      language: "Spanish",
+      location: "Ecuador",
+      id: 12298,
+      tag: "es-EC",
+      version: "Release B"
+    },
+    "es-sv": {
+      language: "Spanish",
+      location: "El Salvador",
+      id: 17418,
+      tag: "es-SV",
+      version: "Release B"
+    },
+    "es-gq": {
+      language: "Spanish",
+      location: "Equatorial Guinea",
+      id: 4096,
+      tag: "es-GQ",
+      version: "Release 10"
+    },
+    "es-gt": {
+      language: "Spanish",
+      location: "Guatemala",
+      id: 4106,
+      tag: "es-GT",
+      version: "Release B"
+    },
+    "es-hn": {
+      language: "Spanish",
+      location: "Honduras",
+      id: 18442,
+      tag: "es-HN",
+      version: "Release B"
+    },
+    "es-419": {
+      language: "Spanish",
+      location: "Latin America",
+      id: 22538,
+      tag: "es-419",
+      version: "Release 8.1"
+    },
+    "es-mx": {
+      language: "Spanish",
+      location: "Mexico",
+      id: 2058,
+      tag: "es-MX",
+      version: "Release A"
+    },
+    "es-ni": {
+      language: "Spanish",
+      location: "Nicaragua",
+      id: 19466,
+      tag: "es-NI",
+      version: "Release B"
+    },
+    "es-pa": {
+      language: "Spanish",
+      location: "Panama",
+      id: 6154,
+      tag: "es-PA",
+      version: "Release B"
+    },
+    "es-py": {
+      language: "Spanish",
+      location: "Paraguay",
+      id: 15370,
+      tag: "es-PY",
+      version: "Release B"
+    },
+    "es-pe": {
+      language: "Spanish",
+      location: "Peru",
+      id: 10250,
+      tag: "es-PE",
+      version: "Release B"
+    },
+    "es-ph": {
+      language: "Spanish",
+      location: "Philippines",
+      id: 4096,
+      tag: "es-PH",
+      version: "Release 10"
+    },
+    "es-pr": {
+      language: "Spanish",
+      location: "Puerto Rico",
+      id: 20490,
+      tag: "es-PR",
+      version: "Release B"
+    },
+    "es-es_tradnl": {
+      language: "Spanish",
+      location: "Spain",
+      id: 1034,
+      tag: "es-ES_tradnl",
+      version: "Release A"
+    },
+    "es-es": {
+      language: "Spanish",
+      location: "Spain",
+      id: 3082,
+      tag: "es-ES",
+      version: "Release A"
+    },
+    "es-us": {
+      language: "Spanish",
+      location: "UnitedStates",
+      id: 21514,
+      tag: "es-US",
+      version: "Release V"
+    },
+    "es-uy": {
+      language: "Spanish",
+      location: "Uruguay",
+      id: 14346,
+      tag: "es-UY",
+      version: "Release B"
+    },
+    zgh: zgh,
+    "zgh-tfng-ma": {
+      language: "Standard Moroccan Tamazight",
+      location: "Morocco",
+      id: 4096,
+      tag: "zgh-Tfng-MA",
+      version: "Release 8.1"
+    },
+    "zgh-tfng": {
+      language: "Standard Moroccan Tamazight",
+      location: "Tifinagh",
+      id: 4096,
+      tag: "zgh-Tfng",
+      version: "Release 8.1"
+    },
+    ss: ss,
+    "ss-za": {
+      language: "Swati",
+      location: "South Africa",
+      id: 4096,
+      tag: "ss-ZA",
+      version: "Release 10"
+    },
+    "ss-sz": {
+      language: "Swati",
+      location: "Swaziland",
+      id: 4096,
+      tag: "ss-SZ",
+      version: "Release 10"
+    },
+    sv: sv,
+    "sv-ax": {
+      language: "Swedish",
+      location: "Åland Islands",
+      id: 4096,
+      tag: "sv-AX",
+      version: "Release 10"
+    },
+    "sv-fi": {
+      language: "Swedish",
+      location: "Finland",
+      id: 2077,
+      tag: "sv-FI",
+      version: "Release B"
+    },
+    "sv-se": {
+      language: "Swedish",
+      location: "Sweden",
+      id: 1053,
+      tag: "sv-SE",
+      version: "Release A"
+    },
+    syr: syr,
+    "syr-sy": {
+      language: "Syriac",
+      location: "Syria",
+      id: 1114,
+      tag: "syr-SY",
+      version: "Release D"
+    },
+    shi: shi,
+    "shi-tfng": {
+      language: "Tachelhit",
+      location: "Tifinagh",
+      id: 4096,
+      tag: "shi-Tfng",
+      version: "Release 10"
+    },
+    "shi-tfng-ma": {
+      language: "Tachelhit",
+      location: "Tifinagh, Morocco",
+      id: 4096,
+      tag: "shi-Tfng-MA",
+      version: "Release 10"
+    },
+    "shi-latn": {
+      language: "Tachelhit (Latin)",
+      location: null,
+      id: 4096,
+      tag: "shi-Latn",
+      version: "Release 10"
+    },
+    "shi-latn-ma": {
+      language: "Tachelhit (Latin)",
+      location: "Morocco",
+      id: 4096,
+      tag: "shi-Latn-MA",
+      version: "Release 10"
+    },
+    dav: dav,
+    "dav-ke": {
+      language: "Taita",
+      location: "Kenya",
+      id: 4096,
+      tag: "dav-KE",
+      version: "Release 10"
+    },
+    tg: tg,
+    "tg-cyrl": {
+      language: "Tajik (Cyrillic)",
+      location: null,
+      id: 31784,
+      tag: "tg-Cyrl",
+      version: "Windows 7"
+    },
+    "tg-cyrl-tj": {
+      language: "Tajik (Cyrillic)",
+      location: "Tajikistan",
+      id: 1064,
+      tag: "tg-Cyrl-TJ",
+      version: "Release V"
+    },
+    tzm: tzm,
+    "tzm-latn": {
+      language: "Tamazight (Latin)",
+      location: null,
+      id: 31839,
+      tag: "tzm-Latn",
+      version: "Windows 7"
+    },
+    "tzm-latn-dz": {
+      language: "Tamazight (Latin)",
+      location: "Algeria",
+      id: 2143,
+      tag: "tzm-Latn-DZ",
+      version: "Release V"
+    },
+    ta: ta,
+    "ta-in": {
+      language: "Tamil",
+      location: "India",
+      id: 1097,
+      tag: "ta-IN",
+      version: "Release C"
+    },
+    "ta-my": {
+      language: "Tamil",
+      location: "Malaysia",
+      id: 4096,
+      tag: "ta-MY",
+      version: "Release 10"
+    },
+    "ta-sg": {
+      language: "Tamil",
+      location: "Singapore",
+      id: 4096,
+      tag: "ta-SG",
+      version: "Release 10"
+    },
+    "ta-lk": {
+      language: "Tamil",
+      location: "Sri Lanka",
+      id: 2121,
+      tag: "ta-LK",
+      version: "Release 8"
+    },
+    twq: twq,
+    "twq-ne": {
+      language: "Tasawaq",
+      location: "Niger",
+      id: 4096,
+      tag: "twq-NE",
+      version: "Release 10"
+    },
+    tt: tt,
+    "tt-ru": {
+      language: "Tatar",
+      location: "Russia",
+      id: 1092,
+      tag: "tt-RU",
+      version: "Release D"
+    },
+    te: te,
+    "te-in": {
+      language: "Telugu",
+      location: "India",
+      id: 1098,
+      tag: "te-IN",
+      version: "Release D"
+    },
+    teo: teo,
+    "teo-ke": {
+      language: "Teso",
+      location: "Kenya",
+      id: 4096,
+      tag: "teo-KE",
+      version: "Release 10"
+    },
+    "teo-ug": {
+      language: "Teso",
+      location: "Uganda",
+      id: 4096,
+      tag: "teo-UG",
+      version: "Release 10"
+    },
+    th: th,
+    "th-th": {
+      language: "Thai",
+      location: "Thailand",
+      id: 1054,
+      tag: "th-TH",
+      version: "Release B"
+    },
+    bo: bo,
+    "bo-in": {
+      language: "Tibetan",
+      location: "India",
+      id: 4096,
+      tag: "bo-IN",
+      version: "Release 10"
+    },
+    "bo-cn": {
+      language: "Tibetan",
+      location: "People's Republic of China",
+      id: 1105,
+      tag: "bo-CN",
+      version: "Release V"
+    },
+    tig: tig,
+    "tig-er": {
+      language: "Tigre",
+      location: "Eritrea",
+      id: 4096,
+      tag: "tig-ER",
+      version: "Release 10"
+    },
+    ti: ti,
+    "ti-er": {
+      language: "Tigrinya",
+      location: "Eritrea",
+      id: 2163,
+      tag: "ti-ER",
+      version: "Release 8"
+    },
+    "ti-et": {
+      language: "Tigrinya",
+      location: "Ethiopia",
+      id: 1139,
+      tag: "ti-ET",
+      version: "Release 8"
+    },
+    to: to,
+    "to-to": {
+      language: "Tongan",
+      location: "Tonga",
+      id: 4096,
+      tag: "to-TO",
+      version: "Release 10"
+    },
+    ts: ts,
+    "ts-za": {
+      language: "Tsonga",
+      location: "South Africa",
+      id: 1073,
+      tag: "ts-ZA",
+      version: "Release 8.1"
+    },
+    tr: tr,
+    "tr-cy": {
+      language: "Turkish",
+      location: "Cyprus",
+      id: 4096,
+      tag: "tr-CY",
+      version: "Release 10"
+    },
+    "tr-tr": {
+      language: "Turkish",
+      location: "Turkey",
+      id: 1055,
+      tag: "tr-TR",
+      version: "Release A"
+    },
+    tk: tk,
+    "tk-tm": {
+      language: "Turkmen",
+      location: "Turkmenistan",
+      id: 1090,
+      tag: "tk-TM",
+      version: "Release V"
+    },
+    uk: uk,
+    "uk-ua": {
+      language: "Ukrainian",
+      location: "Ukraine",
+      id: 1058,
+      tag: "uk-UA",
+      version: "Release B"
+    },
+    hsb: hsb,
+    "hsb-de": {
+      language: "Upper Sorbian",
+      location: "Germany",
+      id: 1070,
+      tag: "hsb-DE",
+      version: "Release V"
+    },
+    ur: ur,
+    "ur-in": {
+      language: "Urdu",
+      location: "India",
+      id: 2080,
+      tag: "ur-IN",
+      version: "Release 8.1"
+    },
+    "ur-pk": {
+      language: "Urdu",
+      location: "Islamic Republic of Pakistan",
+      id: 1056,
+      tag: "ur-PK",
+      version: "Release C"
+    },
+    ug: ug,
+    "ug-cn": {
+      language: "Uyghur",
+      location: "People's Republic of China",
+      id: 1152,
+      tag: "ug-CN",
+      version: "Release V"
+    },
+    "uz-arab": {
+      language: "Uzbek",
+      location: "Perso-Arabic",
+      id: 4096,
+      tag: "uz-Arab",
+      version: "Release 10"
+    },
+    "uz-arab-af": {
+      language: "Uzbek",
+      location: "Perso-Arabic, Afghanistan",
+      id: 4096,
+      tag: "uz-Arab-AF",
+      version: "Release 10"
+    },
+    "uz-cyrl": {
+      language: "Uzbek (Cyrillic)",
+      location: null,
+      id: 30787,
+      tag: "uz-Cyrl",
+      version: "Windows 7"
+    },
+    "uz-cyrl-uz": {
+      language: "Uzbek (Cyrillic)",
+      location: "Uzbekistan",
+      id: 2115,
+      tag: "uz-Cyrl-UZ",
+      version: "Release C"
+    },
+    uz: uz,
+    "uz-latn": {
+      language: "Uzbek (Latin)",
+      location: null,
+      id: 31811,
+      tag: "uz-Latn",
+      version: "Windows7"
+    },
+    "uz-latn-uz": {
+      language: "Uzbek (Latin)",
+      location: "Uzbekistan",
+      id: 1091,
+      tag: "uz-Latn-UZ",
+      version: "Release C"
+    },
+    vai: vai,
+    "vai-vaii": {
+      language: "Vai",
+      location: null,
+      id: 4096,
+      tag: "vai-Vaii",
+      version: "Release 10"
+    },
+    "vai-vaii-lr": {
+      language: "Vai",
+      location: "Liberia",
+      id: 4096,
+      tag: "vai-Vaii-LR",
+      version: "Release 10"
+    },
+    "vai-latn-lr": {
+      language: "Vai (Latin)",
+      location: "Liberia",
+      id: 4096,
+      tag: "vai-Latn-LR",
+      version: "Release 10"
+    },
+    "vai-latn": {
+      language: "Vai (Latin)",
+      location: null,
+      id: 4096,
+      tag: "vai-Latn",
+      version: "Release 10"
+    },
+    "ca-es-": {
+      language: "Valencian",
+      location: "Spain",
+      id: 2051,
+      tag: "ca-ES-",
+      version: "Release 8"
+    },
+    ve: ve,
+    "ve-za": {
+      language: "Venda",
+      location: "South Africa",
+      id: 1075,
+      tag: "ve-ZA",
+      version: "Release 10"
+    },
+    vi: vi,
+    "vi-vn": {
+      language: "Vietnamese",
+      location: "Vietnam",
+      id: 1066,
+      tag: "vi-VN",
+      version: "Release B"
+    },
+    vo: vo,
+    "vo-001": {
+      language: "Volapük",
+      location: "World",
+      id: 4096,
+      tag: "vo-001",
+      version: "Release 10"
+    },
+    vun: vun,
+    "vun-tz": {
+      language: "Vunjo",
+      location: "Tanzania",
+      id: 4096,
+      tag: "vun-TZ",
+      version: "Release 10"
+    },
+    wae: wae,
+    "wae-ch": {
+      language: "Walser",
+      location: "Switzerland",
+      id: 4096,
+      tag: "wae-CH",
+      version: "Release 10"
+    },
+    cy: cy,
+    "cy-gb": {
+      language: "Welsh",
+      location: "United Kingdom",
+      id: 1106,
+      tag: "cy-GB",
+      version: "ReleaseE1"
+    },
+    wal: wal,
+    "wal-et": {
+      language: "Wolaytta",
+      location: "Ethiopia",
+      id: 4096,
+      tag: "wal-ET",
+      version: "Release 10"
+    },
+    wo: wo,
+    "wo-sn": {
+      language: "Wolof",
+      location: "Senegal",
+      id: 1160,
+      tag: "wo-SN",
+      version: "Release V"
+    },
+    xh: xh,
+    "xh-za": {
+      language: "Xhosa",
+      location: "South Africa",
+      id: 1076,
+      tag: "xh-ZA",
+      version: "Release E1"
+    },
+    yav: yav,
+    "yav-cm": {
+      language: "Yangben",
+      location: "Cameroon",
+      id: 4096,
+      tag: "yav-CM",
+      version: "Release 10"
+    },
+    ii: ii,
+    "ii-cn": {
+      language: "Yi",
+      location: "People's Republic of China",
+      id: 1144,
+      tag: "ii-CN",
+      version: "Release V"
+    },
+    yo: yo,
+    "yo-bj": {
+      language: "Yoruba",
+      location: "Benin",
+      id: 4096,
+      tag: "yo-BJ",
+      version: "Release 10"
+    },
+    "yo-ng": {
+      language: "Yoruba",
+      location: "Nigeria",
+      id: 1130,
+      tag: "yo-NG",
+      version: "Release V"
+    },
+    dje: dje,
+    "dje-ne": {
+      language: "Zarma",
+      location: "Niger",
+      id: 4096,
+      tag: "dje-NE",
+      version: "Release 10"
+    },
+    zu: zu,
+    "zu-za": {
+      language: "Zulu",
+      location: "South Africa",
+      id: 1077,
+      tag: "zu-ZA",
+      version: "Release E1"
+    }
   };
-
   var Abkhazian = {
-  	name: "Abkhazian",
-  	names: [
-  		"Abkhazian"
-  	],
-  	"iso639-2": "abk",
-  	"iso639-1": "ab"
+    name: "Abkhazian",
+    names: ["Abkhazian"],
+    "iso639-2": "abk",
+    "iso639-1": "ab"
   };
   var Achinese = {
-  	name: "Achinese",
-  	names: [
-  		"Achinese"
-  	],
-  	"iso639-2": "ace",
-  	"iso639-1": null
+    name: "Achinese",
+    names: ["Achinese"],
+    "iso639-2": "ace",
+    "iso639-1": null
   };
   var Acoli = {
-  	name: "Acoli",
-  	names: [
-  		"Acoli"
-  	],
-  	"iso639-2": "ach",
-  	"iso639-1": null
+    name: "Acoli",
+    names: ["Acoli"],
+    "iso639-2": "ach",
+    "iso639-1": null
   };
   var Adangme = {
-  	name: "Adangme",
-  	names: [
-  		"Adangme"
-  	],
-  	"iso639-2": "ada",
-  	"iso639-1": null
+    name: "Adangme",
+    names: ["Adangme"],
+    "iso639-2": "ada",
+    "iso639-1": null
   };
   var Adygei = {
-  	name: "Adygei",
-  	names: [
-  		"Adyghe",
-  		"Adygei"
-  	],
-  	"iso639-2": "ady",
-  	"iso639-1": null
+    name: "Adygei",
+    names: ["Adyghe", "Adygei"],
+    "iso639-2": "ady",
+    "iso639-1": null
   };
   var Adyghe = {
-  	name: "Adyghe",
-  	names: [
-  		"Adyghe",
-  		"Adygei"
-  	],
-  	"iso639-2": "ady",
-  	"iso639-1": null
+    name: "Adyghe",
+    names: ["Adyghe", "Adygei"],
+    "iso639-2": "ady",
+    "iso639-1": null
   };
   var Afar = {
-  	name: "Afar",
-  	names: [
-  		"Afar"
-  	],
-  	"iso639-2": "aar",
-  	"iso639-1": "aa"
+    name: "Afar",
+    names: ["Afar"],
+    "iso639-2": "aar",
+    "iso639-1": "aa"
   };
   var Afrihili = {
-  	name: "Afrihili",
-  	names: [
-  		"Afrihili"
-  	],
-  	"iso639-2": "afh",
-  	"iso639-1": null
+    name: "Afrihili",
+    names: ["Afrihili"],
+    "iso639-2": "afh",
+    "iso639-1": null
   };
   var Afrikaans = {
-  	name: "Afrikaans",
-  	names: [
-  		"Afrikaans"
-  	],
-  	"iso639-2": "afr",
-  	"iso639-1": "af"
+    name: "Afrikaans",
+    names: ["Afrikaans"],
+    "iso639-2": "afr",
+    "iso639-1": "af"
   };
   var Ainu = {
-  	name: "Ainu",
-  	names: [
-  		"Ainu"
-  	],
-  	"iso639-2": "ain",
-  	"iso639-1": null
+    name: "Ainu",
+    names: ["Ainu"],
+    "iso639-2": "ain",
+    "iso639-1": null
   };
   var Akan = {
-  	name: "Akan",
-  	names: [
-  		"Akan"
-  	],
-  	"iso639-2": "aka",
-  	"iso639-1": "ak"
+    name: "Akan",
+    names: ["Akan"],
+    "iso639-2": "aka",
+    "iso639-1": "ak"
   };
   var Akkadian = {
-  	name: "Akkadian",
-  	names: [
-  		"Akkadian"
-  	],
-  	"iso639-2": "akk",
-  	"iso639-1": null
+    name: "Akkadian",
+    names: ["Akkadian"],
+    "iso639-2": "akk",
+    "iso639-1": null
   };
   var Albanian = {
-  	name: "Albanian",
-  	names: [
-  		"Albanian"
-  	],
-  	"iso639-2": "alb/sqi",
-  	"iso639-1": "sq"
+    name: "Albanian",
+    names: ["Albanian"],
+    "iso639-2": "alb/sqi",
+    "iso639-1": "sq"
   };
   var Alemannic = {
-  	name: "Alemannic",
-  	names: [
-  		"Swiss German",
-  		"Alemannic",
-  		"Alsatian"
-  	],
-  	"iso639-2": "gsw",
-  	"iso639-1": null
+    name: "Alemannic",
+    names: ["Swiss German", "Alemannic", "Alsatian"],
+    "iso639-2": "gsw",
+    "iso639-1": null
   };
   var Aleut = {
-  	name: "Aleut",
-  	names: [
-  		"Aleut"
-  	],
-  	"iso639-2": "ale",
-  	"iso639-1": null
+    name: "Aleut",
+    names: ["Aleut"],
+    "iso639-2": "ale",
+    "iso639-1": null
   };
   var Alsatian = {
-  	name: "Alsatian",
-  	names: [
-  		"Swiss German",
-  		"Alemannic",
-  		"Alsatian"
-  	],
-  	"iso639-2": "gsw",
-  	"iso639-1": null
+    name: "Alsatian",
+    names: ["Swiss German", "Alemannic", "Alsatian"],
+    "iso639-2": "gsw",
+    "iso639-1": null
   };
   var Amharic = {
-  	name: "Amharic",
-  	names: [
-  		"Amharic"
-  	],
-  	"iso639-2": "amh",
-  	"iso639-1": "am"
+    name: "Amharic",
+    names: ["Amharic"],
+    "iso639-2": "amh",
+    "iso639-1": "am"
   };
   var Angika = {
-  	name: "Angika",
-  	names: [
-  		"Angika"
-  	],
-  	"iso639-2": "anp",
-  	"iso639-1": null
+    name: "Angika",
+    names: ["Angika"],
+    "iso639-2": "anp",
+    "iso639-1": null
   };
   var Arabic = {
-  	name: "Arabic",
-  	names: [
-  		"Arabic"
-  	],
-  	"iso639-2": "ara",
-  	"iso639-1": "ar"
+    name: "Arabic",
+    names: ["Arabic"],
+    "iso639-2": "ara",
+    "iso639-1": "ar"
   };
   var Aragonese = {
-  	name: "Aragonese",
-  	names: [
-  		"Aragonese"
-  	],
-  	"iso639-2": "arg",
-  	"iso639-1": "an"
+    name: "Aragonese",
+    names: ["Aragonese"],
+    "iso639-2": "arg",
+    "iso639-1": "an"
   };
   var Arapaho = {
-  	name: "Arapaho",
-  	names: [
-  		"Arapaho"
-  	],
-  	"iso639-2": "arp",
-  	"iso639-1": null
+    name: "Arapaho",
+    names: ["Arapaho"],
+    "iso639-2": "arp",
+    "iso639-1": null
   };
   var Arawak = {
-  	name: "Arawak",
-  	names: [
-  		"Arawak"
-  	],
-  	"iso639-2": "arw",
-  	"iso639-1": null
+    name: "Arawak",
+    names: ["Arawak"],
+    "iso639-2": "arw",
+    "iso639-1": null
   };
   var Armenian = {
-  	name: "Armenian",
-  	names: [
-  		"Armenian"
-  	],
-  	"iso639-2": "arm/hye",
-  	"iso639-1": "hy"
+    name: "Armenian",
+    names: ["Armenian"],
+    "iso639-2": "arm/hye",
+    "iso639-1": "hy"
   };
   var Aromanian = {
-  	name: "Aromanian",
-  	names: [
-  		"Aromanian",
-  		"Arumanian",
-  		"Macedo-Romanian"
-  	],
-  	"iso639-2": "rup",
-  	"iso639-1": null
+    name: "Aromanian",
+    names: ["Aromanian", "Arumanian", "Macedo-Romanian"],
+    "iso639-2": "rup",
+    "iso639-1": null
   };
   var Arumanian = {
-  	name: "Arumanian",
-  	names: [
-  		"Aromanian",
-  		"Arumanian",
-  		"Macedo-Romanian"
-  	],
-  	"iso639-2": "rup",
-  	"iso639-1": null
+    name: "Arumanian",
+    names: ["Aromanian", "Arumanian", "Macedo-Romanian"],
+    "iso639-2": "rup",
+    "iso639-1": null
   };
   var Assamese = {
-  	name: "Assamese",
-  	names: [
-  		"Assamese"
-  	],
-  	"iso639-2": "asm",
-  	"iso639-1": "as"
+    name: "Assamese",
+    names: ["Assamese"],
+    "iso639-2": "asm",
+    "iso639-1": "as"
   };
   var Asturian = {
-  	name: "Asturian",
-  	names: [
-  		"Asturian",
-  		"Bable",
-  		"Leonese",
-  		"Asturleonese"
-  	],
-  	"iso639-2": "ast",
-  	"iso639-1": null
+    name: "Asturian",
+    names: ["Asturian", "Bable", "Leonese", "Asturleonese"],
+    "iso639-2": "ast",
+    "iso639-1": null
   };
   var Asturleonese = {
-  	name: "Asturleonese",
-  	names: [
-  		"Asturian",
-  		"Bable",
-  		"Leonese",
-  		"Asturleonese"
-  	],
-  	"iso639-2": "ast",
-  	"iso639-1": null
+    name: "Asturleonese",
+    names: ["Asturian", "Bable", "Leonese", "Asturleonese"],
+    "iso639-2": "ast",
+    "iso639-1": null
   };
   var Avaric = {
-  	name: "Avaric",
-  	names: [
-  		"Avaric"
-  	],
-  	"iso639-2": "ava",
-  	"iso639-1": "av"
+    name: "Avaric",
+    names: ["Avaric"],
+    "iso639-2": "ava",
+    "iso639-1": "av"
   };
   var Avestan = {
-  	name: "Avestan",
-  	names: [
-  		"Avestan"
-  	],
-  	"iso639-2": "ave",
-  	"iso639-1": "ae"
+    name: "Avestan",
+    names: ["Avestan"],
+    "iso639-2": "ave",
+    "iso639-1": "ae"
   };
   var Awadhi = {
-  	name: "Awadhi",
-  	names: [
-  		"Awadhi"
-  	],
-  	"iso639-2": "awa",
-  	"iso639-1": null
+    name: "Awadhi",
+    names: ["Awadhi"],
+    "iso639-2": "awa",
+    "iso639-1": null
   };
   var Aymara = {
-  	name: "Aymara",
-  	names: [
-  		"Aymara"
-  	],
-  	"iso639-2": "aym",
-  	"iso639-1": "ay"
+    name: "Aymara",
+    names: ["Aymara"],
+    "iso639-2": "aym",
+    "iso639-1": "ay"
   };
   var Azerbaijani = {
-  	name: "Azerbaijani",
-  	names: [
-  		"Azerbaijani"
-  	],
-  	"iso639-2": "aze",
-  	"iso639-1": "az"
+    name: "Azerbaijani",
+    names: ["Azerbaijani"],
+    "iso639-2": "aze",
+    "iso639-1": "az"
   };
   var Bable = {
-  	name: "Bable",
-  	names: [
-  		"Asturian",
-  		"Bable",
-  		"Leonese",
-  		"Asturleonese"
-  	],
-  	"iso639-2": "ast",
-  	"iso639-1": null
+    name: "Bable",
+    names: ["Asturian", "Bable", "Leonese", "Asturleonese"],
+    "iso639-2": "ast",
+    "iso639-1": null
   };
   var Balinese = {
-  	name: "Balinese",
-  	names: [
-  		"Balinese"
-  	],
-  	"iso639-2": "ban",
-  	"iso639-1": null
+    name: "Balinese",
+    names: ["Balinese"],
+    "iso639-2": "ban",
+    "iso639-1": null
   };
   var Baluchi = {
-  	name: "Baluchi",
-  	names: [
-  		"Baluchi"
-  	],
-  	"iso639-2": "bal",
-  	"iso639-1": null
+    name: "Baluchi",
+    names: ["Baluchi"],
+    "iso639-2": "bal",
+    "iso639-1": null
   };
   var Bambara = {
-  	name: "Bambara",
-  	names: [
-  		"Bambara"
-  	],
-  	"iso639-2": "bam",
-  	"iso639-1": "bm"
+    name: "Bambara",
+    names: ["Bambara"],
+    "iso639-2": "bam",
+    "iso639-1": "bm"
   };
   var Basa = {
-  	name: "Basa",
-  	names: [
-  		"Basa"
-  	],
-  	"iso639-2": "bas",
-  	"iso639-1": null
+    name: "Basa",
+    names: ["Basa"],
+    "iso639-2": "bas",
+    "iso639-1": null
   };
   var Bashkir = {
-  	name: "Bashkir",
-  	names: [
-  		"Bashkir"
-  	],
-  	"iso639-2": "bak",
-  	"iso639-1": "ba"
+    name: "Bashkir",
+    names: ["Bashkir"],
+    "iso639-2": "bak",
+    "iso639-1": "ba"
   };
   var Basque = {
-  	name: "Basque",
-  	names: [
-  		"Basque"
-  	],
-  	"iso639-2": "baq/eus",
-  	"iso639-1": "eu"
+    name: "Basque",
+    names: ["Basque"],
+    "iso639-2": "baq/eus",
+    "iso639-1": "eu"
   };
   var Bedawiyet = {
-  	name: "Bedawiyet",
-  	names: [
-  		"Beja",
-  		"Bedawiyet"
-  	],
-  	"iso639-2": "bej",
-  	"iso639-1": null
+    name: "Bedawiyet",
+    names: ["Beja", "Bedawiyet"],
+    "iso639-2": "bej",
+    "iso639-1": null
   };
   var Beja = {
-  	name: "Beja",
-  	names: [
-  		"Beja",
-  		"Bedawiyet"
-  	],
-  	"iso639-2": "bej",
-  	"iso639-1": null
+    name: "Beja",
+    names: ["Beja", "Bedawiyet"],
+    "iso639-2": "bej",
+    "iso639-1": null
   };
   var Belarusian = {
-  	name: "Belarusian",
-  	names: [
-  		"Belarusian"
-  	],
-  	"iso639-2": "bel",
-  	"iso639-1": "be"
+    name: "Belarusian",
+    names: ["Belarusian"],
+    "iso639-2": "bel",
+    "iso639-1": "be"
   };
   var Bemba = {
-  	name: "Bemba",
-  	names: [
-  		"Bemba"
-  	],
-  	"iso639-2": "bem",
-  	"iso639-1": null
+    name: "Bemba",
+    names: ["Bemba"],
+    "iso639-2": "bem",
+    "iso639-1": null
   };
   var Bengali = {
-  	name: "Bengali",
-  	names: [
-  		"Bengali"
-  	],
-  	"iso639-2": "ben",
-  	"iso639-1": "bn"
+    name: "Bengali",
+    names: ["Bengali"],
+    "iso639-2": "ben",
+    "iso639-1": "bn"
   };
   var Bhojpuri = {
-  	name: "Bhojpuri",
-  	names: [
-  		"Bhojpuri"
-  	],
-  	"iso639-2": "bho",
-  	"iso639-1": null
+    name: "Bhojpuri",
+    names: ["Bhojpuri"],
+    "iso639-2": "bho",
+    "iso639-1": null
   };
   var Bikol = {
-  	name: "Bikol",
-  	names: [
-  		"Bikol"
-  	],
-  	"iso639-2": "bik",
-  	"iso639-1": null
+    name: "Bikol",
+    names: ["Bikol"],
+    "iso639-2": "bik",
+    "iso639-1": null
   };
   var Bilin = {
-  	name: "Bilin",
-  	names: [
-  		"Blin",
-  		"Bilin"
-  	],
-  	"iso639-2": "byn",
-  	"iso639-1": null
+    name: "Bilin",
+    names: ["Blin", "Bilin"],
+    "iso639-2": "byn",
+    "iso639-1": null
   };
   var Bini = {
-  	name: "Bini",
-  	names: [
-  		"Bini",
-  		"Edo"
-  	],
-  	"iso639-2": "bin",
-  	"iso639-1": null
+    name: "Bini",
+    names: ["Bini", "Edo"],
+    "iso639-2": "bin",
+    "iso639-1": null
   };
   var Bislama = {
-  	name: "Bislama",
-  	names: [
-  		"Bislama"
-  	],
-  	"iso639-2": "bis",
-  	"iso639-1": "bi"
+    name: "Bislama",
+    names: ["Bislama"],
+    "iso639-2": "bis",
+    "iso639-1": "bi"
   };
   var Blin = {
-  	name: "Blin",
-  	names: [
-  		"Blin",
-  		"Bilin"
-  	],
-  	"iso639-2": "byn",
-  	"iso639-1": null
+    name: "Blin",
+    names: ["Blin", "Bilin"],
+    "iso639-2": "byn",
+    "iso639-1": null
   };
   var Bliss = {
-  	name: "Bliss",
-  	names: [
-  		"Blissymbols",
-  		"Blissymbolics",
-  		"Bliss"
-  	],
-  	"iso639-2": "zbl",
-  	"iso639-1": null
+    name: "Bliss",
+    names: ["Blissymbols", "Blissymbolics", "Bliss"],
+    "iso639-2": "zbl",
+    "iso639-1": null
   };
   var Blissymbolics = {
-  	name: "Blissymbolics",
-  	names: [
-  		"Blissymbols",
-  		"Blissymbolics",
-  		"Bliss"
-  	],
-  	"iso639-2": "zbl",
-  	"iso639-1": null
+    name: "Blissymbolics",
+    names: ["Blissymbols", "Blissymbolics", "Bliss"],
+    "iso639-2": "zbl",
+    "iso639-1": null
   };
   var Blissymbols = {
-  	name: "Blissymbols",
-  	names: [
-  		"Blissymbols",
-  		"Blissymbolics",
-  		"Bliss"
-  	],
-  	"iso639-2": "zbl",
-  	"iso639-1": null
+    name: "Blissymbols",
+    names: ["Blissymbols", "Blissymbolics", "Bliss"],
+    "iso639-2": "zbl",
+    "iso639-1": null
   };
   var Bosnian = {
-  	name: "Bosnian",
-  	names: [
-  		"Bosnian"
-  	],
-  	"iso639-2": "bos",
-  	"iso639-1": "bs"
+    name: "Bosnian",
+    names: ["Bosnian"],
+    "iso639-2": "bos",
+    "iso639-1": "bs"
   };
   var Braj = {
-  	name: "Braj",
-  	names: [
-  		"Braj"
-  	],
-  	"iso639-2": "bra",
-  	"iso639-1": null
+    name: "Braj",
+    names: ["Braj"],
+    "iso639-2": "bra",
+    "iso639-1": null
   };
   var Breton = {
-  	name: "Breton",
-  	names: [
-  		"Breton"
-  	],
-  	"iso639-2": "bre",
-  	"iso639-1": "br"
+    name: "Breton",
+    names: ["Breton"],
+    "iso639-2": "bre",
+    "iso639-1": "br"
   };
   var Buginese = {
-  	name: "Buginese",
-  	names: [
-  		"Buginese"
-  	],
-  	"iso639-2": "bug",
-  	"iso639-1": null
+    name: "Buginese",
+    names: ["Buginese"],
+    "iso639-2": "bug",
+    "iso639-1": null
   };
   var Bulgarian = {
-  	name: "Bulgarian",
-  	names: [
-  		"Bulgarian"
-  	],
-  	"iso639-2": "bul",
-  	"iso639-1": "bg"
+    name: "Bulgarian",
+    names: ["Bulgarian"],
+    "iso639-2": "bul",
+    "iso639-1": "bg"
   };
   var Buriat = {
-  	name: "Buriat",
-  	names: [
-  		"Buriat"
-  	],
-  	"iso639-2": "bua",
-  	"iso639-1": null
+    name: "Buriat",
+    names: ["Buriat"],
+    "iso639-2": "bua",
+    "iso639-1": null
   };
   var Burmese = {
-  	name: "Burmese",
-  	names: [
-  		"Burmese"
-  	],
-  	"iso639-2": "bur/mya",
-  	"iso639-1": "my"
+    name: "Burmese",
+    names: ["Burmese"],
+    "iso639-2": "bur/mya",
+    "iso639-1": "my"
   };
   var Caddo = {
-  	name: "Caddo",
-  	names: [
-  		"Caddo"
-  	],
-  	"iso639-2": "cad",
-  	"iso639-1": null
+    name: "Caddo",
+    names: ["Caddo"],
+    "iso639-2": "cad",
+    "iso639-1": null
   };
   var Castilian = {
-  	name: "Castilian",
-  	names: [
-  		"Spanish",
-  		"Castilian"
-  	],
-  	"iso639-2": "spa",
-  	"iso639-1": "es"
+    name: "Castilian",
+    names: ["Spanish", "Castilian"],
+    "iso639-2": "spa",
+    "iso639-1": "es"
   };
   var Catalan = {
-  	name: "Catalan",
-  	names: [
-  		"Catalan",
-  		"Valencian"
-  	],
-  	"iso639-2": "cat",
-  	"iso639-1": "ca"
+    name: "Catalan",
+    names: ["Catalan", "Valencian"],
+    "iso639-2": "cat",
+    "iso639-1": "ca"
   };
   var Cebuano = {
-  	name: "Cebuano",
-  	names: [
-  		"Cebuano"
-  	],
-  	"iso639-2": "ceb",
-  	"iso639-1": null
+    name: "Cebuano",
+    names: ["Cebuano"],
+    "iso639-2": "ceb",
+    "iso639-1": null
   };
   var Chagatai = {
-  	name: "Chagatai",
-  	names: [
-  		"Chagatai"
-  	],
-  	"iso639-2": "chg",
-  	"iso639-1": null
+    name: "Chagatai",
+    names: ["Chagatai"],
+    "iso639-2": "chg",
+    "iso639-1": null
   };
   var Chamorro = {
-  	name: "Chamorro",
-  	names: [
-  		"Chamorro"
-  	],
-  	"iso639-2": "cha",
-  	"iso639-1": "ch"
+    name: "Chamorro",
+    names: ["Chamorro"],
+    "iso639-2": "cha",
+    "iso639-1": "ch"
   };
   var Chechen = {
-  	name: "Chechen",
-  	names: [
-  		"Chechen"
-  	],
-  	"iso639-2": "che",
-  	"iso639-1": "ce"
+    name: "Chechen",
+    names: ["Chechen"],
+    "iso639-2": "che",
+    "iso639-1": "ce"
   };
   var Cherokee = {
-  	name: "Cherokee",
-  	names: [
-  		"Cherokee"
-  	],
-  	"iso639-2": "chr",
-  	"iso639-1": null
+    name: "Cherokee",
+    names: ["Cherokee"],
+    "iso639-2": "chr",
+    "iso639-1": null
   };
   var Chewa = {
-  	name: "Chewa",
-  	names: [
-  		"Chichewa",
-  		"Chewa",
-  		"Nyanja"
-  	],
-  	"iso639-2": "nya",
-  	"iso639-1": "ny"
+    name: "Chewa",
+    names: ["Chichewa", "Chewa", "Nyanja"],
+    "iso639-2": "nya",
+    "iso639-1": "ny"
   };
   var Cheyenne = {
-  	name: "Cheyenne",
-  	names: [
-  		"Cheyenne"
-  	],
-  	"iso639-2": "chy",
-  	"iso639-1": null
+    name: "Cheyenne",
+    names: ["Cheyenne"],
+    "iso639-2": "chy",
+    "iso639-1": null
   };
   var Chibcha = {
-  	name: "Chibcha",
-  	names: [
-  		"Chibcha"
-  	],
-  	"iso639-2": "chb",
-  	"iso639-1": null
+    name: "Chibcha",
+    names: ["Chibcha"],
+    "iso639-2": "chb",
+    "iso639-1": null
   };
   var Chichewa = {
-  	name: "Chichewa",
-  	names: [
-  		"Chichewa",
-  		"Chewa",
-  		"Nyanja"
-  	],
-  	"iso639-2": "nya",
-  	"iso639-1": "ny"
+    name: "Chichewa",
+    names: ["Chichewa", "Chewa", "Nyanja"],
+    "iso639-2": "nya",
+    "iso639-1": "ny"
   };
   var Chinese = {
-  	name: "Chinese",
-  	names: [
-  		"Chinese"
-  	],
-  	"iso639-2": "chi/zho",
-  	"iso639-1": "zh"
+    name: "Chinese",
+    names: ["Chinese"],
+    "iso639-2": "chi/zho",
+    "iso639-1": "zh"
   };
   var Chipewyan = {
-  	name: "Chipewyan",
-  	names: [
-  		"Chipewyan",
-  		"Dene Suline"
-  	],
-  	"iso639-2": "chp",
-  	"iso639-1": null
+    name: "Chipewyan",
+    names: ["Chipewyan", "Dene Suline"],
+    "iso639-2": "chp",
+    "iso639-1": null
   };
   var Choctaw = {
-  	name: "Choctaw",
-  	names: [
-  		"Choctaw"
-  	],
-  	"iso639-2": "cho",
-  	"iso639-1": null
+    name: "Choctaw",
+    names: ["Choctaw"],
+    "iso639-2": "cho",
+    "iso639-1": null
   };
   var Chuang = {
-  	name: "Chuang",
-  	names: [
-  		"Zhuang",
-  		"Chuang"
-  	],
-  	"iso639-2": "zha",
-  	"iso639-1": "za"
+    name: "Chuang",
+    names: ["Zhuang", "Chuang"],
+    "iso639-2": "zha",
+    "iso639-1": "za"
   };
   var Chuukese = {
-  	name: "Chuukese",
-  	names: [
-  		"Chuukese"
-  	],
-  	"iso639-2": "chk",
-  	"iso639-1": null
+    name: "Chuukese",
+    names: ["Chuukese"],
+    "iso639-2": "chk",
+    "iso639-1": null
   };
   var Chuvash = {
-  	name: "Chuvash",
-  	names: [
-  		"Chuvash"
-  	],
-  	"iso639-2": "chv",
-  	"iso639-1": "cv"
+    name: "Chuvash",
+    names: ["Chuvash"],
+    "iso639-2": "chv",
+    "iso639-1": "cv"
   };
   var Coptic = {
-  	name: "Coptic",
-  	names: [
-  		"Coptic"
-  	],
-  	"iso639-2": "cop",
-  	"iso639-1": null
+    name: "Coptic",
+    names: ["Coptic"],
+    "iso639-2": "cop",
+    "iso639-1": null
   };
   var Cornish = {
-  	name: "Cornish",
-  	names: [
-  		"Cornish"
-  	],
-  	"iso639-2": "cor",
-  	"iso639-1": "kw"
+    name: "Cornish",
+    names: ["Cornish"],
+    "iso639-2": "cor",
+    "iso639-1": "kw"
   };
   var Corsican = {
-  	name: "Corsican",
-  	names: [
-  		"Corsican"
-  	],
-  	"iso639-2": "cos",
-  	"iso639-1": "co"
+    name: "Corsican",
+    names: ["Corsican"],
+    "iso639-2": "cos",
+    "iso639-1": "co"
   };
   var Cree = {
-  	name: "Cree",
-  	names: [
-  		"Cree"
-  	],
-  	"iso639-2": "cre",
-  	"iso639-1": "cr"
+    name: "Cree",
+    names: ["Cree"],
+    "iso639-2": "cre",
+    "iso639-1": "cr"
   };
   var Creek = {
-  	name: "Creek",
-  	names: [
-  		"Creek"
-  	],
-  	"iso639-2": "mus",
-  	"iso639-1": null
+    name: "Creek",
+    names: ["Creek"],
+    "iso639-2": "mus",
+    "iso639-1": null
   };
   var Croatian = {
-  	name: "Croatian",
-  	names: [
-  		"Croatian"
-  	],
-  	"iso639-2": "hrv",
-  	"iso639-1": "hr"
+    name: "Croatian",
+    names: ["Croatian"],
+    "iso639-2": "hrv",
+    "iso639-1": "hr"
   };
   var Czech = {
-  	name: "Czech",
-  	names: [
-  		"Czech"
-  	],
-  	"iso639-2": "cze/ces",
-  	"iso639-1": "cs"
+    name: "Czech",
+    names: ["Czech"],
+    "iso639-2": "cze/ces",
+    "iso639-1": "cs"
   };
   var Dakota = {
-  	name: "Dakota",
-  	names: [
-  		"Dakota"
-  	],
-  	"iso639-2": "dak",
-  	"iso639-1": null
+    name: "Dakota",
+    names: ["Dakota"],
+    "iso639-2": "dak",
+    "iso639-1": null
   };
   var Danish = {
-  	name: "Danish",
-  	names: [
-  		"Danish"
-  	],
-  	"iso639-2": "dan",
-  	"iso639-1": "da"
+    name: "Danish",
+    names: ["Danish"],
+    "iso639-2": "dan",
+    "iso639-1": "da"
   };
   var Dargwa = {
-  	name: "Dargwa",
-  	names: [
-  		"Dargwa"
-  	],
-  	"iso639-2": "dar",
-  	"iso639-1": null
+    name: "Dargwa",
+    names: ["Dargwa"],
+    "iso639-2": "dar",
+    "iso639-1": null
   };
   var Delaware = {
-  	name: "Delaware",
-  	names: [
-  		"Delaware"
-  	],
-  	"iso639-2": "del",
-  	"iso639-1": null
+    name: "Delaware",
+    names: ["Delaware"],
+    "iso639-2": "del",
+    "iso639-1": null
   };
   var Dhivehi = {
-  	name: "Dhivehi",
-  	names: [
-  		"Divehi",
-  		"Dhivehi",
-  		"Maldivian"
-  	],
-  	"iso639-2": "div",
-  	"iso639-1": "dv"
+    name: "Dhivehi",
+    names: ["Divehi", "Dhivehi", "Maldivian"],
+    "iso639-2": "div",
+    "iso639-1": "dv"
   };
   var Dimili = {
-  	name: "Dimili",
-  	names: [
-  		"Zaza",
-  		"Dimili",
-  		"Dimli",
-  		"Kirdki",
-  		"Kirmanjki",
-  		"Zazaki"
-  	],
-  	"iso639-2": "zza",
-  	"iso639-1": null
+    name: "Dimili",
+    names: ["Zaza", "Dimili", "Dimli", "Kirdki", "Kirmanjki", "Zazaki"],
+    "iso639-2": "zza",
+    "iso639-1": null
   };
   var Dimli = {
-  	name: "Dimli",
-  	names: [
-  		"Zaza",
-  		"Dimili",
-  		"Dimli",
-  		"Kirdki",
-  		"Kirmanjki",
-  		"Zazaki"
-  	],
-  	"iso639-2": "zza",
-  	"iso639-1": null
+    name: "Dimli",
+    names: ["Zaza", "Dimili", "Dimli", "Kirdki", "Kirmanjki", "Zazaki"],
+    "iso639-2": "zza",
+    "iso639-1": null
   };
   var Dinka = {
-  	name: "Dinka",
-  	names: [
-  		"Dinka"
-  	],
-  	"iso639-2": "din",
-  	"iso639-1": null
+    name: "Dinka",
+    names: ["Dinka"],
+    "iso639-2": "din",
+    "iso639-1": null
   };
   var Divehi = {
-  	name: "Divehi",
-  	names: [
-  		"Divehi",
-  		"Dhivehi",
-  		"Maldivian"
-  	],
-  	"iso639-2": "div",
-  	"iso639-1": "dv"
+    name: "Divehi",
+    names: ["Divehi", "Dhivehi", "Maldivian"],
+    "iso639-2": "div",
+    "iso639-1": "dv"
   };
   var Dogri = {
-  	name: "Dogri",
-  	names: [
-  		"Dogri"
-  	],
-  	"iso639-2": "doi",
-  	"iso639-1": null
+    name: "Dogri",
+    names: ["Dogri"],
+    "iso639-2": "doi",
+    "iso639-1": null
   };
   var Dogrib = {
-  	name: "Dogrib",
-  	names: [
-  		"Dogrib"
-  	],
-  	"iso639-2": "dgr",
-  	"iso639-1": null
+    name: "Dogrib",
+    names: ["Dogrib"],
+    "iso639-2": "dgr",
+    "iso639-1": null
   };
   var Duala = {
-  	name: "Duala",
-  	names: [
-  		"Duala"
-  	],
-  	"iso639-2": "dua",
-  	"iso639-1": null
+    name: "Duala",
+    names: ["Duala"],
+    "iso639-2": "dua",
+    "iso639-1": null
   };
   var Dutch = {
-  	name: "Dutch",
-  	names: [
-  		"Dutch",
-  		"Flemish"
-  	],
-  	"iso639-2": "dut/nld",
-  	"iso639-1": "nl"
+    name: "Dutch",
+    names: ["Dutch", "Flemish"],
+    "iso639-2": "dut/nld",
+    "iso639-1": "nl"
   };
   var Dyula = {
-  	name: "Dyula",
-  	names: [
-  		"Dyula"
-  	],
-  	"iso639-2": "dyu",
-  	"iso639-1": null
+    name: "Dyula",
+    names: ["Dyula"],
+    "iso639-2": "dyu",
+    "iso639-1": null
   };
   var Dzongkha = {
-  	name: "Dzongkha",
-  	names: [
-  		"Dzongkha"
-  	],
-  	"iso639-2": "dzo",
-  	"iso639-1": "dz"
+    name: "Dzongkha",
+    names: ["Dzongkha"],
+    "iso639-2": "dzo",
+    "iso639-1": "dz"
   };
   var Edo = {
-  	name: "Edo",
-  	names: [
-  		"Bini",
-  		"Edo"
-  	],
-  	"iso639-2": "bin",
-  	"iso639-1": null
+    name: "Edo",
+    names: ["Bini", "Edo"],
+    "iso639-2": "bin",
+    "iso639-1": null
   };
   var Efik = {
-  	name: "Efik",
-  	names: [
-  		"Efik"
-  	],
-  	"iso639-2": "efi",
-  	"iso639-1": null
+    name: "Efik",
+    names: ["Efik"],
+    "iso639-2": "efi",
+    "iso639-1": null
   };
   var Ekajuk = {
-  	name: "Ekajuk",
-  	names: [
-  		"Ekajuk"
-  	],
-  	"iso639-2": "eka",
-  	"iso639-1": null
+    name: "Ekajuk",
+    names: ["Ekajuk"],
+    "iso639-2": "eka",
+    "iso639-1": null
   };
   var Elamite = {
-  	name: "Elamite",
-  	names: [
-  		"Elamite"
-  	],
-  	"iso639-2": "elx",
-  	"iso639-1": null
+    name: "Elamite",
+    names: ["Elamite"],
+    "iso639-2": "elx",
+    "iso639-1": null
   };
   var English = {
-  	name: "English",
-  	names: [
-  		"English"
-  	],
-  	"iso639-2": "eng",
-  	"iso639-1": "en"
+    name: "English",
+    names: ["English"],
+    "iso639-2": "eng",
+    "iso639-1": "en"
   };
   var Erzya = {
-  	name: "Erzya",
-  	names: [
-  		"Erzya"
-  	],
-  	"iso639-2": "myv",
-  	"iso639-1": null
+    name: "Erzya",
+    names: ["Erzya"],
+    "iso639-2": "myv",
+    "iso639-1": null
   };
   var Esperanto = {
-  	name: "Esperanto",
-  	names: [
-  		"Esperanto"
-  	],
-  	"iso639-2": "epo",
-  	"iso639-1": "eo"
+    name: "Esperanto",
+    names: ["Esperanto"],
+    "iso639-2": "epo",
+    "iso639-1": "eo"
   };
   var Estonian = {
-  	name: "Estonian",
-  	names: [
-  		"Estonian"
-  	],
-  	"iso639-2": "est",
-  	"iso639-1": "et"
+    name: "Estonian",
+    names: ["Estonian"],
+    "iso639-2": "est",
+    "iso639-1": "et"
   };
   var Ewe = {
-  	name: "Ewe",
-  	names: [
-  		"Ewe"
-  	],
-  	"iso639-2": "ewe",
-  	"iso639-1": "ee"
+    name: "Ewe",
+    names: ["Ewe"],
+    "iso639-2": "ewe",
+    "iso639-1": "ee"
   };
   var Ewondo = {
-  	name: "Ewondo",
-  	names: [
-  		"Ewondo"
-  	],
-  	"iso639-2": "ewo",
-  	"iso639-1": null
+    name: "Ewondo",
+    names: ["Ewondo"],
+    "iso639-2": "ewo",
+    "iso639-1": null
   };
   var Fang = {
-  	name: "Fang",
-  	names: [
-  		"Fang"
-  	],
-  	"iso639-2": "fan",
-  	"iso639-1": null
+    name: "Fang",
+    names: ["Fang"],
+    "iso639-2": "fan",
+    "iso639-1": null
   };
   var Fanti = {
-  	name: "Fanti",
-  	names: [
-  		"Fanti"
-  	],
-  	"iso639-2": "fat",
-  	"iso639-1": null
+    name: "Fanti",
+    names: ["Fanti"],
+    "iso639-2": "fat",
+    "iso639-1": null
   };
   var Faroese = {
-  	name: "Faroese",
-  	names: [
-  		"Faroese"
-  	],
-  	"iso639-2": "fao",
-  	"iso639-1": "fo"
+    name: "Faroese",
+    names: ["Faroese"],
+    "iso639-2": "fao",
+    "iso639-1": "fo"
   };
   var Fijian = {
-  	name: "Fijian",
-  	names: [
-  		"Fijian"
-  	],
-  	"iso639-2": "fij",
-  	"iso639-1": "fj"
+    name: "Fijian",
+    names: ["Fijian"],
+    "iso639-2": "fij",
+    "iso639-1": "fj"
   };
   var Filipino = {
-  	name: "Filipino",
-  	names: [
-  		"Filipino",
-  		"Pilipino"
-  	],
-  	"iso639-2": "fil",
-  	"iso639-1": null
+    name: "Filipino",
+    names: ["Filipino", "Pilipino"],
+    "iso639-2": "fil",
+    "iso639-1": null
   };
   var Finnish = {
-  	name: "Finnish",
-  	names: [
-  		"Finnish"
-  	],
-  	"iso639-2": "fin",
-  	"iso639-1": "fi"
+    name: "Finnish",
+    names: ["Finnish"],
+    "iso639-2": "fin",
+    "iso639-1": "fi"
   };
   var Flemish = {
-  	name: "Flemish",
-  	names: [
-  		"Dutch",
-  		"Flemish"
-  	],
-  	"iso639-2": "dut/nld",
-  	"iso639-1": "nl"
+    name: "Flemish",
+    names: ["Dutch", "Flemish"],
+    "iso639-2": "dut/nld",
+    "iso639-1": "nl"
   };
   var Fon = {
-  	name: "Fon",
-  	names: [
-  		"Fon"
-  	],
-  	"iso639-2": "fon",
-  	"iso639-1": null
+    name: "Fon",
+    names: ["Fon"],
+    "iso639-2": "fon",
+    "iso639-1": null
   };
   var French = {
-  	name: "French",
-  	names: [
-  		"French"
-  	],
-  	"iso639-2": "fre/fra",
-  	"iso639-1": "fr"
+    name: "French",
+    names: ["French"],
+    "iso639-2": "fre/fra",
+    "iso639-1": "fr"
   };
   var Friulian = {
-  	name: "Friulian",
-  	names: [
-  		"Friulian"
-  	],
-  	"iso639-2": "fur",
-  	"iso639-1": null
+    name: "Friulian",
+    names: ["Friulian"],
+    "iso639-2": "fur",
+    "iso639-1": null
   };
   var Fulah = {
-  	name: "Fulah",
-  	names: [
-  		"Fulah"
-  	],
-  	"iso639-2": "ful",
-  	"iso639-1": "ff"
+    name: "Fulah",
+    names: ["Fulah"],
+    "iso639-2": "ful",
+    "iso639-1": "ff"
   };
   var Ga = {
-  	name: "Ga",
-  	names: [
-  		"Ga"
-  	],
-  	"iso639-2": "gaa",
-  	"iso639-1": null
+    name: "Ga",
+    names: ["Ga"],
+    "iso639-2": "gaa",
+    "iso639-1": null
   };
   var Gaelic = {
-  	name: "Gaelic",
-  	names: [
-  		"Gaelic",
-  		"Scottish Gaelic"
-  	],
-  	"iso639-2": "gla",
-  	"iso639-1": "gd"
+    name: "Gaelic",
+    names: ["Gaelic", "Scottish Gaelic"],
+    "iso639-2": "gla",
+    "iso639-1": "gd"
   };
   var Galician = {
-  	name: "Galician",
-  	names: [
-  		"Galician"
-  	],
-  	"iso639-2": "glg",
-  	"iso639-1": "gl"
+    name: "Galician",
+    names: ["Galician"],
+    "iso639-2": "glg",
+    "iso639-1": "gl"
   };
   var Ganda = {
-  	name: "Ganda",
-  	names: [
-  		"Ganda"
-  	],
-  	"iso639-2": "lug",
-  	"iso639-1": "lg"
+    name: "Ganda",
+    names: ["Ganda"],
+    "iso639-2": "lug",
+    "iso639-1": "lg"
   };
   var Gayo = {
-  	name: "Gayo",
-  	names: [
-  		"Gayo"
-  	],
-  	"iso639-2": "gay",
-  	"iso639-1": null
+    name: "Gayo",
+    names: ["Gayo"],
+    "iso639-2": "gay",
+    "iso639-1": null
   };
   var Gbaya = {
-  	name: "Gbaya",
-  	names: [
-  		"Gbaya"
-  	],
-  	"iso639-2": "gba",
-  	"iso639-1": null
+    name: "Gbaya",
+    names: ["Gbaya"],
+    "iso639-2": "gba",
+    "iso639-1": null
   };
   var Geez = {
-  	name: "Geez",
-  	names: [
-  		"Geez"
-  	],
-  	"iso639-2": "gez",
-  	"iso639-1": null
+    name: "Geez",
+    names: ["Geez"],
+    "iso639-2": "gez",
+    "iso639-1": null
   };
   var Georgian = {
-  	name: "Georgian",
-  	names: [
-  		"Georgian"
-  	],
-  	"iso639-2": "geo/kat",
-  	"iso639-1": "ka"
+    name: "Georgian",
+    names: ["Georgian"],
+    "iso639-2": "geo/kat",
+    "iso639-1": "ka"
   };
   var German = {
-  	name: "German",
-  	names: [
-  		"German"
-  	],
-  	"iso639-2": "ger/deu",
-  	"iso639-1": "de"
+    name: "German",
+    names: ["German"],
+    "iso639-2": "ger/deu",
+    "iso639-1": "de"
   };
   var Gikuyu = {
-  	name: "Gikuyu",
-  	names: [
-  		"Kikuyu",
-  		"Gikuyu"
-  	],
-  	"iso639-2": "kik",
-  	"iso639-1": "ki"
+    name: "Gikuyu",
+    names: ["Kikuyu", "Gikuyu"],
+    "iso639-2": "kik",
+    "iso639-1": "ki"
   };
   var Gilbertese = {
-  	name: "Gilbertese",
-  	names: [
-  		"Gilbertese"
-  	],
-  	"iso639-2": "gil",
-  	"iso639-1": null
+    name: "Gilbertese",
+    names: ["Gilbertese"],
+    "iso639-2": "gil",
+    "iso639-1": null
   };
   var Gondi = {
-  	name: "Gondi",
-  	names: [
-  		"Gondi"
-  	],
-  	"iso639-2": "gon",
-  	"iso639-1": null
+    name: "Gondi",
+    names: ["Gondi"],
+    "iso639-2": "gon",
+    "iso639-1": null
   };
   var Gorontalo = {
-  	name: "Gorontalo",
-  	names: [
-  		"Gorontalo"
-  	],
-  	"iso639-2": "gor",
-  	"iso639-1": null
+    name: "Gorontalo",
+    names: ["Gorontalo"],
+    "iso639-2": "gor",
+    "iso639-1": null
   };
   var Gothic = {
-  	name: "Gothic",
-  	names: [
-  		"Gothic"
-  	],
-  	"iso639-2": "got",
-  	"iso639-1": null
+    name: "Gothic",
+    names: ["Gothic"],
+    "iso639-2": "got",
+    "iso639-1": null
   };
   var Grebo = {
-  	name: "Grebo",
-  	names: [
-  		"Grebo"
-  	],
-  	"iso639-2": "grb",
-  	"iso639-1": null
+    name: "Grebo",
+    names: ["Grebo"],
+    "iso639-2": "grb",
+    "iso639-1": null
   };
   var Greenlandic = {
-  	name: "Greenlandic",
-  	names: [
-  		"Kalaallisut",
-  		"Greenlandic"
-  	],
-  	"iso639-2": "kal",
-  	"iso639-1": "kl"
+    name: "Greenlandic",
+    names: ["Kalaallisut", "Greenlandic"],
+    "iso639-2": "kal",
+    "iso639-1": "kl"
   };
   var Guarani = {
-  	name: "Guarani",
-  	names: [
-  		"Guarani"
-  	],
-  	"iso639-2": "grn",
-  	"iso639-1": "gn"
+    name: "Guarani",
+    names: ["Guarani"],
+    "iso639-2": "grn",
+    "iso639-1": "gn"
   };
   var Gujarati = {
-  	name: "Gujarati",
-  	names: [
-  		"Gujarati"
-  	],
-  	"iso639-2": "guj",
-  	"iso639-1": "gu"
+    name: "Gujarati",
+    names: ["Gujarati"],
+    "iso639-2": "guj",
+    "iso639-1": "gu"
   };
   var Haida = {
-  	name: "Haida",
-  	names: [
-  		"Haida"
-  	],
-  	"iso639-2": "hai",
-  	"iso639-1": null
+    name: "Haida",
+    names: ["Haida"],
+    "iso639-2": "hai",
+    "iso639-1": null
   };
   var Haitian = {
-  	name: "Haitian",
-  	names: [
-  		"Haitian",
-  		"Haitian Creole"
-  	],
-  	"iso639-2": "hat",
-  	"iso639-1": "ht"
+    name: "Haitian",
+    names: ["Haitian", "Haitian Creole"],
+    "iso639-2": "hat",
+    "iso639-1": "ht"
   };
   var Hausa = {
-  	name: "Hausa",
-  	names: [
-  		"Hausa"
-  	],
-  	"iso639-2": "hau",
-  	"iso639-1": "ha"
+    name: "Hausa",
+    names: ["Hausa"],
+    "iso639-2": "hau",
+    "iso639-1": "ha"
   };
   var Hawaiian = {
-  	name: "Hawaiian",
-  	names: [
-  		"Hawaiian"
-  	],
-  	"iso639-2": "haw",
-  	"iso639-1": null
+    name: "Hawaiian",
+    names: ["Hawaiian"],
+    "iso639-2": "haw",
+    "iso639-1": null
   };
   var Hebrew = {
-  	name: "Hebrew",
-  	names: [
-  		"Hebrew"
-  	],
-  	"iso639-2": "heb",
-  	"iso639-1": "he"
+    name: "Hebrew",
+    names: ["Hebrew"],
+    "iso639-2": "heb",
+    "iso639-1": "he"
   };
   var Herero = {
-  	name: "Herero",
-  	names: [
-  		"Herero"
-  	],
-  	"iso639-2": "her",
-  	"iso639-1": "hz"
+    name: "Herero",
+    names: ["Herero"],
+    "iso639-2": "her",
+    "iso639-1": "hz"
   };
   var Hiligaynon = {
-  	name: "Hiligaynon",
-  	names: [
-  		"Hiligaynon"
-  	],
-  	"iso639-2": "hil",
-  	"iso639-1": null
+    name: "Hiligaynon",
+    names: ["Hiligaynon"],
+    "iso639-2": "hil",
+    "iso639-1": null
   };
   var Hindi = {
-  	name: "Hindi",
-  	names: [
-  		"Hindi"
-  	],
-  	"iso639-2": "hin",
-  	"iso639-1": "hi"
+    name: "Hindi",
+    names: ["Hindi"],
+    "iso639-2": "hin",
+    "iso639-1": "hi"
   };
   var Hittite = {
-  	name: "Hittite",
-  	names: [
-  		"Hittite"
-  	],
-  	"iso639-2": "hit",
-  	"iso639-1": null
+    name: "Hittite",
+    names: ["Hittite"],
+    "iso639-2": "hit",
+    "iso639-1": null
   };
   var Hmong = {
-  	name: "Hmong",
-  	names: [
-  		"Hmong",
-  		"Mong"
-  	],
-  	"iso639-2": "hmn",
-  	"iso639-1": null
+    name: "Hmong",
+    names: ["Hmong", "Mong"],
+    "iso639-2": "hmn",
+    "iso639-1": null
   };
   var Hungarian = {
-  	name: "Hungarian",
-  	names: [
-  		"Hungarian"
-  	],
-  	"iso639-2": "hun",
-  	"iso639-1": "hu"
+    name: "Hungarian",
+    names: ["Hungarian"],
+    "iso639-2": "hun",
+    "iso639-1": "hu"
   };
   var Hupa = {
-  	name: "Hupa",
-  	names: [
-  		"Hupa"
-  	],
-  	"iso639-2": "hup",
-  	"iso639-1": null
+    name: "Hupa",
+    names: ["Hupa"],
+    "iso639-2": "hup",
+    "iso639-1": null
   };
   var Iban = {
-  	name: "Iban",
-  	names: [
-  		"Iban"
-  	],
-  	"iso639-2": "iba",
-  	"iso639-1": null
+    name: "Iban",
+    names: ["Iban"],
+    "iso639-2": "iba",
+    "iso639-1": null
   };
   var Icelandic = {
-  	name: "Icelandic",
-  	names: [
-  		"Icelandic"
-  	],
-  	"iso639-2": "ice/isl",
-  	"iso639-1": "is"
+    name: "Icelandic",
+    names: ["Icelandic"],
+    "iso639-2": "ice/isl",
+    "iso639-1": "is"
   };
   var Ido = {
-  	name: "Ido",
-  	names: [
-  		"Ido"
-  	],
-  	"iso639-2": "ido",
-  	"iso639-1": "io"
+    name: "Ido",
+    names: ["Ido"],
+    "iso639-2": "ido",
+    "iso639-1": "io"
   };
   var Igbo = {
-  	name: "Igbo",
-  	names: [
-  		"Igbo"
-  	],
-  	"iso639-2": "ibo",
-  	"iso639-1": "ig"
+    name: "Igbo",
+    names: ["Igbo"],
+    "iso639-2": "ibo",
+    "iso639-1": "ig"
   };
   var Iloko = {
-  	name: "Iloko",
-  	names: [
-  		"Iloko"
-  	],
-  	"iso639-2": "ilo",
-  	"iso639-1": null
+    name: "Iloko",
+    names: ["Iloko"],
+    "iso639-2": "ilo",
+    "iso639-1": null
   };
   var Indonesian = {
-  	name: "Indonesian",
-  	names: [
-  		"Indonesian"
-  	],
-  	"iso639-2": "ind",
-  	"iso639-1": "id"
+    name: "Indonesian",
+    names: ["Indonesian"],
+    "iso639-2": "ind",
+    "iso639-1": "id"
   };
   var Ingush = {
-  	name: "Ingush",
-  	names: [
-  		"Ingush"
-  	],
-  	"iso639-2": "inh",
-  	"iso639-1": null
+    name: "Ingush",
+    names: ["Ingush"],
+    "iso639-2": "inh",
+    "iso639-1": null
   };
   var Interlingue = {
-  	name: "Interlingue",
-  	names: [
-  		"Interlingue",
-  		"Occidental"
-  	],
-  	"iso639-2": "ile",
-  	"iso639-1": "ie"
+    name: "Interlingue",
+    names: ["Interlingue", "Occidental"],
+    "iso639-2": "ile",
+    "iso639-1": "ie"
   };
   var Inuktitut = {
-  	name: "Inuktitut",
-  	names: [
-  		"Inuktitut"
-  	],
-  	"iso639-2": "iku",
-  	"iso639-1": "iu"
+    name: "Inuktitut",
+    names: ["Inuktitut"],
+    "iso639-2": "iku",
+    "iso639-1": "iu"
   };
   var Inupiaq = {
-  	name: "Inupiaq",
-  	names: [
-  		"Inupiaq"
-  	],
-  	"iso639-2": "ipk",
-  	"iso639-1": "ik"
+    name: "Inupiaq",
+    names: ["Inupiaq"],
+    "iso639-2": "ipk",
+    "iso639-1": "ik"
   };
   var Irish = {
-  	name: "Irish",
-  	names: [
-  		"Irish"
-  	],
-  	"iso639-2": "gle",
-  	"iso639-1": "ga"
+    name: "Irish",
+    names: ["Irish"],
+    "iso639-2": "gle",
+    "iso639-1": "ga"
   };
   var Italian = {
-  	name: "Italian",
-  	names: [
-  		"Italian"
-  	],
-  	"iso639-2": "ita",
-  	"iso639-1": "it"
+    name: "Italian",
+    names: ["Italian"],
+    "iso639-2": "ita",
+    "iso639-1": "it"
   };
   var Japanese = {
-  	name: "Japanese",
-  	names: [
-  		"Japanese"
-  	],
-  	"iso639-2": "jpn",
-  	"iso639-1": "ja"
+    name: "Japanese",
+    names: ["Japanese"],
+    "iso639-2": "jpn",
+    "iso639-1": "ja"
   };
   var Javanese = {
-  	name: "Javanese",
-  	names: [
-  		"Javanese"
-  	],
-  	"iso639-2": "jav",
-  	"iso639-1": "jv"
+    name: "Javanese",
+    names: ["Javanese"],
+    "iso639-2": "jav",
+    "iso639-1": "jv"
   };
   var Jingpho = {
-  	name: "Jingpho",
-  	names: [
-  		"Kachin",
-  		"Jingpho"
-  	],
-  	"iso639-2": "kac",
-  	"iso639-1": null
+    name: "Jingpho",
+    names: ["Kachin", "Jingpho"],
+    "iso639-2": "kac",
+    "iso639-1": null
   };
   var Kabardian = {
-  	name: "Kabardian",
-  	names: [
-  		"Kabardian"
-  	],
-  	"iso639-2": "kbd",
-  	"iso639-1": null
+    name: "Kabardian",
+    names: ["Kabardian"],
+    "iso639-2": "kbd",
+    "iso639-1": null
   };
   var Kabyle = {
-  	name: "Kabyle",
-  	names: [
-  		"Kabyle"
-  	],
-  	"iso639-2": "kab",
-  	"iso639-1": null
+    name: "Kabyle",
+    names: ["Kabyle"],
+    "iso639-2": "kab",
+    "iso639-1": null
   };
   var Kachin = {
-  	name: "Kachin",
-  	names: [
-  		"Kachin",
-  		"Jingpho"
-  	],
-  	"iso639-2": "kac",
-  	"iso639-1": null
+    name: "Kachin",
+    names: ["Kachin", "Jingpho"],
+    "iso639-2": "kac",
+    "iso639-1": null
   };
   var Kalaallisut = {
-  	name: "Kalaallisut",
-  	names: [
-  		"Kalaallisut",
-  		"Greenlandic"
-  	],
-  	"iso639-2": "kal",
-  	"iso639-1": "kl"
+    name: "Kalaallisut",
+    names: ["Kalaallisut", "Greenlandic"],
+    "iso639-2": "kal",
+    "iso639-1": "kl"
   };
   var Kalmyk = {
-  	name: "Kalmyk",
-  	names: [
-  		"Kalmyk",
-  		"Oirat"
-  	],
-  	"iso639-2": "xal",
-  	"iso639-1": null
+    name: "Kalmyk",
+    names: ["Kalmyk", "Oirat"],
+    "iso639-2": "xal",
+    "iso639-1": null
   };
   var Kamba = {
-  	name: "Kamba",
-  	names: [
-  		"Kamba"
-  	],
-  	"iso639-2": "kam",
-  	"iso639-1": null
+    name: "Kamba",
+    names: ["Kamba"],
+    "iso639-2": "kam",
+    "iso639-1": null
   };
   var Kannada = {
-  	name: "Kannada",
-  	names: [
-  		"Kannada"
-  	],
-  	"iso639-2": "kan",
-  	"iso639-1": "kn"
+    name: "Kannada",
+    names: ["Kannada"],
+    "iso639-2": "kan",
+    "iso639-1": "kn"
   };
   var Kanuri = {
-  	name: "Kanuri",
-  	names: [
-  		"Kanuri"
-  	],
-  	"iso639-2": "kau",
-  	"iso639-1": "kr"
+    name: "Kanuri",
+    names: ["Kanuri"],
+    "iso639-2": "kau",
+    "iso639-1": "kr"
   };
   var Kapampangan = {
-  	name: "Kapampangan",
-  	names: [
-  		"Pampanga",
-  		"Kapampangan"
-  	],
-  	"iso639-2": "pam",
-  	"iso639-1": null
+    name: "Kapampangan",
+    names: ["Pampanga", "Kapampangan"],
+    "iso639-2": "pam",
+    "iso639-1": null
   };
   var Karelian = {
-  	name: "Karelian",
-  	names: [
-  		"Karelian"
-  	],
-  	"iso639-2": "krl",
-  	"iso639-1": null
+    name: "Karelian",
+    names: ["Karelian"],
+    "iso639-2": "krl",
+    "iso639-1": null
   };
   var Kashmiri = {
-  	name: "Kashmiri",
-  	names: [
-  		"Kashmiri"
-  	],
-  	"iso639-2": "kas",
-  	"iso639-1": "ks"
+    name: "Kashmiri",
+    names: ["Kashmiri"],
+    "iso639-2": "kas",
+    "iso639-1": "ks"
   };
   var Kashubian = {
-  	name: "Kashubian",
-  	names: [
-  		"Kashubian"
-  	],
-  	"iso639-2": "csb",
-  	"iso639-1": null
+    name: "Kashubian",
+    names: ["Kashubian"],
+    "iso639-2": "csb",
+    "iso639-1": null
   };
   var Kawi = {
-  	name: "Kawi",
-  	names: [
-  		"Kawi"
-  	],
-  	"iso639-2": "kaw",
-  	"iso639-1": null
+    name: "Kawi",
+    names: ["Kawi"],
+    "iso639-2": "kaw",
+    "iso639-1": null
   };
   var Kazakh = {
-  	name: "Kazakh",
-  	names: [
-  		"Kazakh"
-  	],
-  	"iso639-2": "kaz",
-  	"iso639-1": "kk"
+    name: "Kazakh",
+    names: ["Kazakh"],
+    "iso639-2": "kaz",
+    "iso639-1": "kk"
   };
   var Khasi = {
-  	name: "Khasi",
-  	names: [
-  		"Khasi"
-  	],
-  	"iso639-2": "kha",
-  	"iso639-1": null
+    name: "Khasi",
+    names: ["Khasi"],
+    "iso639-2": "kha",
+    "iso639-1": null
   };
   var Khotanese = {
-  	name: "Khotanese",
-  	names: [
-  		"Khotanese",
-  		"Sakan"
-  	],
-  	"iso639-2": "kho",
-  	"iso639-1": null
+    name: "Khotanese",
+    names: ["Khotanese", "Sakan"],
+    "iso639-2": "kho",
+    "iso639-1": null
   };
   var Kikuyu = {
-  	name: "Kikuyu",
-  	names: [
-  		"Kikuyu",
-  		"Gikuyu"
-  	],
-  	"iso639-2": "kik",
-  	"iso639-1": "ki"
+    name: "Kikuyu",
+    names: ["Kikuyu", "Gikuyu"],
+    "iso639-2": "kik",
+    "iso639-1": "ki"
   };
   var Kimbundu = {
-  	name: "Kimbundu",
-  	names: [
-  		"Kimbundu"
-  	],
-  	"iso639-2": "kmb",
-  	"iso639-1": null
+    name: "Kimbundu",
+    names: ["Kimbundu"],
+    "iso639-2": "kmb",
+    "iso639-1": null
   };
   var Kinyarwanda = {
-  	name: "Kinyarwanda",
-  	names: [
-  		"Kinyarwanda"
-  	],
-  	"iso639-2": "kin",
-  	"iso639-1": "rw"
+    name: "Kinyarwanda",
+    names: ["Kinyarwanda"],
+    "iso639-2": "kin",
+    "iso639-1": "rw"
   };
   var Kirdki = {
-  	name: "Kirdki",
-  	names: [
-  		"Zaza",
-  		"Dimili",
-  		"Dimli",
-  		"Kirdki",
-  		"Kirmanjki",
-  		"Zazaki"
-  	],
-  	"iso639-2": "zza",
-  	"iso639-1": null
+    name: "Kirdki",
+    names: ["Zaza", "Dimili", "Dimli", "Kirdki", "Kirmanjki", "Zazaki"],
+    "iso639-2": "zza",
+    "iso639-1": null
   };
   var Kirghiz = {
-  	name: "Kirghiz",
-  	names: [
-  		"Kirghiz",
-  		"Kyrgyz"
-  	],
-  	"iso639-2": "kir",
-  	"iso639-1": "ky"
+    name: "Kirghiz",
+    names: ["Kirghiz", "Kyrgyz"],
+    "iso639-2": "kir",
+    "iso639-1": "ky"
   };
   var Kirmanjki = {
-  	name: "Kirmanjki",
-  	names: [
-  		"Zaza",
-  		"Dimili",
-  		"Dimli",
-  		"Kirdki",
-  		"Kirmanjki",
-  		"Zazaki"
-  	],
-  	"iso639-2": "zza",
-  	"iso639-1": null
+    name: "Kirmanjki",
+    names: ["Zaza", "Dimili", "Dimli", "Kirdki", "Kirmanjki", "Zazaki"],
+    "iso639-2": "zza",
+    "iso639-1": null
   };
   var Klingon = {
-  	name: "Klingon",
-  	names: [
-  		"Klingon",
-  		"tlhIngan-Hol"
-  	],
-  	"iso639-2": "tlh",
-  	"iso639-1": null
+    name: "Klingon",
+    names: ["Klingon", "tlhIngan-Hol"],
+    "iso639-2": "tlh",
+    "iso639-1": null
   };
   var Komi = {
-  	name: "Komi",
-  	names: [
-  		"Komi"
-  	],
-  	"iso639-2": "kom",
-  	"iso639-1": "kv"
+    name: "Komi",
+    names: ["Komi"],
+    "iso639-2": "kom",
+    "iso639-1": "kv"
   };
   var Kongo = {
-  	name: "Kongo",
-  	names: [
-  		"Kongo"
-  	],
-  	"iso639-2": "kon",
-  	"iso639-1": "kg"
+    name: "Kongo",
+    names: ["Kongo"],
+    "iso639-2": "kon",
+    "iso639-1": "kg"
   };
   var Konkani = {
-  	name: "Konkani",
-  	names: [
-  		"Konkani"
-  	],
-  	"iso639-2": "kok",
-  	"iso639-1": null
+    name: "Konkani",
+    names: ["Konkani"],
+    "iso639-2": "kok",
+    "iso639-1": null
   };
   var Korean = {
-  	name: "Korean",
-  	names: [
-  		"Korean"
-  	],
-  	"iso639-2": "kor",
-  	"iso639-1": "ko"
+    name: "Korean",
+    names: ["Korean"],
+    "iso639-2": "kor",
+    "iso639-1": "ko"
   };
   var Kosraean = {
-  	name: "Kosraean",
-  	names: [
-  		"Kosraean"
-  	],
-  	"iso639-2": "kos",
-  	"iso639-1": null
+    name: "Kosraean",
+    names: ["Kosraean"],
+    "iso639-2": "kos",
+    "iso639-1": null
   };
   var Kpelle = {
-  	name: "Kpelle",
-  	names: [
-  		"Kpelle"
-  	],
-  	"iso639-2": "kpe",
-  	"iso639-1": null
+    name: "Kpelle",
+    names: ["Kpelle"],
+    "iso639-2": "kpe",
+    "iso639-1": null
   };
   var Kuanyama = {
-  	name: "Kuanyama",
-  	names: [
-  		"Kuanyama",
-  		"Kwanyama"
-  	],
-  	"iso639-2": "kua",
-  	"iso639-1": "kj"
+    name: "Kuanyama",
+    names: ["Kuanyama", "Kwanyama"],
+    "iso639-2": "kua",
+    "iso639-1": "kj"
   };
   var Kumyk = {
-  	name: "Kumyk",
-  	names: [
-  		"Kumyk"
-  	],
-  	"iso639-2": "kum",
-  	"iso639-1": null
+    name: "Kumyk",
+    names: ["Kumyk"],
+    "iso639-2": "kum",
+    "iso639-1": null
   };
   var Kurdish = {
-  	name: "Kurdish",
-  	names: [
-  		"Kurdish"
-  	],
-  	"iso639-2": "kur",
-  	"iso639-1": "ku"
+    name: "Kurdish",
+    names: ["Kurdish"],
+    "iso639-2": "kur",
+    "iso639-1": "ku"
   };
   var Kurukh = {
-  	name: "Kurukh",
-  	names: [
-  		"Kurukh"
-  	],
-  	"iso639-2": "kru",
-  	"iso639-1": null
+    name: "Kurukh",
+    names: ["Kurukh"],
+    "iso639-2": "kru",
+    "iso639-1": null
   };
   var Kutenai = {
-  	name: "Kutenai",
-  	names: [
-  		"Kutenai"
-  	],
-  	"iso639-2": "kut",
-  	"iso639-1": null
+    name: "Kutenai",
+    names: ["Kutenai"],
+    "iso639-2": "kut",
+    "iso639-1": null
   };
   var Kwanyama = {
-  	name: "Kwanyama",
-  	names: [
-  		"Kuanyama",
-  		"Kwanyama"
-  	],
-  	"iso639-2": "kua",
-  	"iso639-1": "kj"
+    name: "Kwanyama",
+    names: ["Kuanyama", "Kwanyama"],
+    "iso639-2": "kua",
+    "iso639-1": "kj"
   };
   var Kyrgyz = {
-  	name: "Kyrgyz",
-  	names: [
-  		"Kirghiz",
-  		"Kyrgyz"
-  	],
-  	"iso639-2": "kir",
-  	"iso639-1": "ky"
+    name: "Kyrgyz",
+    names: ["Kirghiz", "Kyrgyz"],
+    "iso639-2": "kir",
+    "iso639-1": "ky"
   };
   var Ladino = {
-  	name: "Ladino",
-  	names: [
-  		"Ladino"
-  	],
-  	"iso639-2": "lad",
-  	"iso639-1": null
+    name: "Ladino",
+    names: ["Ladino"],
+    "iso639-2": "lad",
+    "iso639-1": null
   };
   var Lahnda = {
-  	name: "Lahnda",
-  	names: [
-  		"Lahnda"
-  	],
-  	"iso639-2": "lah",
-  	"iso639-1": null
+    name: "Lahnda",
+    names: ["Lahnda"],
+    "iso639-2": "lah",
+    "iso639-1": null
   };
   var Lamba = {
-  	name: "Lamba",
-  	names: [
-  		"Lamba"
-  	],
-  	"iso639-2": "lam",
-  	"iso639-1": null
+    name: "Lamba",
+    names: ["Lamba"],
+    "iso639-2": "lam",
+    "iso639-1": null
   };
   var Lao = {
-  	name: "Lao",
-  	names: [
-  		"Lao"
-  	],
-  	"iso639-2": "lao",
-  	"iso639-1": "lo"
+    name: "Lao",
+    names: ["Lao"],
+    "iso639-2": "lao",
+    "iso639-1": "lo"
   };
   var Latin = {
-  	name: "Latin",
-  	names: [
-  		"Latin"
-  	],
-  	"iso639-2": "lat",
-  	"iso639-1": "la"
+    name: "Latin",
+    names: ["Latin"],
+    "iso639-2": "lat",
+    "iso639-1": "la"
   };
   var Latvian = {
-  	name: "Latvian",
-  	names: [
-  		"Latvian"
-  	],
-  	"iso639-2": "lav",
-  	"iso639-1": "lv"
+    name: "Latvian",
+    names: ["Latvian"],
+    "iso639-2": "lav",
+    "iso639-1": "lv"
   };
   var Leonese = {
-  	name: "Leonese",
-  	names: [
-  		"Asturian",
-  		"Bable",
-  		"Leonese",
-  		"Asturleonese"
-  	],
-  	"iso639-2": "ast",
-  	"iso639-1": null
+    name: "Leonese",
+    names: ["Asturian", "Bable", "Leonese", "Asturleonese"],
+    "iso639-2": "ast",
+    "iso639-1": null
   };
   var Letzeburgesch = {
-  	name: "Letzeburgesch",
-  	names: [
-  		"Luxembourgish",
-  		"Letzeburgesch"
-  	],
-  	"iso639-2": "ltz",
-  	"iso639-1": "lb"
+    name: "Letzeburgesch",
+    names: ["Luxembourgish", "Letzeburgesch"],
+    "iso639-2": "ltz",
+    "iso639-1": "lb"
   };
   var Lezghian = {
-  	name: "Lezghian",
-  	names: [
-  		"Lezghian"
-  	],
-  	"iso639-2": "lez",
-  	"iso639-1": null
+    name: "Lezghian",
+    names: ["Lezghian"],
+    "iso639-2": "lez",
+    "iso639-1": null
   };
   var Limburgan = {
-  	name: "Limburgan",
-  	names: [
-  		"Limburgan",
-  		"Limburger",
-  		"Limburgish"
-  	],
-  	"iso639-2": "lim",
-  	"iso639-1": "li"
+    name: "Limburgan",
+    names: ["Limburgan", "Limburger", "Limburgish"],
+    "iso639-2": "lim",
+    "iso639-1": "li"
   };
   var Limburger = {
-  	name: "Limburger",
-  	names: [
-  		"Limburgan",
-  		"Limburger",
-  		"Limburgish"
-  	],
-  	"iso639-2": "lim",
-  	"iso639-1": "li"
+    name: "Limburger",
+    names: ["Limburgan", "Limburger", "Limburgish"],
+    "iso639-2": "lim",
+    "iso639-1": "li"
   };
   var Limburgish = {
-  	name: "Limburgish",
-  	names: [
-  		"Limburgan",
-  		"Limburger",
-  		"Limburgish"
-  	],
-  	"iso639-2": "lim",
-  	"iso639-1": "li"
+    name: "Limburgish",
+    names: ["Limburgan", "Limburger", "Limburgish"],
+    "iso639-2": "lim",
+    "iso639-1": "li"
   };
   var Lingala = {
-  	name: "Lingala",
-  	names: [
-  		"Lingala"
-  	],
-  	"iso639-2": "lin",
-  	"iso639-1": "ln"
+    name: "Lingala",
+    names: ["Lingala"],
+    "iso639-2": "lin",
+    "iso639-1": "ln"
   };
   var Lithuanian = {
-  	name: "Lithuanian",
-  	names: [
-  		"Lithuanian"
-  	],
-  	"iso639-2": "lit",
-  	"iso639-1": "lt"
+    name: "Lithuanian",
+    names: ["Lithuanian"],
+    "iso639-2": "lit",
+    "iso639-1": "lt"
   };
   var Lojban = {
-  	name: "Lojban",
-  	names: [
-  		"Lojban"
-  	],
-  	"iso639-2": "jbo",
-  	"iso639-1": null
+    name: "Lojban",
+    names: ["Lojban"],
+    "iso639-2": "jbo",
+    "iso639-1": null
   };
   var Lozi = {
-  	name: "Lozi",
-  	names: [
-  		"Lozi"
-  	],
-  	"iso639-2": "loz",
-  	"iso639-1": null
+    name: "Lozi",
+    names: ["Lozi"],
+    "iso639-2": "loz",
+    "iso639-1": null
   };
   var Luiseno = {
-  	name: "Luiseno",
-  	names: [
-  		"Luiseno"
-  	],
-  	"iso639-2": "lui",
-  	"iso639-1": null
+    name: "Luiseno",
+    names: ["Luiseno"],
+    "iso639-2": "lui",
+    "iso639-1": null
   };
   var Lunda = {
-  	name: "Lunda",
-  	names: [
-  		"Lunda"
-  	],
-  	"iso639-2": "lun",
-  	"iso639-1": null
+    name: "Lunda",
+    names: ["Lunda"],
+    "iso639-2": "lun",
+    "iso639-1": null
   };
   var Lushai = {
-  	name: "Lushai",
-  	names: [
-  		"Lushai"
-  	],
-  	"iso639-2": "lus",
-  	"iso639-1": null
+    name: "Lushai",
+    names: ["Lushai"],
+    "iso639-2": "lus",
+    "iso639-1": null
   };
   var Luxembourgish = {
-  	name: "Luxembourgish",
-  	names: [
-  		"Luxembourgish",
-  		"Letzeburgesch"
-  	],
-  	"iso639-2": "ltz",
-  	"iso639-1": "lb"
+    name: "Luxembourgish",
+    names: ["Luxembourgish", "Letzeburgesch"],
+    "iso639-2": "ltz",
+    "iso639-1": "lb"
   };
   var Macedonian = {
-  	name: "Macedonian",
-  	names: [
-  		"Macedonian"
-  	],
-  	"iso639-2": "mac/mkd",
-  	"iso639-1": "mk"
+    name: "Macedonian",
+    names: ["Macedonian"],
+    "iso639-2": "mac/mkd",
+    "iso639-1": "mk"
   };
   var Madurese = {
-  	name: "Madurese",
-  	names: [
-  		"Madurese"
-  	],
-  	"iso639-2": "mad",
-  	"iso639-1": null
+    name: "Madurese",
+    names: ["Madurese"],
+    "iso639-2": "mad",
+    "iso639-1": null
   };
   var Magahi = {
-  	name: "Magahi",
-  	names: [
-  		"Magahi"
-  	],
-  	"iso639-2": "mag",
-  	"iso639-1": null
+    name: "Magahi",
+    names: ["Magahi"],
+    "iso639-2": "mag",
+    "iso639-1": null
   };
   var Maithili = {
-  	name: "Maithili",
-  	names: [
-  		"Maithili"
-  	],
-  	"iso639-2": "mai",
-  	"iso639-1": null
+    name: "Maithili",
+    names: ["Maithili"],
+    "iso639-2": "mai",
+    "iso639-1": null
   };
   var Makasar = {
-  	name: "Makasar",
-  	names: [
-  		"Makasar"
-  	],
-  	"iso639-2": "mak",
-  	"iso639-1": null
+    name: "Makasar",
+    names: ["Makasar"],
+    "iso639-2": "mak",
+    "iso639-1": null
   };
   var Malagasy = {
-  	name: "Malagasy",
-  	names: [
-  		"Malagasy"
-  	],
-  	"iso639-2": "mlg",
-  	"iso639-1": "mg"
+    name: "Malagasy",
+    names: ["Malagasy"],
+    "iso639-2": "mlg",
+    "iso639-1": "mg"
   };
   var Malay = {
-  	name: "Malay",
-  	names: [
-  		"Malay"
-  	],
-  	"iso639-2": "may/msa",
-  	"iso639-1": "ms"
+    name: "Malay",
+    names: ["Malay"],
+    "iso639-2": "may/msa",
+    "iso639-1": "ms"
   };
   var Malayalam = {
-  	name: "Malayalam",
-  	names: [
-  		"Malayalam"
-  	],
-  	"iso639-2": "mal",
-  	"iso639-1": "ml"
+    name: "Malayalam",
+    names: ["Malayalam"],
+    "iso639-2": "mal",
+    "iso639-1": "ml"
   };
   var Maldivian = {
-  	name: "Maldivian",
-  	names: [
-  		"Divehi",
-  		"Dhivehi",
-  		"Maldivian"
-  	],
-  	"iso639-2": "div",
-  	"iso639-1": "dv"
+    name: "Maldivian",
+    names: ["Divehi", "Dhivehi", "Maldivian"],
+    "iso639-2": "div",
+    "iso639-1": "dv"
   };
   var Maltese = {
-  	name: "Maltese",
-  	names: [
-  		"Maltese"
-  	],
-  	"iso639-2": "mlt",
-  	"iso639-1": "mt"
+    name: "Maltese",
+    names: ["Maltese"],
+    "iso639-2": "mlt",
+    "iso639-1": "mt"
   };
   var Manchu = {
-  	name: "Manchu",
-  	names: [
-  		"Manchu"
-  	],
-  	"iso639-2": "mnc",
-  	"iso639-1": null
+    name: "Manchu",
+    names: ["Manchu"],
+    "iso639-2": "mnc",
+    "iso639-1": null
   };
   var Mandar = {
-  	name: "Mandar",
-  	names: [
-  		"Mandar"
-  	],
-  	"iso639-2": "mdr",
-  	"iso639-1": null
+    name: "Mandar",
+    names: ["Mandar"],
+    "iso639-2": "mdr",
+    "iso639-1": null
   };
   var Mandingo = {
-  	name: "Mandingo",
-  	names: [
-  		"Mandingo"
-  	],
-  	"iso639-2": "man",
-  	"iso639-1": null
+    name: "Mandingo",
+    names: ["Mandingo"],
+    "iso639-2": "man",
+    "iso639-1": null
   };
   var Manipuri = {
-  	name: "Manipuri",
-  	names: [
-  		"Manipuri"
-  	],
-  	"iso639-2": "mni",
-  	"iso639-1": null
+    name: "Manipuri",
+    names: ["Manipuri"],
+    "iso639-2": "mni",
+    "iso639-1": null
   };
   var Manx = {
-  	name: "Manx",
-  	names: [
-  		"Manx"
-  	],
-  	"iso639-2": "glv",
-  	"iso639-1": "gv"
+    name: "Manx",
+    names: ["Manx"],
+    "iso639-2": "glv",
+    "iso639-1": "gv"
   };
   var Maori = {
-  	name: "Maori",
-  	names: [
-  		"Maori"
-  	],
-  	"iso639-2": "mao/mri",
-  	"iso639-1": "mi"
+    name: "Maori",
+    names: ["Maori"],
+    "iso639-2": "mao/mri",
+    "iso639-1": "mi"
   };
   var Mapuche = {
-  	name: "Mapuche",
-  	names: [
-  		"Mapudungun",
-  		"Mapuche"
-  	],
-  	"iso639-2": "arn",
-  	"iso639-1": null
+    name: "Mapuche",
+    names: ["Mapudungun", "Mapuche"],
+    "iso639-2": "arn",
+    "iso639-1": null
   };
   var Mapudungun = {
-  	name: "Mapudungun",
-  	names: [
-  		"Mapudungun",
-  		"Mapuche"
-  	],
-  	"iso639-2": "arn",
-  	"iso639-1": null
+    name: "Mapudungun",
+    names: ["Mapudungun", "Mapuche"],
+    "iso639-2": "arn",
+    "iso639-1": null
   };
   var Marathi = {
-  	name: "Marathi",
-  	names: [
-  		"Marathi"
-  	],
-  	"iso639-2": "mar",
-  	"iso639-1": "mr"
+    name: "Marathi",
+    names: ["Marathi"],
+    "iso639-2": "mar",
+    "iso639-1": "mr"
   };
   var Mari = {
-  	name: "Mari",
-  	names: [
-  		"Mari"
-  	],
-  	"iso639-2": "chm",
-  	"iso639-1": null
+    name: "Mari",
+    names: ["Mari"],
+    "iso639-2": "chm",
+    "iso639-1": null
   };
   var Marshallese = {
-  	name: "Marshallese",
-  	names: [
-  		"Marshallese"
-  	],
-  	"iso639-2": "mah",
-  	"iso639-1": "mh"
+    name: "Marshallese",
+    names: ["Marshallese"],
+    "iso639-2": "mah",
+    "iso639-1": "mh"
   };
   var Marwari = {
-  	name: "Marwari",
-  	names: [
-  		"Marwari"
-  	],
-  	"iso639-2": "mwr",
-  	"iso639-1": null
+    name: "Marwari",
+    names: ["Marwari"],
+    "iso639-2": "mwr",
+    "iso639-1": null
   };
   var Masai = {
-  	name: "Masai",
-  	names: [
-  		"Masai"
-  	],
-  	"iso639-2": "mas",
-  	"iso639-1": null
+    name: "Masai",
+    names: ["Masai"],
+    "iso639-2": "mas",
+    "iso639-1": null
   };
   var Mende = {
-  	name: "Mende",
-  	names: [
-  		"Mende"
-  	],
-  	"iso639-2": "men",
-  	"iso639-1": null
+    name: "Mende",
+    names: ["Mende"],
+    "iso639-2": "men",
+    "iso639-1": null
   };
   var Micmac = {
-  	name: "Micmac",
-  	names: [
-  		"Mi'kmaq",
-  		"Micmac"
-  	],
-  	"iso639-2": "mic",
-  	"iso639-1": null
+    name: "Micmac",
+    names: ["Mi'kmaq", "Micmac"],
+    "iso639-2": "mic",
+    "iso639-1": null
   };
   var Minangkabau = {
-  	name: "Minangkabau",
-  	names: [
-  		"Minangkabau"
-  	],
-  	"iso639-2": "min",
-  	"iso639-1": null
+    name: "Minangkabau",
+    names: ["Minangkabau"],
+    "iso639-2": "min",
+    "iso639-1": null
   };
   var Mirandese = {
-  	name: "Mirandese",
-  	names: [
-  		"Mirandese"
-  	],
-  	"iso639-2": "mwl",
-  	"iso639-1": null
+    name: "Mirandese",
+    names: ["Mirandese"],
+    "iso639-2": "mwl",
+    "iso639-1": null
   };
   var Mohawk = {
-  	name: "Mohawk",
-  	names: [
-  		"Mohawk"
-  	],
-  	"iso639-2": "moh",
-  	"iso639-1": null
+    name: "Mohawk",
+    names: ["Mohawk"],
+    "iso639-2": "moh",
+    "iso639-1": null
   };
   var Moksha = {
-  	name: "Moksha",
-  	names: [
-  		"Moksha"
-  	],
-  	"iso639-2": "mdf",
-  	"iso639-1": null
+    name: "Moksha",
+    names: ["Moksha"],
+    "iso639-2": "mdf",
+    "iso639-1": null
   };
   var Moldavian = {
-  	name: "Moldavian",
-  	names: [
-  		"Romanian",
-  		"Moldavian",
-  		"Moldovan"
-  	],
-  	"iso639-2": "rum/ron",
-  	"iso639-1": "ro"
+    name: "Moldavian",
+    names: ["Romanian", "Moldavian", "Moldovan"],
+    "iso639-2": "rum/ron",
+    "iso639-1": "ro"
   };
   var Moldovan = {
-  	name: "Moldovan",
-  	names: [
-  		"Romanian",
-  		"Moldavian",
-  		"Moldovan"
-  	],
-  	"iso639-2": "rum/ron",
-  	"iso639-1": "ro"
+    name: "Moldovan",
+    names: ["Romanian", "Moldavian", "Moldovan"],
+    "iso639-2": "rum/ron",
+    "iso639-1": "ro"
   };
   var Mong = {
-  	name: "Mong",
-  	names: [
-  		"Hmong",
-  		"Mong"
-  	],
-  	"iso639-2": "hmn",
-  	"iso639-1": null
+    name: "Mong",
+    names: ["Hmong", "Mong"],
+    "iso639-2": "hmn",
+    "iso639-1": null
   };
   var Mongo = {
-  	name: "Mongo",
-  	names: [
-  		"Mongo"
-  	],
-  	"iso639-2": "lol",
-  	"iso639-1": null
+    name: "Mongo",
+    names: ["Mongo"],
+    "iso639-2": "lol",
+    "iso639-1": null
   };
   var Mongolian = {
-  	name: "Mongolian",
-  	names: [
-  		"Mongolian"
-  	],
-  	"iso639-2": "mon",
-  	"iso639-1": "mn"
+    name: "Mongolian",
+    names: ["Mongolian"],
+    "iso639-2": "mon",
+    "iso639-1": "mn"
   };
   var Montenegrin = {
-  	name: "Montenegrin",
-  	names: [
-  		"Montenegrin"
-  	],
-  	"iso639-2": "cnr",
-  	"iso639-1": null
+    name: "Montenegrin",
+    names: ["Montenegrin"],
+    "iso639-2": "cnr",
+    "iso639-1": null
   };
   var Mossi = {
-  	name: "Mossi",
-  	names: [
-  		"Mossi"
-  	],
-  	"iso639-2": "mos",
-  	"iso639-1": null
+    name: "Mossi",
+    names: ["Mossi"],
+    "iso639-2": "mos",
+    "iso639-1": null
   };
   var Nauru = {
-  	name: "Nauru",
-  	names: [
-  		"Nauru"
-  	],
-  	"iso639-2": "nau",
-  	"iso639-1": "na"
+    name: "Nauru",
+    names: ["Nauru"],
+    "iso639-2": "nau",
+    "iso639-1": "na"
   };
   var Navaho = {
-  	name: "Navaho",
-  	names: [
-  		"Navajo",
-  		"Navaho"
-  	],
-  	"iso639-2": "nav",
-  	"iso639-1": "nv"
+    name: "Navaho",
+    names: ["Navajo", "Navaho"],
+    "iso639-2": "nav",
+    "iso639-1": "nv"
   };
   var Navajo = {
-  	name: "Navajo",
-  	names: [
-  		"Navajo",
-  		"Navaho"
-  	],
-  	"iso639-2": "nav",
-  	"iso639-1": "nv"
+    name: "Navajo",
+    names: ["Navajo", "Navaho"],
+    "iso639-2": "nav",
+    "iso639-1": "nv"
   };
   var Ndonga = {
-  	name: "Ndonga",
-  	names: [
-  		"Ndonga"
-  	],
-  	"iso639-2": "ndo",
-  	"iso639-1": "ng"
+    name: "Ndonga",
+    names: ["Ndonga"],
+    "iso639-2": "ndo",
+    "iso639-1": "ng"
   };
   var Neapolitan = {
-  	name: "Neapolitan",
-  	names: [
-  		"Neapolitan"
-  	],
-  	"iso639-2": "nap",
-  	"iso639-1": null
+    name: "Neapolitan",
+    names: ["Neapolitan"],
+    "iso639-2": "nap",
+    "iso639-1": null
   };
   var Nepali = {
-  	name: "Nepali",
-  	names: [
-  		"Nepali"
-  	],
-  	"iso639-2": "nep",
-  	"iso639-1": "ne"
+    name: "Nepali",
+    names: ["Nepali"],
+    "iso639-2": "nep",
+    "iso639-1": "ne"
   };
   var Newari = {
-  	name: "Newari",
-  	names: [
-  		"Nepal Bhasa",
-  		"Newari"
-  	],
-  	"iso639-2": "new",
-  	"iso639-1": null
+    name: "Newari",
+    names: ["Nepal Bhasa", "Newari"],
+    "iso639-2": "new",
+    "iso639-1": null
   };
   var Nias = {
-  	name: "Nias",
-  	names: [
-  		"Nias"
-  	],
-  	"iso639-2": "nia",
-  	"iso639-1": null
+    name: "Nias",
+    names: ["Nias"],
+    "iso639-2": "nia",
+    "iso639-1": null
   };
   var Niuean = {
-  	name: "Niuean",
-  	names: [
-  		"Niuean"
-  	],
-  	"iso639-2": "niu",
-  	"iso639-1": null
+    name: "Niuean",
+    names: ["Niuean"],
+    "iso639-2": "niu",
+    "iso639-1": null
   };
   var Nogai = {
-  	name: "Nogai",
-  	names: [
-  		"Nogai"
-  	],
-  	"iso639-2": "nog",
-  	"iso639-1": null
+    name: "Nogai",
+    names: ["Nogai"],
+    "iso639-2": "nog",
+    "iso639-1": null
   };
   var Norwegian = {
-  	name: "Norwegian",
-  	names: [
-  		"Norwegian"
-  	],
-  	"iso639-2": "nor",
-  	"iso639-1": "no"
+    name: "Norwegian",
+    names: ["Norwegian"],
+    "iso639-2": "nor",
+    "iso639-1": "no"
   };
   var Nuosu = {
-  	name: "Nuosu",
-  	names: [
-  		"Sichuan Yi",
-  		"Nuosu"
-  	],
-  	"iso639-2": "iii",
-  	"iso639-1": "ii"
+    name: "Nuosu",
+    names: ["Sichuan Yi", "Nuosu"],
+    "iso639-2": "iii",
+    "iso639-1": "ii"
   };
   var Nyamwezi = {
-  	name: "Nyamwezi",
-  	names: [
-  		"Nyamwezi"
-  	],
-  	"iso639-2": "nym",
-  	"iso639-1": null
+    name: "Nyamwezi",
+    names: ["Nyamwezi"],
+    "iso639-2": "nym",
+    "iso639-1": null
   };
   var Nyanja = {
-  	name: "Nyanja",
-  	names: [
-  		"Chichewa",
-  		"Chewa",
-  		"Nyanja"
-  	],
-  	"iso639-2": "nya",
-  	"iso639-1": "ny"
+    name: "Nyanja",
+    names: ["Chichewa", "Chewa", "Nyanja"],
+    "iso639-2": "nya",
+    "iso639-1": "ny"
   };
   var Nyankole = {
-  	name: "Nyankole",
-  	names: [
-  		"Nyankole"
-  	],
-  	"iso639-2": "nyn",
-  	"iso639-1": null
+    name: "Nyankole",
+    names: ["Nyankole"],
+    "iso639-2": "nyn",
+    "iso639-1": null
   };
   var Nyoro = {
-  	name: "Nyoro",
-  	names: [
-  		"Nyoro"
-  	],
-  	"iso639-2": "nyo",
-  	"iso639-1": null
+    name: "Nyoro",
+    names: ["Nyoro"],
+    "iso639-2": "nyo",
+    "iso639-1": null
   };
   var Nzima = {
-  	name: "Nzima",
-  	names: [
-  		"Nzima"
-  	],
-  	"iso639-2": "nzi",
-  	"iso639-1": null
+    name: "Nzima",
+    names: ["Nzima"],
+    "iso639-2": "nzi",
+    "iso639-1": null
   };
   var Occidental = {
-  	name: "Occidental",
-  	names: [
-  		"Interlingue",
-  		"Occidental"
-  	],
-  	"iso639-2": "ile",
-  	"iso639-1": "ie"
+    name: "Occidental",
+    names: ["Interlingue", "Occidental"],
+    "iso639-2": "ile",
+    "iso639-1": "ie"
   };
   var Oirat = {
-  	name: "Oirat",
-  	names: [
-  		"Kalmyk",
-  		"Oirat"
-  	],
-  	"iso639-2": "xal",
-  	"iso639-1": null
+    name: "Oirat",
+    names: ["Kalmyk", "Oirat"],
+    "iso639-2": "xal",
+    "iso639-1": null
   };
   var Ojibwa = {
-  	name: "Ojibwa",
-  	names: [
-  		"Ojibwa"
-  	],
-  	"iso639-2": "oji",
-  	"iso639-1": "oj"
+    name: "Ojibwa",
+    names: ["Ojibwa"],
+    "iso639-2": "oji",
+    "iso639-1": "oj"
   };
   var Oriya = {
-  	name: "Oriya",
-  	names: [
-  		"Oriya"
-  	],
-  	"iso639-2": "ori",
-  	"iso639-1": "or"
+    name: "Oriya",
+    names: ["Oriya"],
+    "iso639-2": "ori",
+    "iso639-1": "or"
   };
   var Oromo = {
-  	name: "Oromo",
-  	names: [
-  		"Oromo"
-  	],
-  	"iso639-2": "orm",
-  	"iso639-1": "om"
+    name: "Oromo",
+    names: ["Oromo"],
+    "iso639-2": "orm",
+    "iso639-1": "om"
   };
   var Osage = {
-  	name: "Osage",
-  	names: [
-  		"Osage"
-  	],
-  	"iso639-2": "osa",
-  	"iso639-1": null
+    name: "Osage",
+    names: ["Osage"],
+    "iso639-2": "osa",
+    "iso639-1": null
   };
   var Ossetian = {
-  	name: "Ossetian",
-  	names: [
-  		"Ossetian",
-  		"Ossetic"
-  	],
-  	"iso639-2": "oss",
-  	"iso639-1": "os"
+    name: "Ossetian",
+    names: ["Ossetian", "Ossetic"],
+    "iso639-2": "oss",
+    "iso639-1": "os"
   };
   var Ossetic = {
-  	name: "Ossetic",
-  	names: [
-  		"Ossetian",
-  		"Ossetic"
-  	],
-  	"iso639-2": "oss",
-  	"iso639-1": "os"
+    name: "Ossetic",
+    names: ["Ossetian", "Ossetic"],
+    "iso639-2": "oss",
+    "iso639-1": "os"
   };
   var Pahlavi = {
-  	name: "Pahlavi",
-  	names: [
-  		"Pahlavi"
-  	],
-  	"iso639-2": "pal",
-  	"iso639-1": null
+    name: "Pahlavi",
+    names: ["Pahlavi"],
+    "iso639-2": "pal",
+    "iso639-1": null
   };
   var Palauan = {
-  	name: "Palauan",
-  	names: [
-  		"Palauan"
-  	],
-  	"iso639-2": "pau",
-  	"iso639-1": null
+    name: "Palauan",
+    names: ["Palauan"],
+    "iso639-2": "pau",
+    "iso639-1": null
   };
   var Pali = {
-  	name: "Pali",
-  	names: [
-  		"Pali"
-  	],
-  	"iso639-2": "pli",
-  	"iso639-1": "pi"
+    name: "Pali",
+    names: ["Pali"],
+    "iso639-2": "pli",
+    "iso639-1": "pi"
   };
   var Pampanga = {
-  	name: "Pampanga",
-  	names: [
-  		"Pampanga",
-  		"Kapampangan"
-  	],
-  	"iso639-2": "pam",
-  	"iso639-1": null
+    name: "Pampanga",
+    names: ["Pampanga", "Kapampangan"],
+    "iso639-2": "pam",
+    "iso639-1": null
   };
   var Pangasinan = {
-  	name: "Pangasinan",
-  	names: [
-  		"Pangasinan"
-  	],
-  	"iso639-2": "pag",
-  	"iso639-1": null
+    name: "Pangasinan",
+    names: ["Pangasinan"],
+    "iso639-2": "pag",
+    "iso639-1": null
   };
   var Panjabi = {
-  	name: "Panjabi",
-  	names: [
-  		"Panjabi",
-  		"Punjabi"
-  	],
-  	"iso639-2": "pan",
-  	"iso639-1": "pa"
+    name: "Panjabi",
+    names: ["Panjabi", "Punjabi"],
+    "iso639-2": "pan",
+    "iso639-1": "pa"
   };
   var Papiamento = {
-  	name: "Papiamento",
-  	names: [
-  		"Papiamento"
-  	],
-  	"iso639-2": "pap",
-  	"iso639-1": null
+    name: "Papiamento",
+    names: ["Papiamento"],
+    "iso639-2": "pap",
+    "iso639-1": null
   };
   var Pashto = {
-  	name: "Pashto",
-  	names: [
-  		"Pushto",
-  		"Pashto"
-  	],
-  	"iso639-2": "pus",
-  	"iso639-1": "ps"
+    name: "Pashto",
+    names: ["Pushto", "Pashto"],
+    "iso639-2": "pus",
+    "iso639-1": "ps"
   };
   var Pedi = {
-  	name: "Pedi",
-  	names: [
-  		"Pedi",
-  		"Sepedi",
-  		"Northern Sotho"
-  	],
-  	"iso639-2": "nso",
-  	"iso639-1": null
+    name: "Pedi",
+    names: ["Pedi", "Sepedi", "Northern Sotho"],
+    "iso639-2": "nso",
+    "iso639-1": null
   };
   var Persian = {
-  	name: "Persian",
-  	names: [
-  		"Persian"
-  	],
-  	"iso639-2": "per/fas",
-  	"iso639-1": "fa"
+    name: "Persian",
+    names: ["Persian"],
+    "iso639-2": "per/fas",
+    "iso639-1": "fa"
   };
   var Phoenician = {
-  	name: "Phoenician",
-  	names: [
-  		"Phoenician"
-  	],
-  	"iso639-2": "phn",
-  	"iso639-1": null
+    name: "Phoenician",
+    names: ["Phoenician"],
+    "iso639-2": "phn",
+    "iso639-1": null
   };
   var Pilipino = {
-  	name: "Pilipino",
-  	names: [
-  		"Filipino",
-  		"Pilipino"
-  	],
-  	"iso639-2": "fil",
-  	"iso639-1": null
+    name: "Pilipino",
+    names: ["Filipino", "Pilipino"],
+    "iso639-2": "fil",
+    "iso639-1": null
   };
   var Pohnpeian = {
-  	name: "Pohnpeian",
-  	names: [
-  		"Pohnpeian"
-  	],
-  	"iso639-2": "pon",
-  	"iso639-1": null
+    name: "Pohnpeian",
+    names: ["Pohnpeian"],
+    "iso639-2": "pon",
+    "iso639-1": null
   };
   var Polish = {
-  	name: "Polish",
-  	names: [
-  		"Polish"
-  	],
-  	"iso639-2": "pol",
-  	"iso639-1": "pl"
+    name: "Polish",
+    names: ["Polish"],
+    "iso639-2": "pol",
+    "iso639-1": "pl"
   };
   var Portuguese = {
-  	name: "Portuguese",
-  	names: [
-  		"Portuguese"
-  	],
-  	"iso639-2": "por",
-  	"iso639-1": "pt"
+    name: "Portuguese",
+    names: ["Portuguese"],
+    "iso639-2": "por",
+    "iso639-1": "pt"
   };
   var Punjabi = {
-  	name: "Punjabi",
-  	names: [
-  		"Panjabi",
-  		"Punjabi"
-  	],
-  	"iso639-2": "pan",
-  	"iso639-1": "pa"
+    name: "Punjabi",
+    names: ["Panjabi", "Punjabi"],
+    "iso639-2": "pan",
+    "iso639-1": "pa"
   };
   var Pushto = {
-  	name: "Pushto",
-  	names: [
-  		"Pushto",
-  		"Pashto"
-  	],
-  	"iso639-2": "pus",
-  	"iso639-1": "ps"
+    name: "Pushto",
+    names: ["Pushto", "Pashto"],
+    "iso639-2": "pus",
+    "iso639-1": "ps"
   };
   var Quechua = {
-  	name: "Quechua",
-  	names: [
-  		"Quechua"
-  	],
-  	"iso639-2": "que",
-  	"iso639-1": "qu"
+    name: "Quechua",
+    names: ["Quechua"],
+    "iso639-2": "que",
+    "iso639-1": "qu"
   };
   var Rajasthani = {
-  	name: "Rajasthani",
-  	names: [
-  		"Rajasthani"
-  	],
-  	"iso639-2": "raj",
-  	"iso639-1": null
+    name: "Rajasthani",
+    names: ["Rajasthani"],
+    "iso639-2": "raj",
+    "iso639-1": null
   };
   var Rapanui = {
-  	name: "Rapanui",
-  	names: [
-  		"Rapanui"
-  	],
-  	"iso639-2": "rap",
-  	"iso639-1": null
+    name: "Rapanui",
+    names: ["Rapanui"],
+    "iso639-2": "rap",
+    "iso639-1": null
   };
   var Rarotongan = {
-  	name: "Rarotongan",
-  	names: [
-  		"Rarotongan",
-  		"Cook Islands Maori"
-  	],
-  	"iso639-2": "rar",
-  	"iso639-1": null
+    name: "Rarotongan",
+    names: ["Rarotongan", "Cook Islands Maori"],
+    "iso639-2": "rar",
+    "iso639-1": null
   };
   var Romanian = {
-  	name: "Romanian",
-  	names: [
-  		"Romanian",
-  		"Moldavian",
-  		"Moldovan"
-  	],
-  	"iso639-2": "rum/ron",
-  	"iso639-1": "ro"
+    name: "Romanian",
+    names: ["Romanian", "Moldavian", "Moldovan"],
+    "iso639-2": "rum/ron",
+    "iso639-1": "ro"
   };
   var Romansh = {
-  	name: "Romansh",
-  	names: [
-  		"Romansh"
-  	],
-  	"iso639-2": "roh",
-  	"iso639-1": "rm"
+    name: "Romansh",
+    names: ["Romansh"],
+    "iso639-2": "roh",
+    "iso639-1": "rm"
   };
   var Romany = {
-  	name: "Romany",
-  	names: [
-  		"Romany"
-  	],
-  	"iso639-2": "rom",
-  	"iso639-1": null
+    name: "Romany",
+    names: ["Romany"],
+    "iso639-2": "rom",
+    "iso639-1": null
   };
   var Rundi = {
-  	name: "Rundi",
-  	names: [
-  		"Rundi"
-  	],
-  	"iso639-2": "run",
-  	"iso639-1": "rn"
+    name: "Rundi",
+    names: ["Rundi"],
+    "iso639-2": "run",
+    "iso639-1": "rn"
   };
   var Russian = {
-  	name: "Russian",
-  	names: [
-  		"Russian"
-  	],
-  	"iso639-2": "rus",
-  	"iso639-1": "ru"
+    name: "Russian",
+    names: ["Russian"],
+    "iso639-2": "rus",
+    "iso639-1": "ru"
   };
   var Sakan = {
-  	name: "Sakan",
-  	names: [
-  		"Khotanese",
-  		"Sakan"
-  	],
-  	"iso639-2": "kho",
-  	"iso639-1": null
+    name: "Sakan",
+    names: ["Khotanese", "Sakan"],
+    "iso639-2": "kho",
+    "iso639-1": null
   };
   var Samoan = {
-  	name: "Samoan",
-  	names: [
-  		"Samoan"
-  	],
-  	"iso639-2": "smo",
-  	"iso639-1": "sm"
+    name: "Samoan",
+    names: ["Samoan"],
+    "iso639-2": "smo",
+    "iso639-1": "sm"
   };
   var Sandawe = {
-  	name: "Sandawe",
-  	names: [
-  		"Sandawe"
-  	],
-  	"iso639-2": "sad",
-  	"iso639-1": null
+    name: "Sandawe",
+    names: ["Sandawe"],
+    "iso639-2": "sad",
+    "iso639-1": null
   };
   var Sango = {
-  	name: "Sango",
-  	names: [
-  		"Sango"
-  	],
-  	"iso639-2": "sag",
-  	"iso639-1": "sg"
+    name: "Sango",
+    names: ["Sango"],
+    "iso639-2": "sag",
+    "iso639-1": "sg"
   };
   var Sanskrit = {
-  	name: "Sanskrit",
-  	names: [
-  		"Sanskrit"
-  	],
-  	"iso639-2": "san",
-  	"iso639-1": "sa"
+    name: "Sanskrit",
+    names: ["Sanskrit"],
+    "iso639-2": "san",
+    "iso639-1": "sa"
   };
   var Santali = {
-  	name: "Santali",
-  	names: [
-  		"Santali"
-  	],
-  	"iso639-2": "sat",
-  	"iso639-1": null
+    name: "Santali",
+    names: ["Santali"],
+    "iso639-2": "sat",
+    "iso639-1": null
   };
   var Sardinian = {
-  	name: "Sardinian",
-  	names: [
-  		"Sardinian"
-  	],
-  	"iso639-2": "srd",
-  	"iso639-1": "sc"
+    name: "Sardinian",
+    names: ["Sardinian"],
+    "iso639-2": "srd",
+    "iso639-1": "sc"
   };
   var Sasak = {
-  	name: "Sasak",
-  	names: [
-  		"Sasak"
-  	],
-  	"iso639-2": "sas",
-  	"iso639-1": null
+    name: "Sasak",
+    names: ["Sasak"],
+    "iso639-2": "sas",
+    "iso639-1": null
   };
   var Scots = {
-  	name: "Scots",
-  	names: [
-  		"Scots"
-  	],
-  	"iso639-2": "sco",
-  	"iso639-1": null
+    name: "Scots",
+    names: ["Scots"],
+    "iso639-2": "sco",
+    "iso639-1": null
   };
   var Selkup = {
-  	name: "Selkup",
-  	names: [
-  		"Selkup"
-  	],
-  	"iso639-2": "sel",
-  	"iso639-1": null
+    name: "Selkup",
+    names: ["Selkup"],
+    "iso639-2": "sel",
+    "iso639-1": null
   };
   var Sepedi = {
-  	name: "Sepedi",
-  	names: [
-  		"Pedi",
-  		"Sepedi",
-  		"Northern Sotho"
-  	],
-  	"iso639-2": "nso",
-  	"iso639-1": null
+    name: "Sepedi",
+    names: ["Pedi", "Sepedi", "Northern Sotho"],
+    "iso639-2": "nso",
+    "iso639-1": null
   };
   var Serbian = {
-  	name: "Serbian",
-  	names: [
-  		"Serbian"
-  	],
-  	"iso639-2": "srp",
-  	"iso639-1": "sr"
+    name: "Serbian",
+    names: ["Serbian"],
+    "iso639-2": "srp",
+    "iso639-1": "sr"
   };
   var Serer = {
-  	name: "Serer",
-  	names: [
-  		"Serer"
-  	],
-  	"iso639-2": "srr",
-  	"iso639-1": null
+    name: "Serer",
+    names: ["Serer"],
+    "iso639-2": "srr",
+    "iso639-1": null
   };
   var Shan = {
-  	name: "Shan",
-  	names: [
-  		"Shan"
-  	],
-  	"iso639-2": "shn",
-  	"iso639-1": null
+    name: "Shan",
+    names: ["Shan"],
+    "iso639-2": "shn",
+    "iso639-1": null
   };
   var Shona = {
-  	name: "Shona",
-  	names: [
-  		"Shona"
-  	],
-  	"iso639-2": "sna",
-  	"iso639-1": "sn"
+    name: "Shona",
+    names: ["Shona"],
+    "iso639-2": "sna",
+    "iso639-1": "sn"
   };
   var Sicilian = {
-  	name: "Sicilian",
-  	names: [
-  		"Sicilian"
-  	],
-  	"iso639-2": "scn",
-  	"iso639-1": null
+    name: "Sicilian",
+    names: ["Sicilian"],
+    "iso639-2": "scn",
+    "iso639-1": null
   };
   var Sidamo = {
-  	name: "Sidamo",
-  	names: [
-  		"Sidamo"
-  	],
-  	"iso639-2": "sid",
-  	"iso639-1": null
+    name: "Sidamo",
+    names: ["Sidamo"],
+    "iso639-2": "sid",
+    "iso639-1": null
   };
   var Siksika = {
-  	name: "Siksika",
-  	names: [
-  		"Siksika"
-  	],
-  	"iso639-2": "bla",
-  	"iso639-1": null
+    name: "Siksika",
+    names: ["Siksika"],
+    "iso639-2": "bla",
+    "iso639-1": null
   };
   var Sindhi = {
-  	name: "Sindhi",
-  	names: [
-  		"Sindhi"
-  	],
-  	"iso639-2": "snd",
-  	"iso639-1": "sd"
+    name: "Sindhi",
+    names: ["Sindhi"],
+    "iso639-2": "snd",
+    "iso639-1": "sd"
   };
   var Sinhala = {
-  	name: "Sinhala",
-  	names: [
-  		"Sinhala",
-  		"Sinhalese"
-  	],
-  	"iso639-2": "sin",
-  	"iso639-1": "si"
+    name: "Sinhala",
+    names: ["Sinhala", "Sinhalese"],
+    "iso639-2": "sin",
+    "iso639-1": "si"
   };
   var Sinhalese = {
-  	name: "Sinhalese",
-  	names: [
-  		"Sinhala",
-  		"Sinhalese"
-  	],
-  	"iso639-2": "sin",
-  	"iso639-1": "si"
+    name: "Sinhalese",
+    names: ["Sinhala", "Sinhalese"],
+    "iso639-2": "sin",
+    "iso639-1": "si"
   };
   var Slovak = {
-  	name: "Slovak",
-  	names: [
-  		"Slovak"
-  	],
-  	"iso639-2": "slo/slk",
-  	"iso639-1": "sk"
+    name: "Slovak",
+    names: ["Slovak"],
+    "iso639-2": "slo/slk",
+    "iso639-1": "sk"
   };
   var Slovenian = {
-  	name: "Slovenian",
-  	names: [
-  		"Slovenian"
-  	],
-  	"iso639-2": "slv",
-  	"iso639-1": "sl"
+    name: "Slovenian",
+    names: ["Slovenian"],
+    "iso639-2": "slv",
+    "iso639-1": "sl"
   };
   var Sogdian = {
-  	name: "Sogdian",
-  	names: [
-  		"Sogdian"
-  	],
-  	"iso639-2": "sog",
-  	"iso639-1": null
+    name: "Sogdian",
+    names: ["Sogdian"],
+    "iso639-2": "sog",
+    "iso639-1": null
   };
   var Somali = {
-  	name: "Somali",
-  	names: [
-  		"Somali"
-  	],
-  	"iso639-2": "som",
-  	"iso639-1": "so"
+    name: "Somali",
+    names: ["Somali"],
+    "iso639-2": "som",
+    "iso639-1": "so"
   };
   var Soninke = {
-  	name: "Soninke",
-  	names: [
-  		"Soninke"
-  	],
-  	"iso639-2": "snk",
-  	"iso639-1": null
+    name: "Soninke",
+    names: ["Soninke"],
+    "iso639-2": "snk",
+    "iso639-1": null
   };
   var Spanish = {
-  	name: "Spanish",
-  	names: [
-  		"Spanish",
-  		"Castilian"
-  	],
-  	"iso639-2": "spa",
-  	"iso639-1": "es"
+    name: "Spanish",
+    names: ["Spanish", "Castilian"],
+    "iso639-2": "spa",
+    "iso639-1": "es"
   };
   var Sukuma = {
-  	name: "Sukuma",
-  	names: [
-  		"Sukuma"
-  	],
-  	"iso639-2": "suk",
-  	"iso639-1": null
+    name: "Sukuma",
+    names: ["Sukuma"],
+    "iso639-2": "suk",
+    "iso639-1": null
   };
   var Sumerian = {
-  	name: "Sumerian",
-  	names: [
-  		"Sumerian"
-  	],
-  	"iso639-2": "sux",
-  	"iso639-1": null
+    name: "Sumerian",
+    names: ["Sumerian"],
+    "iso639-2": "sux",
+    "iso639-1": null
   };
   var Sundanese = {
-  	name: "Sundanese",
-  	names: [
-  		"Sundanese"
-  	],
-  	"iso639-2": "sun",
-  	"iso639-1": "su"
+    name: "Sundanese",
+    names: ["Sundanese"],
+    "iso639-2": "sun",
+    "iso639-1": "su"
   };
   var Susu = {
-  	name: "Susu",
-  	names: [
-  		"Susu"
-  	],
-  	"iso639-2": "sus",
-  	"iso639-1": null
+    name: "Susu",
+    names: ["Susu"],
+    "iso639-2": "sus",
+    "iso639-1": null
   };
   var Swahili = {
-  	name: "Swahili",
-  	names: [
-  		"Swahili"
-  	],
-  	"iso639-2": "swa",
-  	"iso639-1": "sw"
+    name: "Swahili",
+    names: ["Swahili"],
+    "iso639-2": "swa",
+    "iso639-1": "sw"
   };
   var Swati = {
-  	name: "Swati",
-  	names: [
-  		"Swati"
-  	],
-  	"iso639-2": "ssw",
-  	"iso639-1": "ss"
+    name: "Swati",
+    names: ["Swati"],
+    "iso639-2": "ssw",
+    "iso639-1": "ss"
   };
   var Swedish = {
-  	name: "Swedish",
-  	names: [
-  		"Swedish"
-  	],
-  	"iso639-2": "swe",
-  	"iso639-1": "sv"
+    name: "Swedish",
+    names: ["Swedish"],
+    "iso639-2": "swe",
+    "iso639-1": "sv"
   };
   var Syriac = {
-  	name: "Syriac",
-  	names: [
-  		"Syriac"
-  	],
-  	"iso639-2": "syr",
-  	"iso639-1": null
+    name: "Syriac",
+    names: ["Syriac"],
+    "iso639-2": "syr",
+    "iso639-1": null
   };
   var Tagalog = {
-  	name: "Tagalog",
-  	names: [
-  		"Tagalog"
-  	],
-  	"iso639-2": "tgl",
-  	"iso639-1": "tl"
+    name: "Tagalog",
+    names: ["Tagalog"],
+    "iso639-2": "tgl",
+    "iso639-1": "tl"
   };
   var Tahitian = {
-  	name: "Tahitian",
-  	names: [
-  		"Tahitian"
-  	],
-  	"iso639-2": "tah",
-  	"iso639-1": "ty"
+    name: "Tahitian",
+    names: ["Tahitian"],
+    "iso639-2": "tah",
+    "iso639-1": "ty"
   };
   var Tajik = {
-  	name: "Tajik",
-  	names: [
-  		"Tajik"
-  	],
-  	"iso639-2": "tgk",
-  	"iso639-1": "tg"
+    name: "Tajik",
+    names: ["Tajik"],
+    "iso639-2": "tgk",
+    "iso639-1": "tg"
   };
   var Tamashek = {
-  	name: "Tamashek",
-  	names: [
-  		"Tamashek"
-  	],
-  	"iso639-2": "tmh",
-  	"iso639-1": null
+    name: "Tamashek",
+    names: ["Tamashek"],
+    "iso639-2": "tmh",
+    "iso639-1": null
   };
   var Tamil = {
-  	name: "Tamil",
-  	names: [
-  		"Tamil"
-  	],
-  	"iso639-2": "tam",
-  	"iso639-1": "ta"
+    name: "Tamil",
+    names: ["Tamil"],
+    "iso639-2": "tam",
+    "iso639-1": "ta"
   };
   var Tatar = {
-  	name: "Tatar",
-  	names: [
-  		"Tatar"
-  	],
-  	"iso639-2": "tat",
-  	"iso639-1": "tt"
+    name: "Tatar",
+    names: ["Tatar"],
+    "iso639-2": "tat",
+    "iso639-1": "tt"
   };
   var Telugu = {
-  	name: "Telugu",
-  	names: [
-  		"Telugu"
-  	],
-  	"iso639-2": "tel",
-  	"iso639-1": "te"
+    name: "Telugu",
+    names: ["Telugu"],
+    "iso639-2": "tel",
+    "iso639-1": "te"
   };
   var Tereno = {
-  	name: "Tereno",
-  	names: [
-  		"Tereno"
-  	],
-  	"iso639-2": "ter",
-  	"iso639-1": null
+    name: "Tereno",
+    names: ["Tereno"],
+    "iso639-2": "ter",
+    "iso639-1": null
   };
   var Tetum = {
-  	name: "Tetum",
-  	names: [
-  		"Tetum"
-  	],
-  	"iso639-2": "tet",
-  	"iso639-1": null
+    name: "Tetum",
+    names: ["Tetum"],
+    "iso639-2": "tet",
+    "iso639-1": null
   };
   var Thai = {
-  	name: "Thai",
-  	names: [
-  		"Thai"
-  	],
-  	"iso639-2": "tha",
-  	"iso639-1": "th"
+    name: "Thai",
+    names: ["Thai"],
+    "iso639-2": "tha",
+    "iso639-1": "th"
   };
   var Tibetan = {
-  	name: "Tibetan",
-  	names: [
-  		"Tibetan"
-  	],
-  	"iso639-2": "tib/bod",
-  	"iso639-1": "bo"
+    name: "Tibetan",
+    names: ["Tibetan"],
+    "iso639-2": "tib/bod",
+    "iso639-1": "bo"
   };
   var Tigre = {
-  	name: "Tigre",
-  	names: [
-  		"Tigre"
-  	],
-  	"iso639-2": "tig",
-  	"iso639-1": null
+    name: "Tigre",
+    names: ["Tigre"],
+    "iso639-2": "tig",
+    "iso639-1": null
   };
   var Tigrinya = {
-  	name: "Tigrinya",
-  	names: [
-  		"Tigrinya"
-  	],
-  	"iso639-2": "tir",
-  	"iso639-1": "ti"
+    name: "Tigrinya",
+    names: ["Tigrinya"],
+    "iso639-2": "tir",
+    "iso639-1": "ti"
   };
   var Timne = {
-  	name: "Timne",
-  	names: [
-  		"Timne"
-  	],
-  	"iso639-2": "tem",
-  	"iso639-1": null
+    name: "Timne",
+    names: ["Timne"],
+    "iso639-2": "tem",
+    "iso639-1": null
   };
   var Tiv = {
-  	name: "Tiv",
-  	names: [
-  		"Tiv"
-  	],
-  	"iso639-2": "tiv",
-  	"iso639-1": null
+    name: "Tiv",
+    names: ["Tiv"],
+    "iso639-2": "tiv",
+    "iso639-1": null
   };
   var Tlingit = {
-  	name: "Tlingit",
-  	names: [
-  		"Tlingit"
-  	],
-  	"iso639-2": "tli",
-  	"iso639-1": null
+    name: "Tlingit",
+    names: ["Tlingit"],
+    "iso639-2": "tli",
+    "iso639-1": null
   };
   var Tokelau = {
-  	name: "Tokelau",
-  	names: [
-  		"Tokelau"
-  	],
-  	"iso639-2": "tkl",
-  	"iso639-1": null
+    name: "Tokelau",
+    names: ["Tokelau"],
+    "iso639-2": "tkl",
+    "iso639-1": null
   };
   var Tsimshian = {
-  	name: "Tsimshian",
-  	names: [
-  		"Tsimshian"
-  	],
-  	"iso639-2": "tsi",
-  	"iso639-1": null
+    name: "Tsimshian",
+    names: ["Tsimshian"],
+    "iso639-2": "tsi",
+    "iso639-1": null
   };
   var Tsonga = {
-  	name: "Tsonga",
-  	names: [
-  		"Tsonga"
-  	],
-  	"iso639-2": "tso",
-  	"iso639-1": "ts"
+    name: "Tsonga",
+    names: ["Tsonga"],
+    "iso639-2": "tso",
+    "iso639-1": "ts"
   };
   var Tswana = {
-  	name: "Tswana",
-  	names: [
-  		"Tswana"
-  	],
-  	"iso639-2": "tsn",
-  	"iso639-1": "tn"
+    name: "Tswana",
+    names: ["Tswana"],
+    "iso639-2": "tsn",
+    "iso639-1": "tn"
   };
   var Tumbuka = {
-  	name: "Tumbuka",
-  	names: [
-  		"Tumbuka"
-  	],
-  	"iso639-2": "tum",
-  	"iso639-1": null
+    name: "Tumbuka",
+    names: ["Tumbuka"],
+    "iso639-2": "tum",
+    "iso639-1": null
   };
   var Turkish = {
-  	name: "Turkish",
-  	names: [
-  		"Turkish"
-  	],
-  	"iso639-2": "tur",
-  	"iso639-1": "tr"
+    name: "Turkish",
+    names: ["Turkish"],
+    "iso639-2": "tur",
+    "iso639-1": "tr"
   };
   var Turkmen = {
-  	name: "Turkmen",
-  	names: [
-  		"Turkmen"
-  	],
-  	"iso639-2": "tuk",
-  	"iso639-1": "tk"
+    name: "Turkmen",
+    names: ["Turkmen"],
+    "iso639-2": "tuk",
+    "iso639-1": "tk"
   };
   var Tuvalu = {
-  	name: "Tuvalu",
-  	names: [
-  		"Tuvalu"
-  	],
-  	"iso639-2": "tvl",
-  	"iso639-1": null
+    name: "Tuvalu",
+    names: ["Tuvalu"],
+    "iso639-2": "tvl",
+    "iso639-1": null
   };
   var Tuvinian = {
-  	name: "Tuvinian",
-  	names: [
-  		"Tuvinian"
-  	],
-  	"iso639-2": "tyv",
-  	"iso639-1": null
+    name: "Tuvinian",
+    names: ["Tuvinian"],
+    "iso639-2": "tyv",
+    "iso639-1": null
   };
   var Twi = {
-  	name: "Twi",
-  	names: [
-  		"Twi"
-  	],
-  	"iso639-2": "twi",
-  	"iso639-1": "tw"
+    name: "Twi",
+    names: ["Twi"],
+    "iso639-2": "twi",
+    "iso639-1": "tw"
   };
   var Udmurt = {
-  	name: "Udmurt",
-  	names: [
-  		"Udmurt"
-  	],
-  	"iso639-2": "udm",
-  	"iso639-1": null
+    name: "Udmurt",
+    names: ["Udmurt"],
+    "iso639-2": "udm",
+    "iso639-1": null
   };
   var Ugaritic = {
-  	name: "Ugaritic",
-  	names: [
-  		"Ugaritic"
-  	],
-  	"iso639-2": "uga",
-  	"iso639-1": null
+    name: "Ugaritic",
+    names: ["Ugaritic"],
+    "iso639-2": "uga",
+    "iso639-1": null
   };
   var Uighur = {
-  	name: "Uighur",
-  	names: [
-  		"Uighur",
-  		"Uyghur"
-  	],
-  	"iso639-2": "uig",
-  	"iso639-1": "ug"
+    name: "Uighur",
+    names: ["Uighur", "Uyghur"],
+    "iso639-2": "uig",
+    "iso639-1": "ug"
   };
   var Ukrainian = {
-  	name: "Ukrainian",
-  	names: [
-  		"Ukrainian"
-  	],
-  	"iso639-2": "ukr",
-  	"iso639-1": "uk"
+    name: "Ukrainian",
+    names: ["Ukrainian"],
+    "iso639-2": "ukr",
+    "iso639-1": "uk"
   };
   var Umbundu = {
-  	name: "Umbundu",
-  	names: [
-  		"Umbundu"
-  	],
-  	"iso639-2": "umb",
-  	"iso639-1": null
+    name: "Umbundu",
+    names: ["Umbundu"],
+    "iso639-2": "umb",
+    "iso639-1": null
   };
   var Undetermined = {
-  	name: "Undetermined",
-  	names: [
-  		"Undetermined"
-  	],
-  	"iso639-2": "und",
-  	"iso639-1": null
+    name: "Undetermined",
+    names: ["Undetermined"],
+    "iso639-2": "und",
+    "iso639-1": null
   };
   var Urdu = {
-  	name: "Urdu",
-  	names: [
-  		"Urdu"
-  	],
-  	"iso639-2": "urd",
-  	"iso639-1": "ur"
+    name: "Urdu",
+    names: ["Urdu"],
+    "iso639-2": "urd",
+    "iso639-1": "ur"
   };
   var Uyghur = {
-  	name: "Uyghur",
-  	names: [
-  		"Uighur",
-  		"Uyghur"
-  	],
-  	"iso639-2": "uig",
-  	"iso639-1": "ug"
+    name: "Uyghur",
+    names: ["Uighur", "Uyghur"],
+    "iso639-2": "uig",
+    "iso639-1": "ug"
   };
   var Uzbek = {
-  	name: "Uzbek",
-  	names: [
-  		"Uzbek"
-  	],
-  	"iso639-2": "uzb",
-  	"iso639-1": "uz"
+    name: "Uzbek",
+    names: ["Uzbek"],
+    "iso639-2": "uzb",
+    "iso639-1": "uz"
   };
   var Vai = {
-  	name: "Vai",
-  	names: [
-  		"Vai"
-  	],
-  	"iso639-2": "vai",
-  	"iso639-1": null
+    name: "Vai",
+    names: ["Vai"],
+    "iso639-2": "vai",
+    "iso639-1": null
   };
   var Valencian = {
-  	name: "Valencian",
-  	names: [
-  		"Catalan",
-  		"Valencian"
-  	],
-  	"iso639-2": "cat",
-  	"iso639-1": "ca"
+    name: "Valencian",
+    names: ["Catalan", "Valencian"],
+    "iso639-2": "cat",
+    "iso639-1": "ca"
   };
   var Venda = {
-  	name: "Venda",
-  	names: [
-  		"Venda"
-  	],
-  	"iso639-2": "ven",
-  	"iso639-1": "ve"
+    name: "Venda",
+    names: ["Venda"],
+    "iso639-2": "ven",
+    "iso639-1": "ve"
   };
   var Vietnamese = {
-  	name: "Vietnamese",
-  	names: [
-  		"Vietnamese"
-  	],
-  	"iso639-2": "vie",
-  	"iso639-1": "vi"
+    name: "Vietnamese",
+    names: ["Vietnamese"],
+    "iso639-2": "vie",
+    "iso639-1": "vi"
   };
   var Votic = {
-  	name: "Votic",
-  	names: [
-  		"Votic"
-  	],
-  	"iso639-2": "vot",
-  	"iso639-1": null
+    name: "Votic",
+    names: ["Votic"],
+    "iso639-2": "vot",
+    "iso639-1": null
   };
   var Walloon = {
-  	name: "Walloon",
-  	names: [
-  		"Walloon"
-  	],
-  	"iso639-2": "wln",
-  	"iso639-1": "wa"
+    name: "Walloon",
+    names: ["Walloon"],
+    "iso639-2": "wln",
+    "iso639-1": "wa"
   };
   var Waray = {
-  	name: "Waray",
-  	names: [
-  		"Waray"
-  	],
-  	"iso639-2": "war",
-  	"iso639-1": null
+    name: "Waray",
+    names: ["Waray"],
+    "iso639-2": "war",
+    "iso639-1": null
   };
   var Washo = {
-  	name: "Washo",
-  	names: [
-  		"Washo"
-  	],
-  	"iso639-2": "was",
-  	"iso639-1": null
+    name: "Washo",
+    names: ["Washo"],
+    "iso639-2": "was",
+    "iso639-1": null
   };
   var Welsh = {
-  	name: "Welsh",
-  	names: [
-  		"Welsh"
-  	],
-  	"iso639-2": "wel/cym",
-  	"iso639-1": "cy"
+    name: "Welsh",
+    names: ["Welsh"],
+    "iso639-2": "wel/cym",
+    "iso639-1": "cy"
   };
   var Wolaitta = {
-  	name: "Wolaitta",
-  	names: [
-  		"Wolaitta",
-  		"Wolaytta"
-  	],
-  	"iso639-2": "wal",
-  	"iso639-1": null
+    name: "Wolaitta",
+    names: ["Wolaitta", "Wolaytta"],
+    "iso639-2": "wal",
+    "iso639-1": null
   };
   var Wolaytta = {
-  	name: "Wolaytta",
-  	names: [
-  		"Wolaitta",
-  		"Wolaytta"
-  	],
-  	"iso639-2": "wal",
-  	"iso639-1": null
+    name: "Wolaytta",
+    names: ["Wolaitta", "Wolaytta"],
+    "iso639-2": "wal",
+    "iso639-1": null
   };
   var Wolof = {
-  	name: "Wolof",
-  	names: [
-  		"Wolof"
-  	],
-  	"iso639-2": "wol",
-  	"iso639-1": "wo"
+    name: "Wolof",
+    names: ["Wolof"],
+    "iso639-2": "wol",
+    "iso639-1": "wo"
   };
   var Xhosa = {
-  	name: "Xhosa",
-  	names: [
-  		"Xhosa"
-  	],
-  	"iso639-2": "xho",
-  	"iso639-1": "xh"
+    name: "Xhosa",
+    names: ["Xhosa"],
+    "iso639-2": "xho",
+    "iso639-1": "xh"
   };
   var Yakut = {
-  	name: "Yakut",
-  	names: [
-  		"Yakut"
-  	],
-  	"iso639-2": "sah",
-  	"iso639-1": null
+    name: "Yakut",
+    names: ["Yakut"],
+    "iso639-2": "sah",
+    "iso639-1": null
   };
   var Yao = {
-  	name: "Yao",
-  	names: [
-  		"Yao"
-  	],
-  	"iso639-2": "yao",
-  	"iso639-1": null
+    name: "Yao",
+    names: ["Yao"],
+    "iso639-2": "yao",
+    "iso639-1": null
   };
   var Yapese = {
-  	name: "Yapese",
-  	names: [
-  		"Yapese"
-  	],
-  	"iso639-2": "yap",
-  	"iso639-1": null
+    name: "Yapese",
+    names: ["Yapese"],
+    "iso639-2": "yap",
+    "iso639-1": null
   };
   var Yiddish = {
-  	name: "Yiddish",
-  	names: [
-  		"Yiddish"
-  	],
-  	"iso639-2": "yid",
-  	"iso639-1": "yi"
+    name: "Yiddish",
+    names: ["Yiddish"],
+    "iso639-2": "yid",
+    "iso639-1": "yi"
   };
   var Yoruba = {
-  	name: "Yoruba",
-  	names: [
-  		"Yoruba"
-  	],
-  	"iso639-2": "yor",
-  	"iso639-1": "yo"
+    name: "Yoruba",
+    names: ["Yoruba"],
+    "iso639-2": "yor",
+    "iso639-1": "yo"
   };
   var Zapotec = {
-  	name: "Zapotec",
-  	names: [
-  		"Zapotec"
-  	],
-  	"iso639-2": "zap",
-  	"iso639-1": null
+    name: "Zapotec",
+    names: ["Zapotec"],
+    "iso639-2": "zap",
+    "iso639-1": null
   };
   var Zaza = {
-  	name: "Zaza",
-  	names: [
-  		"Zaza",
-  		"Dimili",
-  		"Dimli",
-  		"Kirdki",
-  		"Kirmanjki",
-  		"Zazaki"
-  	],
-  	"iso639-2": "zza",
-  	"iso639-1": null
+    name: "Zaza",
+    names: ["Zaza", "Dimili", "Dimli", "Kirdki", "Kirmanjki", "Zazaki"],
+    "iso639-2": "zza",
+    "iso639-1": null
   };
   var Zazaki = {
-  	name: "Zazaki",
-  	names: [
-  		"Zaza",
-  		"Dimili",
-  		"Dimli",
-  		"Kirdki",
-  		"Kirmanjki",
-  		"Zazaki"
-  	],
-  	"iso639-2": "zza",
-  	"iso639-1": null
+    name: "Zazaki",
+    names: ["Zaza", "Dimili", "Dimli", "Kirdki", "Kirmanjki", "Zazaki"],
+    "iso639-2": "zza",
+    "iso639-1": null
   };
   var Zenaga = {
-  	name: "Zenaga",
-  	names: [
-  		"Zenaga"
-  	],
-  	"iso639-2": "zen",
-  	"iso639-1": null
+    name: "Zenaga",
+    names: ["Zenaga"],
+    "iso639-2": "zen",
+    "iso639-1": null
   };
   var Zhuang = {
-  	name: "Zhuang",
-  	names: [
-  		"Zhuang",
-  		"Chuang"
-  	],
-  	"iso639-2": "zha",
-  	"iso639-1": "za"
+    name: "Zhuang",
+    names: ["Zhuang", "Chuang"],
+    "iso639-2": "zha",
+    "iso639-1": "za"
   };
   var Zulu = {
-  	name: "Zulu",
-  	names: [
-  		"Zulu"
-  	],
-  	"iso639-2": "zul",
-  	"iso639-1": "zu"
+    name: "Zulu",
+    names: ["Zulu"],
+    "iso639-2": "zul",
+    "iso639-1": "zu"
   };
   var Zuni = {
-  	name: "Zuni",
-  	names: [
-  		"Zuni"
-  	],
-  	"iso639-2": "zun",
-  	"iso639-1": null
+    name: "Zuni",
+    names: ["Zuni"],
+    "iso639-2": "zun",
+    "iso639-1": null
   };
   var iso = {
-  	Abkhazian: Abkhazian,
-  	Achinese: Achinese,
-  	Acoli: Acoli,
-  	Adangme: Adangme,
-  	Adygei: Adygei,
-  	Adyghe: Adyghe,
-  	Afar: Afar,
-  	Afrihili: Afrihili,
-  	Afrikaans: Afrikaans,
-  	"Afro-Asiatic languages": {
-  	name: "Afro-Asiatic languages",
-  	names: [
-  		"Afro-Asiatic languages"
-  	],
-  	"iso639-2": "afa",
-  	"iso639-1": null
-  },
-  	Ainu: Ainu,
-  	Akan: Akan,
-  	Akkadian: Akkadian,
-  	Albanian: Albanian,
-  	Alemannic: Alemannic,
-  	Aleut: Aleut,
-  	"Algonquian languages": {
-  	name: "Algonquian languages",
-  	names: [
-  		"Algonquian languages"
-  	],
-  	"iso639-2": "alg",
-  	"iso639-1": null
-  },
-  	Alsatian: Alsatian,
-  	"Altaic languages": {
-  	name: "Altaic languages",
-  	names: [
-  		"Altaic languages"
-  	],
-  	"iso639-2": "tut",
-  	"iso639-1": null
-  },
-  	Amharic: Amharic,
-  	Angika: Angika,
-  	"Apache languages": {
-  	name: "Apache languages",
-  	names: [
-  		"Apache languages"
-  	],
-  	"iso639-2": "apa",
-  	"iso639-1": null
-  },
-  	Arabic: Arabic,
-  	Aragonese: Aragonese,
-  	Arapaho: Arapaho,
-  	Arawak: Arawak,
-  	Armenian: Armenian,
-  	Aromanian: Aromanian,
-  	"Artificial languages": {
-  	name: "Artificial languages",
-  	names: [
-  		"Artificial languages"
-  	],
-  	"iso639-2": "art",
-  	"iso639-1": null
-  },
-  	Arumanian: Arumanian,
-  	Assamese: Assamese,
-  	Asturian: Asturian,
-  	Asturleonese: Asturleonese,
-  	"Athapascan languages": {
-  	name: "Athapascan languages",
-  	names: [
-  		"Athapascan languages"
-  	],
-  	"iso639-2": "ath",
-  	"iso639-1": null
-  },
-  	"Australian languages": {
-  	name: "Australian languages",
-  	names: [
-  		"Australian languages"
-  	],
-  	"iso639-2": "aus",
-  	"iso639-1": null
-  },
-  	"Austronesian languages": {
-  	name: "Austronesian languages",
-  	names: [
-  		"Austronesian languages"
-  	],
-  	"iso639-2": "map",
-  	"iso639-1": null
-  },
-  	Avaric: Avaric,
-  	Avestan: Avestan,
-  	Awadhi: Awadhi,
-  	Aymara: Aymara,
-  	Azerbaijani: Azerbaijani,
-  	Bable: Bable,
-  	Balinese: Balinese,
-  	"Baltic languages": {
-  	name: "Baltic languages",
-  	names: [
-  		"Baltic languages"
-  	],
-  	"iso639-2": "bat",
-  	"iso639-1": null
-  },
-  	Baluchi: Baluchi,
-  	Bambara: Bambara,
-  	"Bamileke languages": {
-  	name: "Bamileke languages",
-  	names: [
-  		"Bamileke languages"
-  	],
-  	"iso639-2": "bai",
-  	"iso639-1": null
-  },
-  	"Banda languages": {
-  	name: "Banda languages",
-  	names: [
-  		"Banda languages"
-  	],
-  	"iso639-2": "bad",
-  	"iso639-1": null
-  },
-  	"Bantu languages": {
-  	name: "Bantu languages",
-  	names: [
-  		"Bantu languages"
-  	],
-  	"iso639-2": "bnt",
-  	"iso639-1": null
-  },
-  	Basa: Basa,
-  	Bashkir: Bashkir,
-  	Basque: Basque,
-  	"Batak languages": {
-  	name: "Batak languages",
-  	names: [
-  		"Batak languages"
-  	],
-  	"iso639-2": "btk",
-  	"iso639-1": null
-  },
-  	Bedawiyet: Bedawiyet,
-  	Beja: Beja,
-  	Belarusian: Belarusian,
-  	Bemba: Bemba,
-  	Bengali: Bengali,
-  	"Berber languages": {
-  	name: "Berber languages",
-  	names: [
-  		"Berber languages"
-  	],
-  	"iso639-2": "ber",
-  	"iso639-1": null
-  },
-  	Bhojpuri: Bhojpuri,
-  	"Bihari languages": {
-  	name: "Bihari languages",
-  	names: [
-  		"Bihari languages"
-  	],
-  	"iso639-2": "bih",
-  	"iso639-1": "bh"
-  },
-  	Bikol: Bikol,
-  	Bilin: Bilin,
-  	Bini: Bini,
-  	Bislama: Bislama,
-  	Blin: Blin,
-  	Bliss: Bliss,
-  	Blissymbolics: Blissymbolics,
-  	Blissymbols: Blissymbols,
-  	"Bokmål, Norwegian": {
-  	name: "Bokmål, Norwegian",
-  	names: [
-  		"Bokmål, Norwegian",
-  		"Norwegian Bokmål"
-  	],
-  	"iso639-2": "nob",
-  	"iso639-1": "nb"
-  },
-  	Bosnian: Bosnian,
-  	Braj: Braj,
-  	Breton: Breton,
-  	Buginese: Buginese,
-  	Bulgarian: Bulgarian,
-  	Buriat: Buriat,
-  	Burmese: Burmese,
-  	Caddo: Caddo,
-  	Castilian: Castilian,
-  	Catalan: Catalan,
-  	"Caucasian languages": {
-  	name: "Caucasian languages",
-  	names: [
-  		"Caucasian languages"
-  	],
-  	"iso639-2": "cau",
-  	"iso639-1": null
-  },
-  	Cebuano: Cebuano,
-  	"Celtic languages": {
-  	name: "Celtic languages",
-  	names: [
-  		"Celtic languages"
-  	],
-  	"iso639-2": "cel",
-  	"iso639-1": null
-  },
-  	"Central American Indian languages": {
-  	name: "Central American Indian languages",
-  	names: [
-  		"Central American Indian languages"
-  	],
-  	"iso639-2": "cai",
-  	"iso639-1": null
-  },
-  	"Central Khmer": {
-  	name: "Central Khmer",
-  	names: [
-  		"Central Khmer"
-  	],
-  	"iso639-2": "khm",
-  	"iso639-1": "km"
-  },
-  	Chagatai: Chagatai,
-  	"Chamic languages": {
-  	name: "Chamic languages",
-  	names: [
-  		"Chamic languages"
-  	],
-  	"iso639-2": "cmc",
-  	"iso639-1": null
-  },
-  	Chamorro: Chamorro,
-  	Chechen: Chechen,
-  	Cherokee: Cherokee,
-  	Chewa: Chewa,
-  	Cheyenne: Cheyenne,
-  	Chibcha: Chibcha,
-  	Chichewa: Chichewa,
-  	Chinese: Chinese,
-  	"Chinook jargon": {
-  	name: "Chinook jargon",
-  	names: [
-  		"Chinook jargon"
-  	],
-  	"iso639-2": "chn",
-  	"iso639-1": null
-  },
-  	Chipewyan: Chipewyan,
-  	Choctaw: Choctaw,
-  	Chuang: Chuang,
-  	"Church Slavic": {
-  	name: "Church Slavic",
-  	names: [
-  		"Church Slavic",
-  		"Old Slavonic",
-  		"Church Slavonic",
-  		"Old Bulgarian",
-  		"Old Church Slavonic"
-  	],
-  	"iso639-2": "chu",
-  	"iso639-1": "cu"
-  },
-  	"Church Slavonic": {
-  	name: "Church Slavonic",
-  	names: [
-  		"Church Slavic",
-  		"Old Slavonic",
-  		"Church Slavonic",
-  		"Old Bulgarian",
-  		"Old Church Slavonic"
-  	],
-  	"iso639-2": "chu",
-  	"iso639-1": "cu"
-  },
-  	Chuukese: Chuukese,
-  	Chuvash: Chuvash,
-  	"Classical Nepal Bhasa": {
-  	name: "Classical Nepal Bhasa",
-  	names: [
-  		"Classical Newari",
-  		"Old Newari",
-  		"Classical Nepal Bhasa"
-  	],
-  	"iso639-2": "nwc",
-  	"iso639-1": null
-  },
-  	"Classical Newari": {
-  	name: "Classical Newari",
-  	names: [
-  		"Classical Newari",
-  		"Old Newari",
-  		"Classical Nepal Bhasa"
-  	],
-  	"iso639-2": "nwc",
-  	"iso639-1": null
-  },
-  	"Classical Syriac": {
-  	name: "Classical Syriac",
-  	names: [
-  		"Classical Syriac"
-  	],
-  	"iso639-2": "syc",
-  	"iso639-1": null
-  },
-  	"Cook Islands Maori": {
-  	name: "Cook Islands Maori",
-  	names: [
-  		"Rarotongan",
-  		"Cook Islands Maori"
-  	],
-  	"iso639-2": "rar",
-  	"iso639-1": null
-  },
-  	Coptic: Coptic,
-  	Cornish: Cornish,
-  	Corsican: Corsican,
-  	Cree: Cree,
-  	Creek: Creek,
-  	"Creoles and pidgins": {
-  	name: "Creoles and pidgins",
-  	names: [
-  		"Creoles and pidgins"
-  	],
-  	"iso639-2": "crp",
-  	"iso639-1": null
-  },
-  	"Creoles and pidgins, English based": {
-  	name: "Creoles and pidgins, English based",
-  	names: [
-  		"Creoles and pidgins, English based"
-  	],
-  	"iso639-2": "cpe",
-  	"iso639-1": null
-  },
-  	"Creoles and pidgins, French-based": {
-  	name: "Creoles and pidgins, French-based",
-  	names: [
-  		"Creoles and pidgins, French-based"
-  	],
-  	"iso639-2": "cpf",
-  	"iso639-1": null
-  },
-  	"Creoles and pidgins, Portuguese-based": {
-  	name: "Creoles and pidgins, Portuguese-based",
-  	names: [
-  		"Creoles and pidgins, Portuguese-based"
-  	],
-  	"iso639-2": "cpp",
-  	"iso639-1": null
-  },
-  	"Crimean Tatar": {
-  	name: "Crimean Tatar",
-  	names: [
-  		"Crimean Tatar",
-  		"Crimean Turkish"
-  	],
-  	"iso639-2": "crh",
-  	"iso639-1": null
-  },
-  	"Crimean Turkish": {
-  	name: "Crimean Turkish",
-  	names: [
-  		"Crimean Tatar",
-  		"Crimean Turkish"
-  	],
-  	"iso639-2": "crh",
-  	"iso639-1": null
-  },
-  	Croatian: Croatian,
-  	"Cushitic languages": {
-  	name: "Cushitic languages",
-  	names: [
-  		"Cushitic languages"
-  	],
-  	"iso639-2": "cus",
-  	"iso639-1": null
-  },
-  	Czech: Czech,
-  	Dakota: Dakota,
-  	Danish: Danish,
-  	Dargwa: Dargwa,
-  	Delaware: Delaware,
-  	"Dene Suline": {
-  	name: "Dene Suline",
-  	names: [
-  		"Chipewyan",
-  		"Dene Suline"
-  	],
-  	"iso639-2": "chp",
-  	"iso639-1": null
-  },
-  	Dhivehi: Dhivehi,
-  	Dimili: Dimili,
-  	Dimli: Dimli,
-  	Dinka: Dinka,
-  	Divehi: Divehi,
-  	Dogri: Dogri,
-  	Dogrib: Dogrib,
-  	"Dravidian languages": {
-  	name: "Dravidian languages",
-  	names: [
-  		"Dravidian languages"
-  	],
-  	"iso639-2": "dra",
-  	"iso639-1": null
-  },
-  	Duala: Duala,
-  	Dutch: Dutch,
-  	"Dutch, Middle (ca.1050-1350)": {
-  	name: "Dutch, Middle (ca.1050-1350)",
-  	names: [
-  		"Dutch, Middle (ca.1050-1350)"
-  	],
-  	"iso639-2": "dum",
-  	"iso639-1": null
-  },
-  	Dyula: Dyula,
-  	Dzongkha: Dzongkha,
-  	"Eastern Frisian": {
-  	name: "Eastern Frisian",
-  	names: [
-  		"Eastern Frisian"
-  	],
-  	"iso639-2": "frs",
-  	"iso639-1": null
-  },
-  	Edo: Edo,
-  	Efik: Efik,
-  	"Egyptian (Ancient)": {
-  	name: "Egyptian (Ancient)",
-  	names: [
-  		"Egyptian (Ancient)"
-  	],
-  	"iso639-2": "egy",
-  	"iso639-1": null
-  },
-  	Ekajuk: Ekajuk,
-  	Elamite: Elamite,
-  	English: English,
-  	"English, Middle (1100-1500)": {
-  	name: "English, Middle (1100-1500)",
-  	names: [
-  		"English, Middle (1100-1500)"
-  	],
-  	"iso639-2": "enm",
-  	"iso639-1": null
-  },
-  	"English, Old (ca.450-1100)": {
-  	name: "English, Old (ca.450-1100)",
-  	names: [
-  		"English, Old (ca.450-1100)"
-  	],
-  	"iso639-2": "ang",
-  	"iso639-1": null
-  },
-  	Erzya: Erzya,
-  	Esperanto: Esperanto,
-  	Estonian: Estonian,
-  	Ewe: Ewe,
-  	Ewondo: Ewondo,
-  	Fang: Fang,
-  	Fanti: Fanti,
-  	Faroese: Faroese,
-  	Fijian: Fijian,
-  	Filipino: Filipino,
-  	Finnish: Finnish,
-  	"Finno-Ugrian languages": {
-  	name: "Finno-Ugrian languages",
-  	names: [
-  		"Finno-Ugrian languages"
-  	],
-  	"iso639-2": "fiu",
-  	"iso639-1": null
-  },
-  	Flemish: Flemish,
-  	Fon: Fon,
-  	French: French,
-  	"French, Middle (ca.1400-1600)": {
-  	name: "French, Middle (ca.1400-1600)",
-  	names: [
-  		"French, Middle (ca.1400-1600)"
-  	],
-  	"iso639-2": "frm",
-  	"iso639-1": null
-  },
-  	"French, Old (842-ca.1400)": {
-  	name: "French, Old (842-ca.1400)",
-  	names: [
-  		"French, Old (842-ca.1400)"
-  	],
-  	"iso639-2": "fro",
-  	"iso639-1": null
-  },
-  	Friulian: Friulian,
-  	Fulah: Fulah,
-  	Ga: Ga,
-  	Gaelic: Gaelic,
-  	"Galibi Carib": {
-  	name: "Galibi Carib",
-  	names: [
-  		"Galibi Carib"
-  	],
-  	"iso639-2": "car",
-  	"iso639-1": null
-  },
-  	Galician: Galician,
-  	Ganda: Ganda,
-  	Gayo: Gayo,
-  	Gbaya: Gbaya,
-  	Geez: Geez,
-  	Georgian: Georgian,
-  	German: German,
-  	"German, Low": {
-  	name: "German, Low",
-  	names: [
-  		"Low German",
-  		"Low Saxon",
-  		"German, Low",
-  		"Saxon, Low"
-  	],
-  	"iso639-2": "nds",
-  	"iso639-1": null
-  },
-  	"German, Middle High (ca.1050-1500)": {
-  	name: "German, Middle High (ca.1050-1500)",
-  	names: [
-  		"German, Middle High (ca.1050-1500)"
-  	],
-  	"iso639-2": "gmh",
-  	"iso639-1": null
-  },
-  	"German, Old High (ca.750-1050)": {
-  	name: "German, Old High (ca.750-1050)",
-  	names: [
-  		"German, Old High (ca.750-1050)"
-  	],
-  	"iso639-2": "goh",
-  	"iso639-1": null
-  },
-  	"Germanic languages": {
-  	name: "Germanic languages",
-  	names: [
-  		"Germanic languages"
-  	],
-  	"iso639-2": "gem",
-  	"iso639-1": null
-  },
-  	Gikuyu: Gikuyu,
-  	Gilbertese: Gilbertese,
-  	Gondi: Gondi,
-  	Gorontalo: Gorontalo,
-  	Gothic: Gothic,
-  	Grebo: Grebo,
-  	"Greek, Ancient (to 1453)": {
-  	name: "Greek, Ancient (to 1453)",
-  	names: [
-  		"Greek, Ancient (to 1453)"
-  	],
-  	"iso639-2": "grc",
-  	"iso639-1": null
-  },
-  	"Greek, Modern (1453-)": {
-  	name: "Greek, Modern (1453-)",
-  	names: [
-  		"Greek, Modern (1453-)"
-  	],
-  	"iso639-2": "gre/ell",
-  	"iso639-1": "el"
-  },
-  	Greenlandic: Greenlandic,
-  	Guarani: Guarani,
-  	Gujarati: Gujarati,
-  	"Gwich'in": {
-  	name: "Gwich'in",
-  	names: [
-  		"Gwich'in"
-  	],
-  	"iso639-2": "gwi",
-  	"iso639-1": null
-  },
-  	Haida: Haida,
-  	Haitian: Haitian,
-  	"Haitian Creole": {
-  	name: "Haitian Creole",
-  	names: [
-  		"Haitian",
-  		"Haitian Creole"
-  	],
-  	"iso639-2": "hat",
-  	"iso639-1": "ht"
-  },
-  	Hausa: Hausa,
-  	Hawaiian: Hawaiian,
-  	Hebrew: Hebrew,
-  	Herero: Herero,
-  	Hiligaynon: Hiligaynon,
-  	"Himachali languages": {
-  	name: "Himachali languages",
-  	names: [
-  		"Himachali languages",
-  		"Western Pahari languages"
-  	],
-  	"iso639-2": "him",
-  	"iso639-1": null
-  },
-  	Hindi: Hindi,
-  	"Hiri Motu": {
-  	name: "Hiri Motu",
-  	names: [
-  		"Hiri Motu"
-  	],
-  	"iso639-2": "hmo",
-  	"iso639-1": "ho"
-  },
-  	Hittite: Hittite,
-  	Hmong: Hmong,
-  	Hungarian: Hungarian,
-  	Hupa: Hupa,
-  	Iban: Iban,
-  	Icelandic: Icelandic,
-  	Ido: Ido,
-  	Igbo: Igbo,
-  	"Ijo languages": {
-  	name: "Ijo languages",
-  	names: [
-  		"Ijo languages"
-  	],
-  	"iso639-2": "ijo",
-  	"iso639-1": null
-  },
-  	Iloko: Iloko,
-  	"Imperial Aramaic (700-300 BCE)": {
-  	name: "Imperial Aramaic (700-300 BCE)",
-  	names: [
-  		"Official Aramaic (700-300 BCE)",
-  		"Imperial Aramaic (700-300 BCE)"
-  	],
-  	"iso639-2": "arc",
-  	"iso639-1": null
-  },
-  	"Inari Sami": {
-  	name: "Inari Sami",
-  	names: [
-  		"Inari Sami"
-  	],
-  	"iso639-2": "smn",
-  	"iso639-1": null
-  },
-  	"Indic languages": {
-  	name: "Indic languages",
-  	names: [
-  		"Indic languages"
-  	],
-  	"iso639-2": "inc",
-  	"iso639-1": null
-  },
-  	"Indo-European languages": {
-  	name: "Indo-European languages",
-  	names: [
-  		"Indo-European languages"
-  	],
-  	"iso639-2": "ine",
-  	"iso639-1": null
-  },
-  	Indonesian: Indonesian,
-  	Ingush: Ingush,
-  	"Interlingua (International Auxiliary Language Association)": {
-  	name: "Interlingua (International Auxiliary Language Association)",
-  	names: [
-  		"Interlingua (International Auxiliary Language Association)"
-  	],
-  	"iso639-2": "ina",
-  	"iso639-1": "ia"
-  },
-  	Interlingue: Interlingue,
-  	Inuktitut: Inuktitut,
-  	Inupiaq: Inupiaq,
-  	"Iranian languages": {
-  	name: "Iranian languages",
-  	names: [
-  		"Iranian languages"
-  	],
-  	"iso639-2": "ira",
-  	"iso639-1": null
-  },
-  	Irish: Irish,
-  	"Irish, Middle (900-1200)": {
-  	name: "Irish, Middle (900-1200)",
-  	names: [
-  		"Irish, Middle (900-1200)"
-  	],
-  	"iso639-2": "mga",
-  	"iso639-1": null
-  },
-  	"Irish, Old (to 900)": {
-  	name: "Irish, Old (to 900)",
-  	names: [
-  		"Irish, Old (to 900)"
-  	],
-  	"iso639-2": "sga",
-  	"iso639-1": null
-  },
-  	"Iroquoian languages": {
-  	name: "Iroquoian languages",
-  	names: [
-  		"Iroquoian languages"
-  	],
-  	"iso639-2": "iro",
-  	"iso639-1": null
-  },
-  	Italian: Italian,
-  	Japanese: Japanese,
-  	Javanese: Javanese,
-  	Jingpho: Jingpho,
-  	"Judeo-Arabic": {
-  	name: "Judeo-Arabic",
-  	names: [
-  		"Judeo-Arabic"
-  	],
-  	"iso639-2": "jrb",
-  	"iso639-1": null
-  },
-  	"Judeo-Persian": {
-  	name: "Judeo-Persian",
-  	names: [
-  		"Judeo-Persian"
-  	],
-  	"iso639-2": "jpr",
-  	"iso639-1": null
-  },
-  	Kabardian: Kabardian,
-  	Kabyle: Kabyle,
-  	Kachin: Kachin,
-  	Kalaallisut: Kalaallisut,
-  	Kalmyk: Kalmyk,
-  	Kamba: Kamba,
-  	Kannada: Kannada,
-  	Kanuri: Kanuri,
-  	Kapampangan: Kapampangan,
-  	"Kara-Kalpak": {
-  	name: "Kara-Kalpak",
-  	names: [
-  		"Kara-Kalpak"
-  	],
-  	"iso639-2": "kaa",
-  	"iso639-1": null
-  },
-  	"Karachay-Balkar": {
-  	name: "Karachay-Balkar",
-  	names: [
-  		"Karachay-Balkar"
-  	],
-  	"iso639-2": "krc",
-  	"iso639-1": null
-  },
-  	Karelian: Karelian,
-  	"Karen languages": {
-  	name: "Karen languages",
-  	names: [
-  		"Karen languages"
-  	],
-  	"iso639-2": "kar",
-  	"iso639-1": null
-  },
-  	Kashmiri: Kashmiri,
-  	Kashubian: Kashubian,
-  	Kawi: Kawi,
-  	Kazakh: Kazakh,
-  	Khasi: Khasi,
-  	"Khoisan languages": {
-  	name: "Khoisan languages",
-  	names: [
-  		"Khoisan languages"
-  	],
-  	"iso639-2": "khi",
-  	"iso639-1": null
-  },
-  	Khotanese: Khotanese,
-  	Kikuyu: Kikuyu,
-  	Kimbundu: Kimbundu,
-  	Kinyarwanda: Kinyarwanda,
-  	Kirdki: Kirdki,
-  	Kirghiz: Kirghiz,
-  	Kirmanjki: Kirmanjki,
-  	Klingon: Klingon,
-  	Komi: Komi,
-  	Kongo: Kongo,
-  	Konkani: Konkani,
-  	Korean: Korean,
-  	Kosraean: Kosraean,
-  	Kpelle: Kpelle,
-  	"Kru languages": {
-  	name: "Kru languages",
-  	names: [
-  		"Kru languages"
-  	],
-  	"iso639-2": "kro",
-  	"iso639-1": null
-  },
-  	Kuanyama: Kuanyama,
-  	Kumyk: Kumyk,
-  	Kurdish: Kurdish,
-  	Kurukh: Kurukh,
-  	Kutenai: Kutenai,
-  	Kwanyama: Kwanyama,
-  	Kyrgyz: Kyrgyz,
-  	Ladino: Ladino,
-  	Lahnda: Lahnda,
-  	Lamba: Lamba,
-  	"Land Dayak languages": {
-  	name: "Land Dayak languages",
-  	names: [
-  		"Land Dayak languages"
-  	],
-  	"iso639-2": "day",
-  	"iso639-1": null
-  },
-  	Lao: Lao,
-  	Latin: Latin,
-  	Latvian: Latvian,
-  	Leonese: Leonese,
-  	Letzeburgesch: Letzeburgesch,
-  	Lezghian: Lezghian,
-  	Limburgan: Limburgan,
-  	Limburger: Limburger,
-  	Limburgish: Limburgish,
-  	Lingala: Lingala,
-  	Lithuanian: Lithuanian,
-  	Lojban: Lojban,
-  	"Low German": {
-  	name: "Low German",
-  	names: [
-  		"Low German",
-  		"Low Saxon",
-  		"German, Low",
-  		"Saxon, Low"
-  	],
-  	"iso639-2": "nds",
-  	"iso639-1": null
-  },
-  	"Low Saxon": {
-  	name: "Low Saxon",
-  	names: [
-  		"Low German",
-  		"Low Saxon",
-  		"German, Low",
-  		"Saxon, Low"
-  	],
-  	"iso639-2": "nds",
-  	"iso639-1": null
-  },
-  	"Lower Sorbian": {
-  	name: "Lower Sorbian",
-  	names: [
-  		"Lower Sorbian"
-  	],
-  	"iso639-2": "dsb",
-  	"iso639-1": null
-  },
-  	Lozi: Lozi,
-  	"Luba-Katanga": {
-  	name: "Luba-Katanga",
-  	names: [
-  		"Luba-Katanga"
-  	],
-  	"iso639-2": "lub",
-  	"iso639-1": "lu"
-  },
-  	"Luba-Lulua": {
-  	name: "Luba-Lulua",
-  	names: [
-  		"Luba-Lulua"
-  	],
-  	"iso639-2": "lua",
-  	"iso639-1": null
-  },
-  	Luiseno: Luiseno,
-  	"Lule Sami": {
-  	name: "Lule Sami",
-  	names: [
-  		"Lule Sami"
-  	],
-  	"iso639-2": "smj",
-  	"iso639-1": null
-  },
-  	Lunda: Lunda,
-  	"Luo (Kenya and Tanzania)": {
-  	name: "Luo (Kenya and Tanzania)",
-  	names: [
-  		"Luo (Kenya and Tanzania)"
-  	],
-  	"iso639-2": "luo",
-  	"iso639-1": null
-  },
-  	Lushai: Lushai,
-  	Luxembourgish: Luxembourgish,
-  	"Macedo-Romanian": {
-  	name: "Macedo-Romanian",
-  	names: [
-  		"Aromanian",
-  		"Arumanian",
-  		"Macedo-Romanian"
-  	],
-  	"iso639-2": "rup",
-  	"iso639-1": null
-  },
-  	Macedonian: Macedonian,
-  	Madurese: Madurese,
-  	Magahi: Magahi,
-  	Maithili: Maithili,
-  	Makasar: Makasar,
-  	Malagasy: Malagasy,
-  	Malay: Malay,
-  	Malayalam: Malayalam,
-  	Maldivian: Maldivian,
-  	Maltese: Maltese,
-  	Manchu: Manchu,
-  	Mandar: Mandar,
-  	Mandingo: Mandingo,
-  	Manipuri: Manipuri,
-  	"Manobo languages": {
-  	name: "Manobo languages",
-  	names: [
-  		"Manobo languages"
-  	],
-  	"iso639-2": "mno",
-  	"iso639-1": null
-  },
-  	Manx: Manx,
-  	Maori: Maori,
-  	Mapuche: Mapuche,
-  	Mapudungun: Mapudungun,
-  	Marathi: Marathi,
-  	Mari: Mari,
-  	Marshallese: Marshallese,
-  	Marwari: Marwari,
-  	Masai: Masai,
-  	"Mayan languages": {
-  	name: "Mayan languages",
-  	names: [
-  		"Mayan languages"
-  	],
-  	"iso639-2": "myn",
-  	"iso639-1": null
-  },
-  	Mende: Mende,
-  	"Mi'kmaq": {
-  	name: "Mi'kmaq",
-  	names: [
-  		"Mi'kmaq",
-  		"Micmac"
-  	],
-  	"iso639-2": "mic",
-  	"iso639-1": null
-  },
-  	Micmac: Micmac,
-  	Minangkabau: Minangkabau,
-  	Mirandese: Mirandese,
-  	Mohawk: Mohawk,
-  	Moksha: Moksha,
-  	Moldavian: Moldavian,
-  	Moldovan: Moldovan,
-  	"Mon-Khmer languages": {
-  	name: "Mon-Khmer languages",
-  	names: [
-  		"Mon-Khmer languages"
-  	],
-  	"iso639-2": "mkh",
-  	"iso639-1": null
-  },
-  	Mong: Mong,
-  	Mongo: Mongo,
-  	Mongolian: Mongolian,
-  	Montenegrin: Montenegrin,
-  	Mossi: Mossi,
-  	"Multiple languages": {
-  	name: "Multiple languages",
-  	names: [
-  		"Multiple languages"
-  	],
-  	"iso639-2": "mul",
-  	"iso639-1": null
-  },
-  	"Munda languages": {
-  	name: "Munda languages",
-  	names: [
-  		"Munda languages"
-  	],
-  	"iso639-2": "mun",
-  	"iso639-1": null
-  },
-  	"N'Ko": {
-  	name: "N'Ko",
-  	names: [
-  		"N'Ko"
-  	],
-  	"iso639-2": "nqo",
-  	"iso639-1": null
-  },
-  	"Nahuatl languages": {
-  	name: "Nahuatl languages",
-  	names: [
-  		"Nahuatl languages"
-  	],
-  	"iso639-2": "nah",
-  	"iso639-1": null
-  },
-  	Nauru: Nauru,
-  	Navaho: Navaho,
-  	Navajo: Navajo,
-  	"Ndebele, North": {
-  	name: "Ndebele, North",
-  	names: [
-  		"Ndebele, North",
-  		"North Ndebele"
-  	],
-  	"iso639-2": "nde",
-  	"iso639-1": "nd"
-  },
-  	"Ndebele, South": {
-  	name: "Ndebele, South",
-  	names: [
-  		"Ndebele, South",
-  		"South Ndebele"
-  	],
-  	"iso639-2": "nbl",
-  	"iso639-1": "nr"
-  },
-  	Ndonga: Ndonga,
-  	Neapolitan: Neapolitan,
-  	"Nepal Bhasa": {
-  	name: "Nepal Bhasa",
-  	names: [
-  		"Nepal Bhasa",
-  		"Newari"
-  	],
-  	"iso639-2": "new",
-  	"iso639-1": null
-  },
-  	Nepali: Nepali,
-  	Newari: Newari,
-  	Nias: Nias,
-  	"Niger-Kordofanian languages": {
-  	name: "Niger-Kordofanian languages",
-  	names: [
-  		"Niger-Kordofanian languages"
-  	],
-  	"iso639-2": "nic",
-  	"iso639-1": null
-  },
-  	"Nilo-Saharan languages": {
-  	name: "Nilo-Saharan languages",
-  	names: [
-  		"Nilo-Saharan languages"
-  	],
-  	"iso639-2": "ssa",
-  	"iso639-1": null
-  },
-  	Niuean: Niuean,
-  	"No linguistic content": {
-  	name: "No linguistic content",
-  	names: [
-  		"No linguistic content",
-  		"Not applicable"
-  	],
-  	"iso639-2": "zxx",
-  	"iso639-1": null
-  },
-  	Nogai: Nogai,
-  	"Norse, Old": {
-  	name: "Norse, Old",
-  	names: [
-  		"Norse, Old"
-  	],
-  	"iso639-2": "non",
-  	"iso639-1": null
-  },
-  	"North American Indian languages": {
-  	name: "North American Indian languages",
-  	names: [
-  		"North American Indian languages"
-  	],
-  	"iso639-2": "nai",
-  	"iso639-1": null
-  },
-  	"North Ndebele": {
-  	name: "North Ndebele",
-  	names: [
-  		"Ndebele, North",
-  		"North Ndebele"
-  	],
-  	"iso639-2": "nde",
-  	"iso639-1": "nd"
-  },
-  	"Northern Frisian": {
-  	name: "Northern Frisian",
-  	names: [
-  		"Northern Frisian"
-  	],
-  	"iso639-2": "frr",
-  	"iso639-1": null
-  },
-  	"Northern Sami": {
-  	name: "Northern Sami",
-  	names: [
-  		"Northern Sami"
-  	],
-  	"iso639-2": "sme",
-  	"iso639-1": "se"
-  },
-  	"Northern Sotho": {
-  	name: "Northern Sotho",
-  	names: [
-  		"Pedi",
-  		"Sepedi",
-  		"Northern Sotho"
-  	],
-  	"iso639-2": "nso",
-  	"iso639-1": null
-  },
-  	Norwegian: Norwegian,
-  	"Norwegian Bokmål": {
-  	name: "Norwegian Bokmål",
-  	names: [
-  		"Bokmål, Norwegian",
-  		"Norwegian Bokmål"
-  	],
-  	"iso639-2": "nob",
-  	"iso639-1": "nb"
-  },
-  	"Norwegian Nynorsk": {
-  	name: "Norwegian Nynorsk",
-  	names: [
-  		"Norwegian Nynorsk",
-  		"Nynorsk, Norwegian"
-  	],
-  	"iso639-2": "nno",
-  	"iso639-1": "nn"
-  },
-  	"Not applicable": {
-  	name: "Not applicable",
-  	names: [
-  		"No linguistic content",
-  		"Not applicable"
-  	],
-  	"iso639-2": "zxx",
-  	"iso639-1": null
-  },
-  	"Nubian languages": {
-  	name: "Nubian languages",
-  	names: [
-  		"Nubian languages"
-  	],
-  	"iso639-2": "nub",
-  	"iso639-1": null
-  },
-  	Nuosu: Nuosu,
-  	Nyamwezi: Nyamwezi,
-  	Nyanja: Nyanja,
-  	Nyankole: Nyankole,
-  	"Nynorsk, Norwegian": {
-  	name: "Nynorsk, Norwegian",
-  	names: [
-  		"Norwegian Nynorsk",
-  		"Nynorsk, Norwegian"
-  	],
-  	"iso639-2": "nno",
-  	"iso639-1": "nn"
-  },
-  	Nyoro: Nyoro,
-  	Nzima: Nzima,
-  	Occidental: Occidental,
-  	"Occitan (post 1500)": {
-  	name: "Occitan (post 1500)",
-  	names: [
-  		"Occitan (post 1500)"
-  	],
-  	"iso639-2": "oci",
-  	"iso639-1": "oc"
-  },
-  	"Occitan, Old (to 1500)": {
-  	name: "Occitan, Old (to 1500)",
-  	names: [
-  		"Provençal, Old (to 1500)",
-  		"Occitan, Old (to 1500)"
-  	],
-  	"iso639-2": "pro",
-  	"iso639-1": null
-  },
-  	"Official Aramaic (700-300 BCE)": {
-  	name: "Official Aramaic (700-300 BCE)",
-  	names: [
-  		"Official Aramaic (700-300 BCE)",
-  		"Imperial Aramaic (700-300 BCE)"
-  	],
-  	"iso639-2": "arc",
-  	"iso639-1": null
-  },
-  	Oirat: Oirat,
-  	Ojibwa: Ojibwa,
-  	"Old Bulgarian": {
-  	name: "Old Bulgarian",
-  	names: [
-  		"Church Slavic",
-  		"Old Slavonic",
-  		"Church Slavonic",
-  		"Old Bulgarian",
-  		"Old Church Slavonic"
-  	],
-  	"iso639-2": "chu",
-  	"iso639-1": "cu"
-  },
-  	"Old Church Slavonic": {
-  	name: "Old Church Slavonic",
-  	names: [
-  		"Church Slavic",
-  		"Old Slavonic",
-  		"Church Slavonic",
-  		"Old Bulgarian",
-  		"Old Church Slavonic"
-  	],
-  	"iso639-2": "chu",
-  	"iso639-1": "cu"
-  },
-  	"Old Newari": {
-  	name: "Old Newari",
-  	names: [
-  		"Classical Newari",
-  		"Old Newari",
-  		"Classical Nepal Bhasa"
-  	],
-  	"iso639-2": "nwc",
-  	"iso639-1": null
-  },
-  	"Old Slavonic": {
-  	name: "Old Slavonic",
-  	names: [
-  		"Church Slavic",
-  		"Old Slavonic",
-  		"Church Slavonic",
-  		"Old Bulgarian",
-  		"Old Church Slavonic"
-  	],
-  	"iso639-2": "chu",
-  	"iso639-1": "cu"
-  },
-  	Oriya: Oriya,
-  	Oromo: Oromo,
-  	Osage: Osage,
-  	Ossetian: Ossetian,
-  	Ossetic: Ossetic,
-  	"Otomian languages": {
-  	name: "Otomian languages",
-  	names: [
-  		"Otomian languages"
-  	],
-  	"iso639-2": "oto",
-  	"iso639-1": null
-  },
-  	Pahlavi: Pahlavi,
-  	Palauan: Palauan,
-  	Pali: Pali,
-  	Pampanga: Pampanga,
-  	Pangasinan: Pangasinan,
-  	Panjabi: Panjabi,
-  	Papiamento: Papiamento,
-  	"Papuan languages": {
-  	name: "Papuan languages",
-  	names: [
-  		"Papuan languages"
-  	],
-  	"iso639-2": "paa",
-  	"iso639-1": null
-  },
-  	Pashto: Pashto,
-  	Pedi: Pedi,
-  	Persian: Persian,
-  	"Persian, Old (ca.600-400 B.C.)": {
-  	name: "Persian, Old (ca.600-400 B.C.)",
-  	names: [
-  		"Persian, Old (ca.600-400 B.C.)"
-  	],
-  	"iso639-2": "peo",
-  	"iso639-1": null
-  },
-  	"Philippine languages": {
-  	name: "Philippine languages",
-  	names: [
-  		"Philippine languages"
-  	],
-  	"iso639-2": "phi",
-  	"iso639-1": null
-  },
-  	Phoenician: Phoenician,
-  	Pilipino: Pilipino,
-  	Pohnpeian: Pohnpeian,
-  	Polish: Polish,
-  	Portuguese: Portuguese,
-  	"Prakrit languages": {
-  	name: "Prakrit languages",
-  	names: [
-  		"Prakrit languages"
-  	],
-  	"iso639-2": "pra",
-  	"iso639-1": null
-  },
-  	"Provençal, Old (to 1500)": {
-  	name: "Provençal, Old (to 1500)",
-  	names: [
-  		"Provençal, Old (to 1500)",
-  		"Occitan, Old (to 1500)"
-  	],
-  	"iso639-2": "pro",
-  	"iso639-1": null
-  },
-  	Punjabi: Punjabi,
-  	Pushto: Pushto,
-  	Quechua: Quechua,
-  	Rajasthani: Rajasthani,
-  	Rapanui: Rapanui,
-  	Rarotongan: Rarotongan,
-  	"Reserved for local use": {
-  	name: "Reserved for local use",
-  	names: [
-  		"Reserved for local use"
-  	],
-  	"iso639-2": "qaa-qtz",
-  	"iso639-1": null
-  },
-  	"Romance languages": {
-  	name: "Romance languages",
-  	names: [
-  		"Romance languages"
-  	],
-  	"iso639-2": "roa",
-  	"iso639-1": null
-  },
-  	Romanian: Romanian,
-  	Romansh: Romansh,
-  	Romany: Romany,
-  	Rundi: Rundi,
-  	Russian: Russian,
-  	Sakan: Sakan,
-  	"Salishan languages": {
-  	name: "Salishan languages",
-  	names: [
-  		"Salishan languages"
-  	],
-  	"iso639-2": "sal",
-  	"iso639-1": null
-  },
-  	"Samaritan Aramaic": {
-  	name: "Samaritan Aramaic",
-  	names: [
-  		"Samaritan Aramaic"
-  	],
-  	"iso639-2": "sam",
-  	"iso639-1": null
-  },
-  	"Sami languages": {
-  	name: "Sami languages",
-  	names: [
-  		"Sami languages"
-  	],
-  	"iso639-2": "smi",
-  	"iso639-1": null
-  },
-  	Samoan: Samoan,
-  	Sandawe: Sandawe,
-  	Sango: Sango,
-  	Sanskrit: Sanskrit,
-  	Santali: Santali,
-  	Sardinian: Sardinian,
-  	Sasak: Sasak,
-  	"Saxon, Low": {
-  	name: "Saxon, Low",
-  	names: [
-  		"Low German",
-  		"Low Saxon",
-  		"German, Low",
-  		"Saxon, Low"
-  	],
-  	"iso639-2": "nds",
-  	"iso639-1": null
-  },
-  	Scots: Scots,
-  	"Scottish Gaelic": {
-  	name: "Scottish Gaelic",
-  	names: [
-  		"Gaelic",
-  		"Scottish Gaelic"
-  	],
-  	"iso639-2": "gla",
-  	"iso639-1": "gd"
-  },
-  	Selkup: Selkup,
-  	"Semitic languages": {
-  	name: "Semitic languages",
-  	names: [
-  		"Semitic languages"
-  	],
-  	"iso639-2": "sem",
-  	"iso639-1": null
-  },
-  	Sepedi: Sepedi,
-  	Serbian: Serbian,
-  	Serer: Serer,
-  	Shan: Shan,
-  	Shona: Shona,
-  	"Sichuan Yi": {
-  	name: "Sichuan Yi",
-  	names: [
-  		"Sichuan Yi",
-  		"Nuosu"
-  	],
-  	"iso639-2": "iii",
-  	"iso639-1": "ii"
-  },
-  	Sicilian: Sicilian,
-  	Sidamo: Sidamo,
-  	"Sign Languages": {
-  	name: "Sign Languages",
-  	names: [
-  		"Sign Languages"
-  	],
-  	"iso639-2": "sgn",
-  	"iso639-1": null
-  },
-  	Siksika: Siksika,
-  	Sindhi: Sindhi,
-  	Sinhala: Sinhala,
-  	Sinhalese: Sinhalese,
-  	"Sino-Tibetan languages": {
-  	name: "Sino-Tibetan languages",
-  	names: [
-  		"Sino-Tibetan languages"
-  	],
-  	"iso639-2": "sit",
-  	"iso639-1": null
-  },
-  	"Siouan languages": {
-  	name: "Siouan languages",
-  	names: [
-  		"Siouan languages"
-  	],
-  	"iso639-2": "sio",
-  	"iso639-1": null
-  },
-  	"Skolt Sami": {
-  	name: "Skolt Sami",
-  	names: [
-  		"Skolt Sami"
-  	],
-  	"iso639-2": "sms",
-  	"iso639-1": null
-  },
-  	"Slave (Athapascan)": {
-  	name: "Slave (Athapascan)",
-  	names: [
-  		"Slave (Athapascan)"
-  	],
-  	"iso639-2": "den",
-  	"iso639-1": null
-  },
-  	"Slavic languages": {
-  	name: "Slavic languages",
-  	names: [
-  		"Slavic languages"
-  	],
-  	"iso639-2": "sla",
-  	"iso639-1": null
-  },
-  	Slovak: Slovak,
-  	Slovenian: Slovenian,
-  	Sogdian: Sogdian,
-  	Somali: Somali,
-  	"Songhai languages": {
-  	name: "Songhai languages",
-  	names: [
-  		"Songhai languages"
-  	],
-  	"iso639-2": "son",
-  	"iso639-1": null
-  },
-  	Soninke: Soninke,
-  	"Sorbian languages": {
-  	name: "Sorbian languages",
-  	names: [
-  		"Sorbian languages"
-  	],
-  	"iso639-2": "wen",
-  	"iso639-1": null
-  },
-  	"Sotho, Northern": {
-  	name: "Sotho, Northern",
-  	names: [
-  		"Pedi",
-  		"Sepedi",
-  		"Northern Sotho"
-  	],
-  	"iso639-2": "nso",
-  	"iso639-1": null
-  },
-  	"Sotho, Southern": {
-  	name: "Sotho, Southern",
-  	names: [
-  		"Sotho, Southern"
-  	],
-  	"iso639-2": "sot",
-  	"iso639-1": "st"
-  },
-  	"South American Indian languages": {
-  	name: "South American Indian languages",
-  	names: [
-  		"South American Indian languages"
-  	],
-  	"iso639-2": "sai",
-  	"iso639-1": null
-  },
-  	"South Ndebele": {
-  	name: "South Ndebele",
-  	names: [
-  		"Ndebele, South",
-  		"South Ndebele"
-  	],
-  	"iso639-2": "nbl",
-  	"iso639-1": "nr"
-  },
-  	"Southern Altai": {
-  	name: "Southern Altai",
-  	names: [
-  		"Southern Altai"
-  	],
-  	"iso639-2": "alt",
-  	"iso639-1": null
-  },
-  	"Southern Sami": {
-  	name: "Southern Sami",
-  	names: [
-  		"Southern Sami"
-  	],
-  	"iso639-2": "sma",
-  	"iso639-1": null
-  },
-  	Spanish: Spanish,
-  	"Sranan Tongo": {
-  	name: "Sranan Tongo",
-  	names: [
-  		"Sranan Tongo"
-  	],
-  	"iso639-2": "srn",
-  	"iso639-1": null
-  },
-  	"Standard Moroccan Tamazight": {
-  	name: "Standard Moroccan Tamazight",
-  	names: [
-  		"Standard Moroccan Tamazight"
-  	],
-  	"iso639-2": "zgh",
-  	"iso639-1": null
-  },
-  	Sukuma: Sukuma,
-  	Sumerian: Sumerian,
-  	Sundanese: Sundanese,
-  	Susu: Susu,
-  	Swahili: Swahili,
-  	Swati: Swati,
-  	Swedish: Swedish,
-  	"Swiss German": {
-  	name: "Swiss German",
-  	names: [
-  		"Swiss German",
-  		"Alemannic",
-  		"Alsatian"
-  	],
-  	"iso639-2": "gsw",
-  	"iso639-1": null
-  },
-  	Syriac: Syriac,
-  	Tagalog: Tagalog,
-  	Tahitian: Tahitian,
-  	"Tai languages": {
-  	name: "Tai languages",
-  	names: [
-  		"Tai languages"
-  	],
-  	"iso639-2": "tai",
-  	"iso639-1": null
-  },
-  	Tajik: Tajik,
-  	Tamashek: Tamashek,
-  	Tamil: Tamil,
-  	Tatar: Tatar,
-  	Telugu: Telugu,
-  	Tereno: Tereno,
-  	Tetum: Tetum,
-  	Thai: Thai,
-  	Tibetan: Tibetan,
-  	Tigre: Tigre,
-  	Tigrinya: Tigrinya,
-  	Timne: Timne,
-  	Tiv: Tiv,
-  	"tlhIngan-Hol": {
-  	name: "tlhIngan-Hol",
-  	names: [
-  		"Klingon",
-  		"tlhIngan-Hol"
-  	],
-  	"iso639-2": "tlh",
-  	"iso639-1": null
-  },
-  	Tlingit: Tlingit,
-  	"Tok Pisin": {
-  	name: "Tok Pisin",
-  	names: [
-  		"Tok Pisin"
-  	],
-  	"iso639-2": "tpi",
-  	"iso639-1": null
-  },
-  	Tokelau: Tokelau,
-  	"Tonga (Nyasa)": {
-  	name: "Tonga (Nyasa)",
-  	names: [
-  		"Tonga (Nyasa)"
-  	],
-  	"iso639-2": "tog",
-  	"iso639-1": null
-  },
-  	"Tonga (Tonga Islands)": {
-  	name: "Tonga (Tonga Islands)",
-  	names: [
-  		"Tonga (Tonga Islands)"
-  	],
-  	"iso639-2": "ton",
-  	"iso639-1": "to"
-  },
-  	Tsimshian: Tsimshian,
-  	Tsonga: Tsonga,
-  	Tswana: Tswana,
-  	Tumbuka: Tumbuka,
-  	"Tupi languages": {
-  	name: "Tupi languages",
-  	names: [
-  		"Tupi languages"
-  	],
-  	"iso639-2": "tup",
-  	"iso639-1": null
-  },
-  	Turkish: Turkish,
-  	"Turkish, Ottoman (1500-1928)": {
-  	name: "Turkish, Ottoman (1500-1928)",
-  	names: [
-  		"Turkish, Ottoman (1500-1928)"
-  	],
-  	"iso639-2": "ota",
-  	"iso639-1": null
-  },
-  	Turkmen: Turkmen,
-  	Tuvalu: Tuvalu,
-  	Tuvinian: Tuvinian,
-  	Twi: Twi,
-  	Udmurt: Udmurt,
-  	Ugaritic: Ugaritic,
-  	Uighur: Uighur,
-  	Ukrainian: Ukrainian,
-  	Umbundu: Umbundu,
-  	"Uncoded languages": {
-  	name: "Uncoded languages",
-  	names: [
-  		"Uncoded languages"
-  	],
-  	"iso639-2": "mis",
-  	"iso639-1": null
-  },
-  	Undetermined: Undetermined,
-  	"Upper Sorbian": {
-  	name: "Upper Sorbian",
-  	names: [
-  		"Upper Sorbian"
-  	],
-  	"iso639-2": "hsb",
-  	"iso639-1": null
-  },
-  	Urdu: Urdu,
-  	Uyghur: Uyghur,
-  	Uzbek: Uzbek,
-  	Vai: Vai,
-  	Valencian: Valencian,
-  	Venda: Venda,
-  	Vietnamese: Vietnamese,
-  	"Volapük": {
-  	name: "Volapük",
-  	names: [
-  		"Volapük"
-  	],
-  	"iso639-2": "vol",
-  	"iso639-1": "vo"
-  },
-  	Votic: Votic,
-  	"Wakashan languages": {
-  	name: "Wakashan languages",
-  	names: [
-  		"Wakashan languages"
-  	],
-  	"iso639-2": "wak",
-  	"iso639-1": null
-  },
-  	Walloon: Walloon,
-  	Waray: Waray,
-  	Washo: Washo,
-  	Welsh: Welsh,
-  	"Western Frisian": {
-  	name: "Western Frisian",
-  	names: [
-  		"Western Frisian"
-  	],
-  	"iso639-2": "fry",
-  	"iso639-1": "fy"
-  },
-  	"Western Pahari languages": {
-  	name: "Western Pahari languages",
-  	names: [
-  		"Himachali languages",
-  		"Western Pahari languages"
-  	],
-  	"iso639-2": "him",
-  	"iso639-1": null
-  },
-  	Wolaitta: Wolaitta,
-  	Wolaytta: Wolaytta,
-  	Wolof: Wolof,
-  	Xhosa: Xhosa,
-  	Yakut: Yakut,
-  	Yao: Yao,
-  	Yapese: Yapese,
-  	Yiddish: Yiddish,
-  	Yoruba: Yoruba,
-  	"Yupik languages": {
-  	name: "Yupik languages",
-  	names: [
-  		"Yupik languages"
-  	],
-  	"iso639-2": "ypk",
-  	"iso639-1": null
-  },
-  	"Zande languages": {
-  	name: "Zande languages",
-  	names: [
-  		"Zande languages"
-  	],
-  	"iso639-2": "znd",
-  	"iso639-1": null
-  },
-  	Zapotec: Zapotec,
-  	Zaza: Zaza,
-  	Zazaki: Zazaki,
-  	Zenaga: Zenaga,
-  	Zhuang: Zhuang,
-  	Zulu: Zulu,
-  	Zuni: Zuni
+    Abkhazian: Abkhazian,
+    Achinese: Achinese,
+    Acoli: Acoli,
+    Adangme: Adangme,
+    Adygei: Adygei,
+    Adyghe: Adyghe,
+    Afar: Afar,
+    Afrihili: Afrihili,
+    Afrikaans: Afrikaans,
+    "Afro-Asiatic languages": {
+      name: "Afro-Asiatic languages",
+      names: ["Afro-Asiatic languages"],
+      "iso639-2": "afa",
+      "iso639-1": null
+    },
+    Ainu: Ainu,
+    Akan: Akan,
+    Akkadian: Akkadian,
+    Albanian: Albanian,
+    Alemannic: Alemannic,
+    Aleut: Aleut,
+    "Algonquian languages": {
+      name: "Algonquian languages",
+      names: ["Algonquian languages"],
+      "iso639-2": "alg",
+      "iso639-1": null
+    },
+    Alsatian: Alsatian,
+    "Altaic languages": {
+      name: "Altaic languages",
+      names: ["Altaic languages"],
+      "iso639-2": "tut",
+      "iso639-1": null
+    },
+    Amharic: Amharic,
+    Angika: Angika,
+    "Apache languages": {
+      name: "Apache languages",
+      names: ["Apache languages"],
+      "iso639-2": "apa",
+      "iso639-1": null
+    },
+    Arabic: Arabic,
+    Aragonese: Aragonese,
+    Arapaho: Arapaho,
+    Arawak: Arawak,
+    Armenian: Armenian,
+    Aromanian: Aromanian,
+    "Artificial languages": {
+      name: "Artificial languages",
+      names: ["Artificial languages"],
+      "iso639-2": "art",
+      "iso639-1": null
+    },
+    Arumanian: Arumanian,
+    Assamese: Assamese,
+    Asturian: Asturian,
+    Asturleonese: Asturleonese,
+    "Athapascan languages": {
+      name: "Athapascan languages",
+      names: ["Athapascan languages"],
+      "iso639-2": "ath",
+      "iso639-1": null
+    },
+    "Australian languages": {
+      name: "Australian languages",
+      names: ["Australian languages"],
+      "iso639-2": "aus",
+      "iso639-1": null
+    },
+    "Austronesian languages": {
+      name: "Austronesian languages",
+      names: ["Austronesian languages"],
+      "iso639-2": "map",
+      "iso639-1": null
+    },
+    Avaric: Avaric,
+    Avestan: Avestan,
+    Awadhi: Awadhi,
+    Aymara: Aymara,
+    Azerbaijani: Azerbaijani,
+    Bable: Bable,
+    Balinese: Balinese,
+    "Baltic languages": {
+      name: "Baltic languages",
+      names: ["Baltic languages"],
+      "iso639-2": "bat",
+      "iso639-1": null
+    },
+    Baluchi: Baluchi,
+    Bambara: Bambara,
+    "Bamileke languages": {
+      name: "Bamileke languages",
+      names: ["Bamileke languages"],
+      "iso639-2": "bai",
+      "iso639-1": null
+    },
+    "Banda languages": {
+      name: "Banda languages",
+      names: ["Banda languages"],
+      "iso639-2": "bad",
+      "iso639-1": null
+    },
+    "Bantu languages": {
+      name: "Bantu languages",
+      names: ["Bantu languages"],
+      "iso639-2": "bnt",
+      "iso639-1": null
+    },
+    Basa: Basa,
+    Bashkir: Bashkir,
+    Basque: Basque,
+    "Batak languages": {
+      name: "Batak languages",
+      names: ["Batak languages"],
+      "iso639-2": "btk",
+      "iso639-1": null
+    },
+    Bedawiyet: Bedawiyet,
+    Beja: Beja,
+    Belarusian: Belarusian,
+    Bemba: Bemba,
+    Bengali: Bengali,
+    "Berber languages": {
+      name: "Berber languages",
+      names: ["Berber languages"],
+      "iso639-2": "ber",
+      "iso639-1": null
+    },
+    Bhojpuri: Bhojpuri,
+    "Bihari languages": {
+      name: "Bihari languages",
+      names: ["Bihari languages"],
+      "iso639-2": "bih",
+      "iso639-1": "bh"
+    },
+    Bikol: Bikol,
+    Bilin: Bilin,
+    Bini: Bini,
+    Bislama: Bislama,
+    Blin: Blin,
+    Bliss: Bliss,
+    Blissymbolics: Blissymbolics,
+    Blissymbols: Blissymbols,
+    "Bokmål, Norwegian": {
+      name: "Bokmål, Norwegian",
+      names: ["Bokmål, Norwegian", "Norwegian Bokmål"],
+      "iso639-2": "nob",
+      "iso639-1": "nb"
+    },
+    Bosnian: Bosnian,
+    Braj: Braj,
+    Breton: Breton,
+    Buginese: Buginese,
+    Bulgarian: Bulgarian,
+    Buriat: Buriat,
+    Burmese: Burmese,
+    Caddo: Caddo,
+    Castilian: Castilian,
+    Catalan: Catalan,
+    "Caucasian languages": {
+      name: "Caucasian languages",
+      names: ["Caucasian languages"],
+      "iso639-2": "cau",
+      "iso639-1": null
+    },
+    Cebuano: Cebuano,
+    "Celtic languages": {
+      name: "Celtic languages",
+      names: ["Celtic languages"],
+      "iso639-2": "cel",
+      "iso639-1": null
+    },
+    "Central American Indian languages": {
+      name: "Central American Indian languages",
+      names: ["Central American Indian languages"],
+      "iso639-2": "cai",
+      "iso639-1": null
+    },
+    "Central Khmer": {
+      name: "Central Khmer",
+      names: ["Central Khmer"],
+      "iso639-2": "khm",
+      "iso639-1": "km"
+    },
+    Chagatai: Chagatai,
+    "Chamic languages": {
+      name: "Chamic languages",
+      names: ["Chamic languages"],
+      "iso639-2": "cmc",
+      "iso639-1": null
+    },
+    Chamorro: Chamorro,
+    Chechen: Chechen,
+    Cherokee: Cherokee,
+    Chewa: Chewa,
+    Cheyenne: Cheyenne,
+    Chibcha: Chibcha,
+    Chichewa: Chichewa,
+    Chinese: Chinese,
+    "Chinook jargon": {
+      name: "Chinook jargon",
+      names: ["Chinook jargon"],
+      "iso639-2": "chn",
+      "iso639-1": null
+    },
+    Chipewyan: Chipewyan,
+    Choctaw: Choctaw,
+    Chuang: Chuang,
+    "Church Slavic": {
+      name: "Church Slavic",
+      names: ["Church Slavic", "Old Slavonic", "Church Slavonic", "Old Bulgarian", "Old Church Slavonic"],
+      "iso639-2": "chu",
+      "iso639-1": "cu"
+    },
+    "Church Slavonic": {
+      name: "Church Slavonic",
+      names: ["Church Slavic", "Old Slavonic", "Church Slavonic", "Old Bulgarian", "Old Church Slavonic"],
+      "iso639-2": "chu",
+      "iso639-1": "cu"
+    },
+    Chuukese: Chuukese,
+    Chuvash: Chuvash,
+    "Classical Nepal Bhasa": {
+      name: "Classical Nepal Bhasa",
+      names: ["Classical Newari", "Old Newari", "Classical Nepal Bhasa"],
+      "iso639-2": "nwc",
+      "iso639-1": null
+    },
+    "Classical Newari": {
+      name: "Classical Newari",
+      names: ["Classical Newari", "Old Newari", "Classical Nepal Bhasa"],
+      "iso639-2": "nwc",
+      "iso639-1": null
+    },
+    "Classical Syriac": {
+      name: "Classical Syriac",
+      names: ["Classical Syriac"],
+      "iso639-2": "syc",
+      "iso639-1": null
+    },
+    "Cook Islands Maori": {
+      name: "Cook Islands Maori",
+      names: ["Rarotongan", "Cook Islands Maori"],
+      "iso639-2": "rar",
+      "iso639-1": null
+    },
+    Coptic: Coptic,
+    Cornish: Cornish,
+    Corsican: Corsican,
+    Cree: Cree,
+    Creek: Creek,
+    "Creoles and pidgins": {
+      name: "Creoles and pidgins",
+      names: ["Creoles and pidgins"],
+      "iso639-2": "crp",
+      "iso639-1": null
+    },
+    "Creoles and pidgins, English based": {
+      name: "Creoles and pidgins, English based",
+      names: ["Creoles and pidgins, English based"],
+      "iso639-2": "cpe",
+      "iso639-1": null
+    },
+    "Creoles and pidgins, French-based": {
+      name: "Creoles and pidgins, French-based",
+      names: ["Creoles and pidgins, French-based"],
+      "iso639-2": "cpf",
+      "iso639-1": null
+    },
+    "Creoles and pidgins, Portuguese-based": {
+      name: "Creoles and pidgins, Portuguese-based",
+      names: ["Creoles and pidgins, Portuguese-based"],
+      "iso639-2": "cpp",
+      "iso639-1": null
+    },
+    "Crimean Tatar": {
+      name: "Crimean Tatar",
+      names: ["Crimean Tatar", "Crimean Turkish"],
+      "iso639-2": "crh",
+      "iso639-1": null
+    },
+    "Crimean Turkish": {
+      name: "Crimean Turkish",
+      names: ["Crimean Tatar", "Crimean Turkish"],
+      "iso639-2": "crh",
+      "iso639-1": null
+    },
+    Croatian: Croatian,
+    "Cushitic languages": {
+      name: "Cushitic languages",
+      names: ["Cushitic languages"],
+      "iso639-2": "cus",
+      "iso639-1": null
+    },
+    Czech: Czech,
+    Dakota: Dakota,
+    Danish: Danish,
+    Dargwa: Dargwa,
+    Delaware: Delaware,
+    "Dene Suline": {
+      name: "Dene Suline",
+      names: ["Chipewyan", "Dene Suline"],
+      "iso639-2": "chp",
+      "iso639-1": null
+    },
+    Dhivehi: Dhivehi,
+    Dimili: Dimili,
+    Dimli: Dimli,
+    Dinka: Dinka,
+    Divehi: Divehi,
+    Dogri: Dogri,
+    Dogrib: Dogrib,
+    "Dravidian languages": {
+      name: "Dravidian languages",
+      names: ["Dravidian languages"],
+      "iso639-2": "dra",
+      "iso639-1": null
+    },
+    Duala: Duala,
+    Dutch: Dutch,
+    "Dutch, Middle (ca.1050-1350)": {
+      name: "Dutch, Middle (ca.1050-1350)",
+      names: ["Dutch, Middle (ca.1050-1350)"],
+      "iso639-2": "dum",
+      "iso639-1": null
+    },
+    Dyula: Dyula,
+    Dzongkha: Dzongkha,
+    "Eastern Frisian": {
+      name: "Eastern Frisian",
+      names: ["Eastern Frisian"],
+      "iso639-2": "frs",
+      "iso639-1": null
+    },
+    Edo: Edo,
+    Efik: Efik,
+    "Egyptian (Ancient)": {
+      name: "Egyptian (Ancient)",
+      names: ["Egyptian (Ancient)"],
+      "iso639-2": "egy",
+      "iso639-1": null
+    },
+    Ekajuk: Ekajuk,
+    Elamite: Elamite,
+    English: English,
+    "English, Middle (1100-1500)": {
+      name: "English, Middle (1100-1500)",
+      names: ["English, Middle (1100-1500)"],
+      "iso639-2": "enm",
+      "iso639-1": null
+    },
+    "English, Old (ca.450-1100)": {
+      name: "English, Old (ca.450-1100)",
+      names: ["English, Old (ca.450-1100)"],
+      "iso639-2": "ang",
+      "iso639-1": null
+    },
+    Erzya: Erzya,
+    Esperanto: Esperanto,
+    Estonian: Estonian,
+    Ewe: Ewe,
+    Ewondo: Ewondo,
+    Fang: Fang,
+    Fanti: Fanti,
+    Faroese: Faroese,
+    Fijian: Fijian,
+    Filipino: Filipino,
+    Finnish: Finnish,
+    "Finno-Ugrian languages": {
+      name: "Finno-Ugrian languages",
+      names: ["Finno-Ugrian languages"],
+      "iso639-2": "fiu",
+      "iso639-1": null
+    },
+    Flemish: Flemish,
+    Fon: Fon,
+    French: French,
+    "French, Middle (ca.1400-1600)": {
+      name: "French, Middle (ca.1400-1600)",
+      names: ["French, Middle (ca.1400-1600)"],
+      "iso639-2": "frm",
+      "iso639-1": null
+    },
+    "French, Old (842-ca.1400)": {
+      name: "French, Old (842-ca.1400)",
+      names: ["French, Old (842-ca.1400)"],
+      "iso639-2": "fro",
+      "iso639-1": null
+    },
+    Friulian: Friulian,
+    Fulah: Fulah,
+    Ga: Ga,
+    Gaelic: Gaelic,
+    "Galibi Carib": {
+      name: "Galibi Carib",
+      names: ["Galibi Carib"],
+      "iso639-2": "car",
+      "iso639-1": null
+    },
+    Galician: Galician,
+    Ganda: Ganda,
+    Gayo: Gayo,
+    Gbaya: Gbaya,
+    Geez: Geez,
+    Georgian: Georgian,
+    German: German,
+    "German, Low": {
+      name: "German, Low",
+      names: ["Low German", "Low Saxon", "German, Low", "Saxon, Low"],
+      "iso639-2": "nds",
+      "iso639-1": null
+    },
+    "German, Middle High (ca.1050-1500)": {
+      name: "German, Middle High (ca.1050-1500)",
+      names: ["German, Middle High (ca.1050-1500)"],
+      "iso639-2": "gmh",
+      "iso639-1": null
+    },
+    "German, Old High (ca.750-1050)": {
+      name: "German, Old High (ca.750-1050)",
+      names: ["German, Old High (ca.750-1050)"],
+      "iso639-2": "goh",
+      "iso639-1": null
+    },
+    "Germanic languages": {
+      name: "Germanic languages",
+      names: ["Germanic languages"],
+      "iso639-2": "gem",
+      "iso639-1": null
+    },
+    Gikuyu: Gikuyu,
+    Gilbertese: Gilbertese,
+    Gondi: Gondi,
+    Gorontalo: Gorontalo,
+    Gothic: Gothic,
+    Grebo: Grebo,
+    "Greek, Ancient (to 1453)": {
+      name: "Greek, Ancient (to 1453)",
+      names: ["Greek, Ancient (to 1453)"],
+      "iso639-2": "grc",
+      "iso639-1": null
+    },
+    "Greek, Modern (1453-)": {
+      name: "Greek, Modern (1453-)",
+      names: ["Greek, Modern (1453-)"],
+      "iso639-2": "gre/ell",
+      "iso639-1": "el"
+    },
+    Greenlandic: Greenlandic,
+    Guarani: Guarani,
+    Gujarati: Gujarati,
+    "Gwich'in": {
+      name: "Gwich'in",
+      names: ["Gwich'in"],
+      "iso639-2": "gwi",
+      "iso639-1": null
+    },
+    Haida: Haida,
+    Haitian: Haitian,
+    "Haitian Creole": {
+      name: "Haitian Creole",
+      names: ["Haitian", "Haitian Creole"],
+      "iso639-2": "hat",
+      "iso639-1": "ht"
+    },
+    Hausa: Hausa,
+    Hawaiian: Hawaiian,
+    Hebrew: Hebrew,
+    Herero: Herero,
+    Hiligaynon: Hiligaynon,
+    "Himachali languages": {
+      name: "Himachali languages",
+      names: ["Himachali languages", "Western Pahari languages"],
+      "iso639-2": "him",
+      "iso639-1": null
+    },
+    Hindi: Hindi,
+    "Hiri Motu": {
+      name: "Hiri Motu",
+      names: ["Hiri Motu"],
+      "iso639-2": "hmo",
+      "iso639-1": "ho"
+    },
+    Hittite: Hittite,
+    Hmong: Hmong,
+    Hungarian: Hungarian,
+    Hupa: Hupa,
+    Iban: Iban,
+    Icelandic: Icelandic,
+    Ido: Ido,
+    Igbo: Igbo,
+    "Ijo languages": {
+      name: "Ijo languages",
+      names: ["Ijo languages"],
+      "iso639-2": "ijo",
+      "iso639-1": null
+    },
+    Iloko: Iloko,
+    "Imperial Aramaic (700-300 BCE)": {
+      name: "Imperial Aramaic (700-300 BCE)",
+      names: ["Official Aramaic (700-300 BCE)", "Imperial Aramaic (700-300 BCE)"],
+      "iso639-2": "arc",
+      "iso639-1": null
+    },
+    "Inari Sami": {
+      name: "Inari Sami",
+      names: ["Inari Sami"],
+      "iso639-2": "smn",
+      "iso639-1": null
+    },
+    "Indic languages": {
+      name: "Indic languages",
+      names: ["Indic languages"],
+      "iso639-2": "inc",
+      "iso639-1": null
+    },
+    "Indo-European languages": {
+      name: "Indo-European languages",
+      names: ["Indo-European languages"],
+      "iso639-2": "ine",
+      "iso639-1": null
+    },
+    Indonesian: Indonesian,
+    Ingush: Ingush,
+    "Interlingua (International Auxiliary Language Association)": {
+      name: "Interlingua (International Auxiliary Language Association)",
+      names: ["Interlingua (International Auxiliary Language Association)"],
+      "iso639-2": "ina",
+      "iso639-1": "ia"
+    },
+    Interlingue: Interlingue,
+    Inuktitut: Inuktitut,
+    Inupiaq: Inupiaq,
+    "Iranian languages": {
+      name: "Iranian languages",
+      names: ["Iranian languages"],
+      "iso639-2": "ira",
+      "iso639-1": null
+    },
+    Irish: Irish,
+    "Irish, Middle (900-1200)": {
+      name: "Irish, Middle (900-1200)",
+      names: ["Irish, Middle (900-1200)"],
+      "iso639-2": "mga",
+      "iso639-1": null
+    },
+    "Irish, Old (to 900)": {
+      name: "Irish, Old (to 900)",
+      names: ["Irish, Old (to 900)"],
+      "iso639-2": "sga",
+      "iso639-1": null
+    },
+    "Iroquoian languages": {
+      name: "Iroquoian languages",
+      names: ["Iroquoian languages"],
+      "iso639-2": "iro",
+      "iso639-1": null
+    },
+    Italian: Italian,
+    Japanese: Japanese,
+    Javanese: Javanese,
+    Jingpho: Jingpho,
+    "Judeo-Arabic": {
+      name: "Judeo-Arabic",
+      names: ["Judeo-Arabic"],
+      "iso639-2": "jrb",
+      "iso639-1": null
+    },
+    "Judeo-Persian": {
+      name: "Judeo-Persian",
+      names: ["Judeo-Persian"],
+      "iso639-2": "jpr",
+      "iso639-1": null
+    },
+    Kabardian: Kabardian,
+    Kabyle: Kabyle,
+    Kachin: Kachin,
+    Kalaallisut: Kalaallisut,
+    Kalmyk: Kalmyk,
+    Kamba: Kamba,
+    Kannada: Kannada,
+    Kanuri: Kanuri,
+    Kapampangan: Kapampangan,
+    "Kara-Kalpak": {
+      name: "Kara-Kalpak",
+      names: ["Kara-Kalpak"],
+      "iso639-2": "kaa",
+      "iso639-1": null
+    },
+    "Karachay-Balkar": {
+      name: "Karachay-Balkar",
+      names: ["Karachay-Balkar"],
+      "iso639-2": "krc",
+      "iso639-1": null
+    },
+    Karelian: Karelian,
+    "Karen languages": {
+      name: "Karen languages",
+      names: ["Karen languages"],
+      "iso639-2": "kar",
+      "iso639-1": null
+    },
+    Kashmiri: Kashmiri,
+    Kashubian: Kashubian,
+    Kawi: Kawi,
+    Kazakh: Kazakh,
+    Khasi: Khasi,
+    "Khoisan languages": {
+      name: "Khoisan languages",
+      names: ["Khoisan languages"],
+      "iso639-2": "khi",
+      "iso639-1": null
+    },
+    Khotanese: Khotanese,
+    Kikuyu: Kikuyu,
+    Kimbundu: Kimbundu,
+    Kinyarwanda: Kinyarwanda,
+    Kirdki: Kirdki,
+    Kirghiz: Kirghiz,
+    Kirmanjki: Kirmanjki,
+    Klingon: Klingon,
+    Komi: Komi,
+    Kongo: Kongo,
+    Konkani: Konkani,
+    Korean: Korean,
+    Kosraean: Kosraean,
+    Kpelle: Kpelle,
+    "Kru languages": {
+      name: "Kru languages",
+      names: ["Kru languages"],
+      "iso639-2": "kro",
+      "iso639-1": null
+    },
+    Kuanyama: Kuanyama,
+    Kumyk: Kumyk,
+    Kurdish: Kurdish,
+    Kurukh: Kurukh,
+    Kutenai: Kutenai,
+    Kwanyama: Kwanyama,
+    Kyrgyz: Kyrgyz,
+    Ladino: Ladino,
+    Lahnda: Lahnda,
+    Lamba: Lamba,
+    "Land Dayak languages": {
+      name: "Land Dayak languages",
+      names: ["Land Dayak languages"],
+      "iso639-2": "day",
+      "iso639-1": null
+    },
+    Lao: Lao,
+    Latin: Latin,
+    Latvian: Latvian,
+    Leonese: Leonese,
+    Letzeburgesch: Letzeburgesch,
+    Lezghian: Lezghian,
+    Limburgan: Limburgan,
+    Limburger: Limburger,
+    Limburgish: Limburgish,
+    Lingala: Lingala,
+    Lithuanian: Lithuanian,
+    Lojban: Lojban,
+    "Low German": {
+      name: "Low German",
+      names: ["Low German", "Low Saxon", "German, Low", "Saxon, Low"],
+      "iso639-2": "nds",
+      "iso639-1": null
+    },
+    "Low Saxon": {
+      name: "Low Saxon",
+      names: ["Low German", "Low Saxon", "German, Low", "Saxon, Low"],
+      "iso639-2": "nds",
+      "iso639-1": null
+    },
+    "Lower Sorbian": {
+      name: "Lower Sorbian",
+      names: ["Lower Sorbian"],
+      "iso639-2": "dsb",
+      "iso639-1": null
+    },
+    Lozi: Lozi,
+    "Luba-Katanga": {
+      name: "Luba-Katanga",
+      names: ["Luba-Katanga"],
+      "iso639-2": "lub",
+      "iso639-1": "lu"
+    },
+    "Luba-Lulua": {
+      name: "Luba-Lulua",
+      names: ["Luba-Lulua"],
+      "iso639-2": "lua",
+      "iso639-1": null
+    },
+    Luiseno: Luiseno,
+    "Lule Sami": {
+      name: "Lule Sami",
+      names: ["Lule Sami"],
+      "iso639-2": "smj",
+      "iso639-1": null
+    },
+    Lunda: Lunda,
+    "Luo (Kenya and Tanzania)": {
+      name: "Luo (Kenya and Tanzania)",
+      names: ["Luo (Kenya and Tanzania)"],
+      "iso639-2": "luo",
+      "iso639-1": null
+    },
+    Lushai: Lushai,
+    Luxembourgish: Luxembourgish,
+    "Macedo-Romanian": {
+      name: "Macedo-Romanian",
+      names: ["Aromanian", "Arumanian", "Macedo-Romanian"],
+      "iso639-2": "rup",
+      "iso639-1": null
+    },
+    Macedonian: Macedonian,
+    Madurese: Madurese,
+    Magahi: Magahi,
+    Maithili: Maithili,
+    Makasar: Makasar,
+    Malagasy: Malagasy,
+    Malay: Malay,
+    Malayalam: Malayalam,
+    Maldivian: Maldivian,
+    Maltese: Maltese,
+    Manchu: Manchu,
+    Mandar: Mandar,
+    Mandingo: Mandingo,
+    Manipuri: Manipuri,
+    "Manobo languages": {
+      name: "Manobo languages",
+      names: ["Manobo languages"],
+      "iso639-2": "mno",
+      "iso639-1": null
+    },
+    Manx: Manx,
+    Maori: Maori,
+    Mapuche: Mapuche,
+    Mapudungun: Mapudungun,
+    Marathi: Marathi,
+    Mari: Mari,
+    Marshallese: Marshallese,
+    Marwari: Marwari,
+    Masai: Masai,
+    "Mayan languages": {
+      name: "Mayan languages",
+      names: ["Mayan languages"],
+      "iso639-2": "myn",
+      "iso639-1": null
+    },
+    Mende: Mende,
+    "Mi'kmaq": {
+      name: "Mi'kmaq",
+      names: ["Mi'kmaq", "Micmac"],
+      "iso639-2": "mic",
+      "iso639-1": null
+    },
+    Micmac: Micmac,
+    Minangkabau: Minangkabau,
+    Mirandese: Mirandese,
+    Mohawk: Mohawk,
+    Moksha: Moksha,
+    Moldavian: Moldavian,
+    Moldovan: Moldovan,
+    "Mon-Khmer languages": {
+      name: "Mon-Khmer languages",
+      names: ["Mon-Khmer languages"],
+      "iso639-2": "mkh",
+      "iso639-1": null
+    },
+    Mong: Mong,
+    Mongo: Mongo,
+    Mongolian: Mongolian,
+    Montenegrin: Montenegrin,
+    Mossi: Mossi,
+    "Multiple languages": {
+      name: "Multiple languages",
+      names: ["Multiple languages"],
+      "iso639-2": "mul",
+      "iso639-1": null
+    },
+    "Munda languages": {
+      name: "Munda languages",
+      names: ["Munda languages"],
+      "iso639-2": "mun",
+      "iso639-1": null
+    },
+    "N'Ko": {
+      name: "N'Ko",
+      names: ["N'Ko"],
+      "iso639-2": "nqo",
+      "iso639-1": null
+    },
+    "Nahuatl languages": {
+      name: "Nahuatl languages",
+      names: ["Nahuatl languages"],
+      "iso639-2": "nah",
+      "iso639-1": null
+    },
+    Nauru: Nauru,
+    Navaho: Navaho,
+    Navajo: Navajo,
+    "Ndebele, North": {
+      name: "Ndebele, North",
+      names: ["Ndebele, North", "North Ndebele"],
+      "iso639-2": "nde",
+      "iso639-1": "nd"
+    },
+    "Ndebele, South": {
+      name: "Ndebele, South",
+      names: ["Ndebele, South", "South Ndebele"],
+      "iso639-2": "nbl",
+      "iso639-1": "nr"
+    },
+    Ndonga: Ndonga,
+    Neapolitan: Neapolitan,
+    "Nepal Bhasa": {
+      name: "Nepal Bhasa",
+      names: ["Nepal Bhasa", "Newari"],
+      "iso639-2": "new",
+      "iso639-1": null
+    },
+    Nepali: Nepali,
+    Newari: Newari,
+    Nias: Nias,
+    "Niger-Kordofanian languages": {
+      name: "Niger-Kordofanian languages",
+      names: ["Niger-Kordofanian languages"],
+      "iso639-2": "nic",
+      "iso639-1": null
+    },
+    "Nilo-Saharan languages": {
+      name: "Nilo-Saharan languages",
+      names: ["Nilo-Saharan languages"],
+      "iso639-2": "ssa",
+      "iso639-1": null
+    },
+    Niuean: Niuean,
+    "No linguistic content": {
+      name: "No linguistic content",
+      names: ["No linguistic content", "Not applicable"],
+      "iso639-2": "zxx",
+      "iso639-1": null
+    },
+    Nogai: Nogai,
+    "Norse, Old": {
+      name: "Norse, Old",
+      names: ["Norse, Old"],
+      "iso639-2": "non",
+      "iso639-1": null
+    },
+    "North American Indian languages": {
+      name: "North American Indian languages",
+      names: ["North American Indian languages"],
+      "iso639-2": "nai",
+      "iso639-1": null
+    },
+    "North Ndebele": {
+      name: "North Ndebele",
+      names: ["Ndebele, North", "North Ndebele"],
+      "iso639-2": "nde",
+      "iso639-1": "nd"
+    },
+    "Northern Frisian": {
+      name: "Northern Frisian",
+      names: ["Northern Frisian"],
+      "iso639-2": "frr",
+      "iso639-1": null
+    },
+    "Northern Sami": {
+      name: "Northern Sami",
+      names: ["Northern Sami"],
+      "iso639-2": "sme",
+      "iso639-1": "se"
+    },
+    "Northern Sotho": {
+      name: "Northern Sotho",
+      names: ["Pedi", "Sepedi", "Northern Sotho"],
+      "iso639-2": "nso",
+      "iso639-1": null
+    },
+    Norwegian: Norwegian,
+    "Norwegian Bokmål": {
+      name: "Norwegian Bokmål",
+      names: ["Bokmål, Norwegian", "Norwegian Bokmål"],
+      "iso639-2": "nob",
+      "iso639-1": "nb"
+    },
+    "Norwegian Nynorsk": {
+      name: "Norwegian Nynorsk",
+      names: ["Norwegian Nynorsk", "Nynorsk, Norwegian"],
+      "iso639-2": "nno",
+      "iso639-1": "nn"
+    },
+    "Not applicable": {
+      name: "Not applicable",
+      names: ["No linguistic content", "Not applicable"],
+      "iso639-2": "zxx",
+      "iso639-1": null
+    },
+    "Nubian languages": {
+      name: "Nubian languages",
+      names: ["Nubian languages"],
+      "iso639-2": "nub",
+      "iso639-1": null
+    },
+    Nuosu: Nuosu,
+    Nyamwezi: Nyamwezi,
+    Nyanja: Nyanja,
+    Nyankole: Nyankole,
+    "Nynorsk, Norwegian": {
+      name: "Nynorsk, Norwegian",
+      names: ["Norwegian Nynorsk", "Nynorsk, Norwegian"],
+      "iso639-2": "nno",
+      "iso639-1": "nn"
+    },
+    Nyoro: Nyoro,
+    Nzima: Nzima,
+    Occidental: Occidental,
+    "Occitan (post 1500)": {
+      name: "Occitan (post 1500)",
+      names: ["Occitan (post 1500)"],
+      "iso639-2": "oci",
+      "iso639-1": "oc"
+    },
+    "Occitan, Old (to 1500)": {
+      name: "Occitan, Old (to 1500)",
+      names: ["Provençal, Old (to 1500)", "Occitan, Old (to 1500)"],
+      "iso639-2": "pro",
+      "iso639-1": null
+    },
+    "Official Aramaic (700-300 BCE)": {
+      name: "Official Aramaic (700-300 BCE)",
+      names: ["Official Aramaic (700-300 BCE)", "Imperial Aramaic (700-300 BCE)"],
+      "iso639-2": "arc",
+      "iso639-1": null
+    },
+    Oirat: Oirat,
+    Ojibwa: Ojibwa,
+    "Old Bulgarian": {
+      name: "Old Bulgarian",
+      names: ["Church Slavic", "Old Slavonic", "Church Slavonic", "Old Bulgarian", "Old Church Slavonic"],
+      "iso639-2": "chu",
+      "iso639-1": "cu"
+    },
+    "Old Church Slavonic": {
+      name: "Old Church Slavonic",
+      names: ["Church Slavic", "Old Slavonic", "Church Slavonic", "Old Bulgarian", "Old Church Slavonic"],
+      "iso639-2": "chu",
+      "iso639-1": "cu"
+    },
+    "Old Newari": {
+      name: "Old Newari",
+      names: ["Classical Newari", "Old Newari", "Classical Nepal Bhasa"],
+      "iso639-2": "nwc",
+      "iso639-1": null
+    },
+    "Old Slavonic": {
+      name: "Old Slavonic",
+      names: ["Church Slavic", "Old Slavonic", "Church Slavonic", "Old Bulgarian", "Old Church Slavonic"],
+      "iso639-2": "chu",
+      "iso639-1": "cu"
+    },
+    Oriya: Oriya,
+    Oromo: Oromo,
+    Osage: Osage,
+    Ossetian: Ossetian,
+    Ossetic: Ossetic,
+    "Otomian languages": {
+      name: "Otomian languages",
+      names: ["Otomian languages"],
+      "iso639-2": "oto",
+      "iso639-1": null
+    },
+    Pahlavi: Pahlavi,
+    Palauan: Palauan,
+    Pali: Pali,
+    Pampanga: Pampanga,
+    Pangasinan: Pangasinan,
+    Panjabi: Panjabi,
+    Papiamento: Papiamento,
+    "Papuan languages": {
+      name: "Papuan languages",
+      names: ["Papuan languages"],
+      "iso639-2": "paa",
+      "iso639-1": null
+    },
+    Pashto: Pashto,
+    Pedi: Pedi,
+    Persian: Persian,
+    "Persian, Old (ca.600-400 B.C.)": {
+      name: "Persian, Old (ca.600-400 B.C.)",
+      names: ["Persian, Old (ca.600-400 B.C.)"],
+      "iso639-2": "peo",
+      "iso639-1": null
+    },
+    "Philippine languages": {
+      name: "Philippine languages",
+      names: ["Philippine languages"],
+      "iso639-2": "phi",
+      "iso639-1": null
+    },
+    Phoenician: Phoenician,
+    Pilipino: Pilipino,
+    Pohnpeian: Pohnpeian,
+    Polish: Polish,
+    Portuguese: Portuguese,
+    "Prakrit languages": {
+      name: "Prakrit languages",
+      names: ["Prakrit languages"],
+      "iso639-2": "pra",
+      "iso639-1": null
+    },
+    "Provençal, Old (to 1500)": {
+      name: "Provençal, Old (to 1500)",
+      names: ["Provençal, Old (to 1500)", "Occitan, Old (to 1500)"],
+      "iso639-2": "pro",
+      "iso639-1": null
+    },
+    Punjabi: Punjabi,
+    Pushto: Pushto,
+    Quechua: Quechua,
+    Rajasthani: Rajasthani,
+    Rapanui: Rapanui,
+    Rarotongan: Rarotongan,
+    "Reserved for local use": {
+      name: "Reserved for local use",
+      names: ["Reserved for local use"],
+      "iso639-2": "qaa-qtz",
+      "iso639-1": null
+    },
+    "Romance languages": {
+      name: "Romance languages",
+      names: ["Romance languages"],
+      "iso639-2": "roa",
+      "iso639-1": null
+    },
+    Romanian: Romanian,
+    Romansh: Romansh,
+    Romany: Romany,
+    Rundi: Rundi,
+    Russian: Russian,
+    Sakan: Sakan,
+    "Salishan languages": {
+      name: "Salishan languages",
+      names: ["Salishan languages"],
+      "iso639-2": "sal",
+      "iso639-1": null
+    },
+    "Samaritan Aramaic": {
+      name: "Samaritan Aramaic",
+      names: ["Samaritan Aramaic"],
+      "iso639-2": "sam",
+      "iso639-1": null
+    },
+    "Sami languages": {
+      name: "Sami languages",
+      names: ["Sami languages"],
+      "iso639-2": "smi",
+      "iso639-1": null
+    },
+    Samoan: Samoan,
+    Sandawe: Sandawe,
+    Sango: Sango,
+    Sanskrit: Sanskrit,
+    Santali: Santali,
+    Sardinian: Sardinian,
+    Sasak: Sasak,
+    "Saxon, Low": {
+      name: "Saxon, Low",
+      names: ["Low German", "Low Saxon", "German, Low", "Saxon, Low"],
+      "iso639-2": "nds",
+      "iso639-1": null
+    },
+    Scots: Scots,
+    "Scottish Gaelic": {
+      name: "Scottish Gaelic",
+      names: ["Gaelic", "Scottish Gaelic"],
+      "iso639-2": "gla",
+      "iso639-1": "gd"
+    },
+    Selkup: Selkup,
+    "Semitic languages": {
+      name: "Semitic languages",
+      names: ["Semitic languages"],
+      "iso639-2": "sem",
+      "iso639-1": null
+    },
+    Sepedi: Sepedi,
+    Serbian: Serbian,
+    Serer: Serer,
+    Shan: Shan,
+    Shona: Shona,
+    "Sichuan Yi": {
+      name: "Sichuan Yi",
+      names: ["Sichuan Yi", "Nuosu"],
+      "iso639-2": "iii",
+      "iso639-1": "ii"
+    },
+    Sicilian: Sicilian,
+    Sidamo: Sidamo,
+    "Sign Languages": {
+      name: "Sign Languages",
+      names: ["Sign Languages"],
+      "iso639-2": "sgn",
+      "iso639-1": null
+    },
+    Siksika: Siksika,
+    Sindhi: Sindhi,
+    Sinhala: Sinhala,
+    Sinhalese: Sinhalese,
+    "Sino-Tibetan languages": {
+      name: "Sino-Tibetan languages",
+      names: ["Sino-Tibetan languages"],
+      "iso639-2": "sit",
+      "iso639-1": null
+    },
+    "Siouan languages": {
+      name: "Siouan languages",
+      names: ["Siouan languages"],
+      "iso639-2": "sio",
+      "iso639-1": null
+    },
+    "Skolt Sami": {
+      name: "Skolt Sami",
+      names: ["Skolt Sami"],
+      "iso639-2": "sms",
+      "iso639-1": null
+    },
+    "Slave (Athapascan)": {
+      name: "Slave (Athapascan)",
+      names: ["Slave (Athapascan)"],
+      "iso639-2": "den",
+      "iso639-1": null
+    },
+    "Slavic languages": {
+      name: "Slavic languages",
+      names: ["Slavic languages"],
+      "iso639-2": "sla",
+      "iso639-1": null
+    },
+    Slovak: Slovak,
+    Slovenian: Slovenian,
+    Sogdian: Sogdian,
+    Somali: Somali,
+    "Songhai languages": {
+      name: "Songhai languages",
+      names: ["Songhai languages"],
+      "iso639-2": "son",
+      "iso639-1": null
+    },
+    Soninke: Soninke,
+    "Sorbian languages": {
+      name: "Sorbian languages",
+      names: ["Sorbian languages"],
+      "iso639-2": "wen",
+      "iso639-1": null
+    },
+    "Sotho, Northern": {
+      name: "Sotho, Northern",
+      names: ["Pedi", "Sepedi", "Northern Sotho"],
+      "iso639-2": "nso",
+      "iso639-1": null
+    },
+    "Sotho, Southern": {
+      name: "Sotho, Southern",
+      names: ["Sotho, Southern"],
+      "iso639-2": "sot",
+      "iso639-1": "st"
+    },
+    "South American Indian languages": {
+      name: "South American Indian languages",
+      names: ["South American Indian languages"],
+      "iso639-2": "sai",
+      "iso639-1": null
+    },
+    "South Ndebele": {
+      name: "South Ndebele",
+      names: ["Ndebele, South", "South Ndebele"],
+      "iso639-2": "nbl",
+      "iso639-1": "nr"
+    },
+    "Southern Altai": {
+      name: "Southern Altai",
+      names: ["Southern Altai"],
+      "iso639-2": "alt",
+      "iso639-1": null
+    },
+    "Southern Sami": {
+      name: "Southern Sami",
+      names: ["Southern Sami"],
+      "iso639-2": "sma",
+      "iso639-1": null
+    },
+    Spanish: Spanish,
+    "Sranan Tongo": {
+      name: "Sranan Tongo",
+      names: ["Sranan Tongo"],
+      "iso639-2": "srn",
+      "iso639-1": null
+    },
+    "Standard Moroccan Tamazight": {
+      name: "Standard Moroccan Tamazight",
+      names: ["Standard Moroccan Tamazight"],
+      "iso639-2": "zgh",
+      "iso639-1": null
+    },
+    Sukuma: Sukuma,
+    Sumerian: Sumerian,
+    Sundanese: Sundanese,
+    Susu: Susu,
+    Swahili: Swahili,
+    Swati: Swati,
+    Swedish: Swedish,
+    "Swiss German": {
+      name: "Swiss German",
+      names: ["Swiss German", "Alemannic", "Alsatian"],
+      "iso639-2": "gsw",
+      "iso639-1": null
+    },
+    Syriac: Syriac,
+    Tagalog: Tagalog,
+    Tahitian: Tahitian,
+    "Tai languages": {
+      name: "Tai languages",
+      names: ["Tai languages"],
+      "iso639-2": "tai",
+      "iso639-1": null
+    },
+    Tajik: Tajik,
+    Tamashek: Tamashek,
+    Tamil: Tamil,
+    Tatar: Tatar,
+    Telugu: Telugu,
+    Tereno: Tereno,
+    Tetum: Tetum,
+    Thai: Thai,
+    Tibetan: Tibetan,
+    Tigre: Tigre,
+    Tigrinya: Tigrinya,
+    Timne: Timne,
+    Tiv: Tiv,
+    "tlhIngan-Hol": {
+      name: "tlhIngan-Hol",
+      names: ["Klingon", "tlhIngan-Hol"],
+      "iso639-2": "tlh",
+      "iso639-1": null
+    },
+    Tlingit: Tlingit,
+    "Tok Pisin": {
+      name: "Tok Pisin",
+      names: ["Tok Pisin"],
+      "iso639-2": "tpi",
+      "iso639-1": null
+    },
+    Tokelau: Tokelau,
+    "Tonga (Nyasa)": {
+      name: "Tonga (Nyasa)",
+      names: ["Tonga (Nyasa)"],
+      "iso639-2": "tog",
+      "iso639-1": null
+    },
+    "Tonga (Tonga Islands)": {
+      name: "Tonga (Tonga Islands)",
+      names: ["Tonga (Tonga Islands)"],
+      "iso639-2": "ton",
+      "iso639-1": "to"
+    },
+    Tsimshian: Tsimshian,
+    Tsonga: Tsonga,
+    Tswana: Tswana,
+    Tumbuka: Tumbuka,
+    "Tupi languages": {
+      name: "Tupi languages",
+      names: ["Tupi languages"],
+      "iso639-2": "tup",
+      "iso639-1": null
+    },
+    Turkish: Turkish,
+    "Turkish, Ottoman (1500-1928)": {
+      name: "Turkish, Ottoman (1500-1928)",
+      names: ["Turkish, Ottoman (1500-1928)"],
+      "iso639-2": "ota",
+      "iso639-1": null
+    },
+    Turkmen: Turkmen,
+    Tuvalu: Tuvalu,
+    Tuvinian: Tuvinian,
+    Twi: Twi,
+    Udmurt: Udmurt,
+    Ugaritic: Ugaritic,
+    Uighur: Uighur,
+    Ukrainian: Ukrainian,
+    Umbundu: Umbundu,
+    "Uncoded languages": {
+      name: "Uncoded languages",
+      names: ["Uncoded languages"],
+      "iso639-2": "mis",
+      "iso639-1": null
+    },
+    Undetermined: Undetermined,
+    "Upper Sorbian": {
+      name: "Upper Sorbian",
+      names: ["Upper Sorbian"],
+      "iso639-2": "hsb",
+      "iso639-1": null
+    },
+    Urdu: Urdu,
+    Uyghur: Uyghur,
+    Uzbek: Uzbek,
+    Vai: Vai,
+    Valencian: Valencian,
+    Venda: Venda,
+    Vietnamese: Vietnamese,
+    "Volapük": {
+      name: "Volapük",
+      names: ["Volapük"],
+      "iso639-2": "vol",
+      "iso639-1": "vo"
+    },
+    Votic: Votic,
+    "Wakashan languages": {
+      name: "Wakashan languages",
+      names: ["Wakashan languages"],
+      "iso639-2": "wak",
+      "iso639-1": null
+    },
+    Walloon: Walloon,
+    Waray: Waray,
+    Washo: Washo,
+    Welsh: Welsh,
+    "Western Frisian": {
+      name: "Western Frisian",
+      names: ["Western Frisian"],
+      "iso639-2": "fry",
+      "iso639-1": "fy"
+    },
+    "Western Pahari languages": {
+      name: "Western Pahari languages",
+      names: ["Himachali languages", "Western Pahari languages"],
+      "iso639-2": "him",
+      "iso639-1": null
+    },
+    Wolaitta: Wolaitta,
+    Wolaytta: Wolaytta,
+    Wolof: Wolof,
+    Xhosa: Xhosa,
+    Yakut: Yakut,
+    Yao: Yao,
+    Yapese: Yapese,
+    Yiddish: Yiddish,
+    Yoruba: Yoruba,
+    "Yupik languages": {
+      name: "Yupik languages",
+      names: ["Yupik languages"],
+      "iso639-2": "ypk",
+      "iso639-1": null
+    },
+    "Zande languages": {
+      name: "Zande languages",
+      names: ["Zande languages"],
+      "iso639-2": "znd",
+      "iso639-1": null
+    },
+    Zapotec: Zapotec,
+    Zaza: Zaza,
+    Zazaki: Zazaki,
+    Zenaga: Zenaga,
+    Zhuang: Zhuang,
+    Zulu: Zulu,
+    Zuni: Zuni
   };
 
-  function _defineProperty$1(obj, key, value) {
+  function _defineProperty(obj, key, value) {
     if (key in obj) {
       Object.defineProperty(obj, key, {
         value: value,
@@ -30174,6 +28849,7 @@
 
     return obj;
   }
+
   var locales = [];
   var isoKeys = Object.keys(iso);
   Object.keys(lcid).map(function (id) {
@@ -30185,7 +28861,7 @@
     if (locale.location && isoLanguage) {
       var _locales$push;
 
-      locales.push((_locales$push = {}, _defineProperty$1(_locales$push, "name", locale.language), _defineProperty$1(_locales$push, "location", locale.location), _defineProperty$1(_locales$push, "tag", locale.tag), _defineProperty$1(_locales$push, "lcid", locale.id), _defineProperty$1(_locales$push, "iso639-2", iso[isoLanguage]["iso639-2"]), _defineProperty$1(_locales$push, "iso639-1", iso[isoLanguage]["iso639-1"]), _locales$push));
+      locales.push((_locales$push = {}, _defineProperty(_locales$push, "name", locale.language), _defineProperty(_locales$push, "location", locale.location), _defineProperty(_locales$push, "tag", locale.tag), _defineProperty(_locales$push, "lcid", locale.id), _defineProperty(_locales$push, "iso639-2", iso[isoLanguage]["iso639-2"]), _defineProperty(_locales$push, "iso639-1", iso[isoLanguage]["iso639-1"]), _locales$push));
     }
   });
   var defaultLocales = {
@@ -30203,7 +28879,7 @@
    * @param {String} locale
    */
 
-  function findLocale (locale) {
+  function findLocale(locale) {
     if (typeof locale !== "string" || locale.length === 5) return locale;
     if (defaultLocales[locale]) return defaultLocales[locale];
     var list = locales.filter(function (d) {
@@ -30213,12 +28889,13 @@
       return d.tag === "".concat(locale, "-").concat(locale.toUpperCase());
     })) return "".concat(locale, "-").concat(locale.toUpperCase());else return list[0].tag;
   }
-
   /**
       @function s
       @desc Returns 4 random characters, used for constructing unique identifiers.
       @private
   */
+
+
   function s() {
     return Math.floor((1 + Math.random()) * 0x10000).toString(16).substring(1);
   }
@@ -30228,16 +28905,16 @@
   */
 
 
-  function uuid () {
+  function uuid() {
     return "".concat(s()).concat(s(), "-").concat(s(), "-").concat(s(), "-").concat(s(), "-").concat(s()).concat(s()).concat(s());
   }
-
   /**
       @constant RESET
       @desc String constant used to reset an individual config property.
   */
-  var RESET = "D3PLUS-COMMON-RESET";
 
+
+  var RESET = "D3PLUS-COMMON-RESET";
   var esES = {
     "and": "y",
     "Back": "Atrás",
@@ -30254,18 +28931,17 @@
     "Total": "Total",
     "Values": "Valores"
   };
-
   var dictionaries = {
     "es-ES": esES
   };
 
-  function _classCallCheck$1(instance, Constructor) {
+  function _classCallCheck(instance, Constructor) {
     if (!(instance instanceof Constructor)) {
       throw new TypeError("Cannot call a class as a function");
     }
   }
 
-  function _defineProperties$1(target, props) {
+  function _defineProperties(target, props) {
     for (var i = 0; i < props.length; i++) {
       var descriptor = props[i];
       descriptor.enumerable = descriptor.enumerable || false;
@@ -30275,9 +28951,9 @@
     }
   }
 
-  function _createClass$1(Constructor, protoProps, staticProps) {
-    if (protoProps) _defineProperties$1(Constructor.prototype, protoProps);
-    if (staticProps) _defineProperties$1(Constructor, staticProps);
+  function _createClass(Constructor, protoProps, staticProps) {
+    if (protoProps) _defineProperties(Constructor.prototype, protoProps);
+    if (staticProps) _defineProperties(Constructor, staticProps);
     return Constructor;
   }
   /**
@@ -30286,6 +28962,7 @@
       @param {Object} defaults
       @private
   */
+
 
   function nestedReset(obj, defaults) {
     if (isObject(obj)) {
@@ -30336,7 +29013,7 @@
     function BaseClass() {
       var _this = this;
 
-      _classCallCheck$1(this, BaseClass);
+      _classCallCheck(this, BaseClass);
 
       this._locale = "en-US";
       this._on = {};
@@ -30358,7 +29035,7 @@
     */
 
 
-    _createClass$1(BaseClass, [{
+    _createClass(BaseClass, [{
       key: "config",
       value: function config(_) {
         var _this2 = this;
@@ -30484,14 +29161,15 @@
 
     return BaseClass;
   }();
-
   /**
       @function closest
       @desc Finds the closest numeric value in an array.
       @param {Number} n The number value to use when searching the array.
       @param {Array} arr The array of values to test against.
   */
-  function closest (n) {
+
+
+  function closest(n) {
     var arr = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : [];
     if (!arr || !(arr instanceof Array) || !arr.length) return undefined;
     return arr.reduce(function (prev, curr) {
@@ -30499,20 +29177,20 @@
     });
   }
 
-  function _typeof$2(obj) {
+  function _typeof$1(obj) {
     "@babel/helpers - typeof";
 
     if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") {
-      _typeof$2 = function _typeof(obj) {
+      _typeof$1 = function _typeof(obj) {
         return typeof obj;
       };
     } else {
-      _typeof$2 = function _typeof(obj) {
+      _typeof$1 = function _typeof(obj) {
         return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
       };
     }
 
-    return _typeof$2(obj);
+    return _typeof$1(obj);
   }
   /**
       @function configPrep
@@ -30559,7 +29237,7 @@
 
     var arrayEval = function arrayEval(arr) {
       return arr.map(function (d) {
-        if (d instanceof Array) return arrayEval(d);else if (_typeof$2(d) === "object") return keyEval({}, d);else if (typeof d === "function") return wrapFunction(d);else return d;
+        if (d instanceof Array) return arrayEval(d);else if (_typeof$1(d) === "object") return keyEval({}, d);else if (typeof d === "function") return wrapFunction(d);else return d;
       });
     };
 
@@ -30570,7 +29248,7 @@
             newObj[key] = wrapFunction(obj[key]);
           } else if (obj[key] instanceof Array) {
             newObj[key] = arrayEval(obj[key]);
-          } else if (_typeof$2(obj[key]) === "object") {
+          } else if (_typeof$1(obj[key]) === "object") {
             newObj[key] = {
               on: {}
             };
@@ -30590,7 +29268,6 @@
 
     return newConfig;
   }
-
   /**
       @function constant
       @desc Wraps non-function variables in a simple return function.
@@ -30602,12 +29279,13 @@
     return 42;
   }
   */
-  function constant$6 (value) {
+
+
+  function constant$6(value) {
     return function constant() {
       return value;
     };
   }
-
   /**
       @function elem
       @desc Manages the enter/update/exit pattern for a single DOM element.
@@ -30621,7 +29299,8 @@
       @param {Object} [params.update = {}] A collection of key/value pairs that map to attributes to be given on update.
   */
 
-  function elem (selector, p) {
+
+  function elem(selector, p) {
     // overrides default params
     p = Object.assign({}, {
       condition: true,
@@ -30643,7 +29322,6 @@
     update.transition(p.transition).call(attrize, p.update);
     return update;
   }
-
   /**
       @function unique
       @desc ES5 implementation to reduce an Array of values to unique instances.
@@ -30653,12 +29331,13 @@
       @example <caption>returns this</caption>
   ["apple", "banana"]
   */
-  function unique (arr) {
+
+
+  function unique(arr) {
     return arr.filter(function (k, i, a) {
       return a.indexOf(k) === i;
     });
   }
-
   /**
       @function merge
       @desc Combines an Array of Objects together and returns a new Object.
@@ -30672,6 +29351,7 @@
       @example <caption>returns this</caption>
   {id: ["bar", "foo"], group: "A", value: 30, links: [1, 2, 3]}
   */
+
 
   function objectMerge(objects) {
     var aggs = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
@@ -30717,13 +29397,14 @@
     });
     return newObject;
   }
-
   /**
    @function parseSides
    @desc Converts a string of directional CSS shorthand values into an object with the values expanded.
    @param {String|Number} sides The CSS shorthand string to expand.
    */
-  function parseSides (sides) {
+
+
+  function parseSides(sides) {
     var values;
     if (typeof sides === "number") values = [sides];else values = sides.split(/\s+/);
     if (values.length === 1) values = [values[0], values[0], values[0], values[0]];else if (values.length === 2) values = values.concat(values);else if (values.length === 3) values.push(values[1]);
@@ -30733,22 +29414,24 @@
       return acc;
     }, {});
   }
-
   /**
       @function prefix
       @desc Returns the appropriate CSS vendor prefix, given the current browser.
   */
-  function prefix$1 () {
+
+
+  function prefix$1() {
     if ("-webkit-transform" in document.body.style) return "-webkit-";else if ("-moz-transform" in document.body.style) return "-moz-";else if ("-ms-transform" in document.body.style) return "-ms-";else if ("-o-transform" in document.body.style) return "-o-";else return "";
   }
-
   /**
       @function stylize
       @desc Applies each key/value in an object as a style.
       @param {D3selection} elem The D3 element to apply the styles to.
       @param {Object} styles An object of key/value style pairs.
   */
-  function stylize (e) {
+
+
+  function stylize(e) {
     var s = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
 
     for (var k in s) {
@@ -30756,13 +29439,13 @@
     }
   }
 
-  function _classCallCheck$2(instance, Constructor) {
+  function _classCallCheck$1(instance, Constructor) {
     if (!(instance instanceof Constructor)) {
       throw new TypeError("Cannot call a class as a function");
     }
   }
 
-  function _defineProperties$2(target, props) {
+  function _defineProperties$1(target, props) {
     for (var i = 0; i < props.length; i++) {
       var descriptor = props[i];
       descriptor.enumerable = descriptor.enumerable || false;
@@ -30772,9 +29455,9 @@
     }
   }
 
-  function _createClass$2(Constructor, protoProps, staticProps) {
-    if (protoProps) _defineProperties$2(Constructor.prototype, protoProps);
-    if (staticProps) _defineProperties$2(Constructor, staticProps);
+  function _createClass$1(Constructor, protoProps, staticProps) {
+    if (protoProps) _defineProperties$1(Constructor.prototype, protoProps);
+    if (staticProps) _defineProperties$1(Constructor, staticProps);
     return Constructor;
   }
   /**
@@ -30792,6 +29475,7 @@
   image().data([data])(function() { alert("draw complete!"); })
   */
 
+
   var Image$1 = /*#__PURE__*/function () {
     /**
         @memberof Image
@@ -30799,7 +29483,7 @@
         @private
     */
     function Image() {
-      _classCallCheck$2(this, Image);
+      _classCallCheck$1(this, Image);
 
       this._duration = 600;
       this._height = accessor("height");
@@ -30820,7 +29504,7 @@
     */
 
 
-    _createClass$2(Image, [{
+    _createClass$1(Image, [{
       key: "render",
       value: function render(callback) {
         var _this = this;
@@ -31038,7 +29722,6 @@
 
     return Image;
   }();
-
   /**
       @namespace {Object} colorDefaults
       @desc A set of default color values used when assigning colors based on data.
@@ -31052,6 +29735,7 @@
         * | on | #224f20 | Used in the [assign](#assign) function when the value passed is `true`. |
         * | scale | #b22200, #eace3f, #282f6b, #b35c1e, #224f20, #5f487c, #759143, #419391, #993c88, #e89c89, #ffee8d, #afd5e8, #f7ba77, #a5c697, #c5b5e5, #d1d392, #bbefd0, #e099cf | An ordinal scale used in the [assign](#assign) function for non-valid color strings and numbers. |
   */
+
 
   var defaults = {
     dark: "#444444",
@@ -31071,7 +29755,6 @@
     var u = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
     return k in u ? u[k] : k in defaults ? defaults[k] : defaults.missing;
   }
-
   /**
       @function colorAssign
       @desc Assigns a color to a value using a predefined set of defaults.
@@ -31080,7 +29763,8 @@
       @returns {String}
   */
 
-  function colorAssign (c) {
+
+  function colorAssign(c) {
     var u = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {}; // If the value is null or undefined, set to grey.
 
     if ([null, void 0].indexOf(c) >= 0) return getColor("missing", u); // Else if the value is true, set to green.
@@ -31091,7 +29775,6 @@
     if (!p) return getColor("scale", u)(c);
     return c.toString();
   }
-
   /**
       @function colorContrast
       @desc A set of default color values used when assigning colors based on data.
@@ -31100,13 +29783,13 @@
       @returns {String}
   */
 
-  function colorContrast (c) {
+
+  function colorContrast(c) {
     var u = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
     c = rgb(c);
     var yiq = (c.r * 299 + c.g * 587 + c.b * 114) / 1000;
     return yiq >= 128 ? getColor("dark", u) : getColor("light", u);
   }
-
   /**
       @function colorLighter
       @desc Similar to d3.color.brighter, except that this also reduces saturation so that colors don't appear neon.
@@ -31115,7 +29798,8 @@
       @returns {String}
   */
 
-  function colorLighter (c) {
+
+  function colorLighter(c) {
     var i = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 0.5;
     c = hsl(c);
     i *= 1 - c.l;
@@ -31124,7 +29808,7 @@
     return c.toString();
   }
 
-  function constant$7 (x) {
+  function constant$7(x) {
     return function constant() {
       return x;
     };
@@ -31141,9 +29825,11 @@
   var pi$3 = Math.PI;
   var halfPi$2 = pi$3 / 2;
   var tau$3 = 2 * pi$3;
+
   function acos$2(x) {
     return x > 1 ? 0 : x < -1 ? pi$3 : Math.acos(x);
   }
+
   function asin$2(x) {
     return x >= 1 ? halfPi$2 : x <= -1 ? -halfPi$2 : Math.asin(x);
   }
@@ -31220,7 +29906,7 @@
     };
   }
 
-  function arc () {
+  function arc() {
     var innerRadius = arcInnerRadius,
         outerRadius = arcOuterRadius,
         cornerRadius = constant$7(0),
@@ -31414,18 +30100,20 @@
       }
     }
   };
-  function curveLinear (context) {
+
+  function curveLinear(context) {
     return new Linear(context);
   }
 
   function x(p) {
     return p[0];
   }
+
   function y(p) {
     return p[1];
   }
 
-  function line () {
+  function line() {
     var x$1 = x,
         y$1 = y,
         defined = constant$7(true),
@@ -31475,7 +30163,7 @@
     return line;
   }
 
-  function area$1 () {
+  function area$1() {
     var x0 = x,
         x1 = null,
         y0 = constant$7(0),
@@ -31580,15 +30268,15 @@
     return area;
   }
 
-  function descending (a, b) {
+  function descending(a, b) {
     return b < a ? -1 : b > a ? 1 : b >= a ? 0 : NaN;
   }
 
-  function identity$8 (d) {
+  function identity$8(d) {
     return d;
   }
 
-  function pie () {
+  function pie() {
     var value = identity$8,
         sortValues = descending,
         sort = null,
@@ -31688,6 +30376,7 @@
       this._curve.point(r * Math.sin(a), r * -Math.cos(a));
     }
   };
+
   function curveRadial(curve) {
     function radial(context) {
       return new Radial(curve(context));
@@ -31708,11 +30397,12 @@
 
     return l;
   }
-  function lineRadial$1 () {
+
+  function lineRadial$1() {
     return lineRadial(line().curve(curveRadialLinear));
   }
 
-  function areaRadial () {
+  function areaRadial() {
     var a = area$1().curve(curveRadialLinear),
         c = a.curve,
         x0 = a.lineX0,
@@ -31745,7 +30435,7 @@
     return a;
   }
 
-  function pointRadial (x, y) {
+  function pointRadial(x, y) {
     return [(y = +y) * Math.cos(x -= Math.PI / 2), y * Math.sin(x)];
   }
 
@@ -31821,9 +30511,11 @@
   function linkHorizontal() {
     return link$1(curveHorizontal);
   }
+
   function linkVertical() {
     return link$1(curveVertical);
   }
+
   function linkRadial() {
     var l = link$1(curveRadial$1);
     l.angle = l.x, delete l.x;
@@ -31838,7 +30530,6 @@
       context.arc(0, 0, r, 0, tau$3);
     }
   };
-
   var cross$1 = {
     draw: function draw(context, size) {
       var r = Math.sqrt(size / 5) / 2;
@@ -31857,7 +30548,6 @@
       context.closePath();
     }
   };
-
   var tan30 = Math.sqrt(1 / 3),
       tan30_2 = tan30 * 2;
   var diamond = {
@@ -31871,7 +30561,6 @@
       context.closePath();
     }
   };
-
   var ka$1 = 0.89081309152928522810,
       kr = Math.sin(pi$3 / 10) / Math.sin(7 * pi$3 / 10),
       kx$1 = Math.sin(tau$3 / 10) * kr,
@@ -31895,7 +30584,6 @@
       context.closePath();
     }
   };
-
   var square = {
     draw: function draw(context, size) {
       var w = Math.sqrt(size),
@@ -31903,7 +30591,6 @@
       context.rect(x, x, w, w);
     }
   };
-
   var sqrt3$1 = Math.sqrt(3);
   var triangle = {
     draw: function draw(context, size) {
@@ -31914,7 +30601,6 @@
       context.closePath();
     }
   };
-
   var c = -0.5,
       s$1 = Math.sqrt(3) / 2,
       k$1 = 1 / Math.sqrt(12),
@@ -31940,9 +30626,9 @@
       context.closePath();
     }
   };
-
   var symbols = [circle$1, cross$1, diamond, square, star, triangle, wye];
-  function symbol () {
+
+  function symbol() {
     var type = constant$7(circle$1),
         size = constant$7(64),
         context = null;
@@ -31969,14 +30655,16 @@
     return symbol;
   }
 
-  function noop$4 () {}
+  function noop$4() {}
 
-  function _point(that, x, y) {
+  function point$2(that, x, y) {
     that._context.bezierCurveTo((2 * that._x0 + that._x1) / 3, (2 * that._y0 + that._y1) / 3, (that._x0 + 2 * that._x1) / 3, (that._y0 + 2 * that._y1) / 3, (that._x0 + 4 * that._x1 + x) / 6, (that._y0 + 4 * that._y1 + y) / 6);
   }
+
   function Basis(context) {
     this._context = context;
   }
+
   Basis.prototype = {
     areaStart: function areaStart() {
       this._line = 0;
@@ -31991,8 +30679,7 @@
     lineEnd: function lineEnd() {
       switch (this._point) {
         case 3:
-          _point(this, this._x1, this._y1);
-
+          point$2(this, this._x1, this._y1);
         // proceed
 
         case 2:
@@ -32025,8 +30712,7 @@
         // proceed
 
         default:
-          _point(this, x, y);
-
+          point$2(this, x, y);
           break;
       }
 
@@ -32034,7 +30720,8 @@
       this._y0 = this._y1, this._y1 = y;
     }
   };
-  function basis (context) {
+
+  function basis(context) {
     return new Basis(context);
   }
 
@@ -32103,8 +30790,7 @@
           break;
 
         default:
-          _point(this, x, y);
-
+          point$2(this, x, y);
           break;
       }
 
@@ -32112,7 +30798,8 @@
       this._y0 = this._y1, this._y1 = y;
     }
   };
-  function basisClosed (context) {
+
+  function basisClosed(context) {
     return new BasisClosed(context);
   }
 
@@ -32159,8 +30846,7 @@
         // proceed
 
         default:
-          _point(this, x, y);
-
+          point$2(this, x, y);
           break;
       }
 
@@ -32168,7 +30854,8 @@
       this._y0 = this._y1, this._y1 = y;
     }
   };
-  function basisOpen (context) {
+
+  function basisOpen(context) {
     return new BasisOpen(context);
   }
 
@@ -32214,7 +30901,8 @@
       this._y.push(+y);
     }
   };
-  var bundle = (function custom(beta) {
+
+  var bundle = function custom(beta) {
     function bundle(context) {
       return beta === 1 ? new Basis(context) : new Bundle(context, beta);
     }
@@ -32224,15 +30912,17 @@
     };
 
     return bundle;
-  })(0.85);
+  }(0.85);
 
-  function _point$1(that, x, y) {
+  function point$3(that, x, y) {
     that._context.bezierCurveTo(that._x1 + that._k * (that._x2 - that._x0), that._y1 + that._k * (that._y2 - that._y0), that._x2 + that._k * (that._x1 - x), that._y2 + that._k * (that._y1 - y), that._x2, that._y2);
   }
+
   function Cardinal(context, tension) {
     this._context = context;
     this._k = (1 - tension) / 6;
   }
+
   Cardinal.prototype = {
     areaStart: function areaStart() {
       this._line = 0;
@@ -32252,8 +30942,7 @@
           break;
 
         case 3:
-          _point$1(this, this._x1, this._y1);
-
+          point$3(this, this._x1, this._y1);
           break;
       }
 
@@ -32279,8 +30968,7 @@
         // proceed
 
         default:
-          _point$1(this, x, y);
-
+          point$3(this, x, y);
           break;
       }
 
@@ -32288,7 +30976,8 @@
       this._y0 = this._y1, this._y1 = this._y2, this._y2 = y;
     }
   };
-  var cardinal = (function custom(tension) {
+
+  var cardinal = function custom(tension) {
     function cardinal(context) {
       return new Cardinal(context, tension);
     }
@@ -32298,12 +30987,13 @@
     };
 
     return cardinal;
-  })(0);
+  }(0);
 
   function CardinalClosed(context, tension) {
     this._context = context;
     this._k = (1 - tension) / 6;
   }
+
   CardinalClosed.prototype = {
     areaStart: noop$4,
     areaEnd: noop$4,
@@ -32362,8 +31052,7 @@
           break;
 
         default:
-          _point$1(this, x, y);
-
+          point$3(this, x, y);
           break;
       }
 
@@ -32371,7 +31060,8 @@
       this._y0 = this._y1, this._y1 = this._y2, this._y2 = y;
     }
   };
-  var cardinalClosed = (function custom(tension) {
+
+  var cardinalClosed = function custom(tension) {
     function cardinal(context) {
       return new CardinalClosed(context, tension);
     }
@@ -32381,12 +31071,13 @@
     };
 
     return cardinal;
-  })(0);
+  }(0);
 
   function CardinalOpen(context, tension) {
     this._context = context;
     this._k = (1 - tension) / 6;
   }
+
   CardinalOpen.prototype = {
     areaStart: function areaStart() {
       this._line = 0;
@@ -32424,8 +31115,7 @@
         // proceed
 
         default:
-          _point$1(this, x, y);
-
+          point$3(this, x, y);
           break;
       }
 
@@ -32433,7 +31123,8 @@
       this._y0 = this._y1, this._y1 = this._y2, this._y2 = y;
     }
   };
-  var cardinalOpen = (function custom(tension) {
+
+  var cardinalOpen = function custom(tension) {
     function cardinal(context) {
       return new CardinalOpen(context, tension);
     }
@@ -32443,9 +31134,9 @@
     };
 
     return cardinal;
-  })(0);
+  }(0);
 
-  function _point$2(that, x, y) {
+  function point$4(that, x, y) {
     var x1 = that._x1,
         y1 = that._y1,
         x2 = that._x2,
@@ -32523,8 +31214,7 @@
         // proceed
 
         default:
-          _point$2(this, x, y);
-
+          point$4(this, x, y);
           break;
       }
 
@@ -32534,7 +31224,8 @@
       this._y0 = this._y1, this._y1 = this._y2, this._y2 = y;
     }
   };
-  var catmullRom = (function custom(alpha) {
+
+  var catmullRom = function custom(alpha) {
     function catmullRom(context) {
       return alpha ? new CatmullRom(context, alpha) : new Cardinal(context, 0);
     }
@@ -32544,7 +31235,7 @@
     };
 
     return catmullRom;
-  })(0.5);
+  }(0.5);
 
   function CatmullRomClosed(context, alpha) {
     this._context = context;
@@ -32615,8 +31306,7 @@
           break;
 
         default:
-          _point$2(this, x, y);
-
+          point$4(this, x, y);
           break;
       }
 
@@ -32626,7 +31316,8 @@
       this._y0 = this._y1, this._y1 = this._y2, this._y2 = y;
     }
   };
-  var catmullRomClosed = (function custom(alpha) {
+
+  var catmullRomClosed = function custom(alpha) {
     function catmullRom(context) {
       return alpha ? new CatmullRomClosed(context, alpha) : new CardinalClosed(context, 0);
     }
@@ -32636,7 +31327,7 @@
     };
 
     return catmullRom;
-  })(0.5);
+  }(0.5);
 
   function CatmullRomOpen(context, alpha) {
     this._context = context;
@@ -32686,8 +31377,7 @@
         // proceed
 
         default:
-          _point$2(this, x, y);
-
+          point$4(this, x, y);
           break;
       }
 
@@ -32697,7 +31387,8 @@
       this._y0 = this._y1, this._y1 = this._y2, this._y2 = y;
     }
   };
-  var catmullRomOpen = (function custom(alpha) {
+
+  var catmullRomOpen = function custom(alpha) {
     function catmullRom(context) {
       return alpha ? new CatmullRomOpen(context, alpha) : new CardinalOpen(context, 0);
     }
@@ -32707,7 +31398,7 @@
     };
 
     return catmullRom;
-  })(0.5);
+  }(0.5);
 
   function LinearClosed(context) {
     this._context = context;
@@ -32727,7 +31418,8 @@
       if (this._point) this._context.lineTo(x, y);else this._point = 1, this._context.moveTo(x, y);
     }
   };
-  function linearClosed (context) {
+
+  function linearClosed(context) {
     return new LinearClosed(context);
   }
 
@@ -32757,7 +31449,7 @@
   // with respect to the four values p0, p0 + m0 / 3, p1 - m1 / 3, p1".
 
 
-  function _point$3(that, t0, t1) {
+  function point$5(that, t0, t1) {
     var x0 = that._x0,
         y0 = that._y0,
         x1 = that._x1,
@@ -32790,8 +31482,7 @@
           break;
 
         case 3:
-          _point$3(this, this._t0, slope2(this, this._t0));
-
+          point$5(this, this._t0, slope2(this, this._t0));
           break;
       }
 
@@ -32815,14 +31506,11 @@
 
         case 2:
           this._point = 3;
-
-          _point$3(this, slope2(this, t1 = slope3(this, x, y)), t1);
-
+          point$5(this, slope2(this, t1 = slope3(this, x, y)), t1);
           break;
 
         default:
-          _point$3(this, this._t0, t1 = slope3(this, x, y));
-
+          point$5(this, this._t0, t1 = slope3(this, x, y));
           break;
       }
 
@@ -32858,9 +31546,11 @@
       this._context.bezierCurveTo(y1, x1, y2, x2, y, x);
     }
   };
+
   function monotoneX(context) {
     return new MonotoneX(context);
   }
+
   function monotoneY(context) {
     return new MonotoneY(context);
   }
@@ -32945,7 +31635,7 @@
     return [a, b];
   }
 
-  function natural (context) {
+  function natural(context) {
     return new Natural(context);
   }
 
@@ -33004,17 +31694,20 @@
       this._x = x, this._y = y;
     }
   };
-  function step (context) {
+
+  function step(context) {
     return new Step(context, 0.5);
   }
+
   function stepBefore(context) {
     return new Step(context, 0);
   }
+
   function stepAfter(context) {
     return new Step(context, 1);
   }
 
-  function none$1 (series, order) {
+  function none$1(series, order) {
     if (!((n = series.length) > 1)) return;
 
     for (var i = 1, j, s0, s1 = series[order[0]], n, m = s1.length; i < n; ++i) {
@@ -33026,7 +31719,7 @@
     }
   }
 
-  function none$2 (series) {
+  function none$2(series) {
     var n = series.length,
         o = new Array(n);
 
@@ -33041,7 +31734,7 @@
     return d[key];
   }
 
-  function stack () {
+  function stack() {
     var keys = constant$7([]),
         order = none$2,
         offset = none$1,
@@ -33091,7 +31784,7 @@
     return stack;
   }
 
-  function expand (series, order) {
+  function expand(series, order) {
     if (!((n = series.length) > 0)) return;
 
     for (var i, n, j = 0, m = series[0].length, y; j < m; ++j) {
@@ -33107,7 +31800,7 @@
     none$1(series, order);
   }
 
-  function diverging$1 (series, order) {
+  function diverging$1(series, order) {
     if (!((n = series.length) > 0)) return;
 
     for (var i, j = 0, d, dy, yp, yn, n, m = series[order[0]].length; j < m; ++j) {
@@ -33123,7 +31816,7 @@
     }
   }
 
-  function silhouette (series, order) {
+  function silhouette(series, order) {
     if (!((n = series.length) > 0)) return;
 
     for (var j = 0, s0 = series[order[0]], n, m = s0.length; j < m; ++j) {
@@ -33137,7 +31830,7 @@
     none$1(series, order);
   }
 
-  function wiggle (series, order) {
+  function wiggle(series, order) {
     if (!((n = series.length) > 0) || !((m = (s0 = series[order[0]]).length) > 0)) return;
 
     for (var y = 0, j = 1, s0, m, n; j < m; ++j) {
@@ -33165,7 +31858,7 @@
     none$1(series, order);
   }
 
-  function appearance (series) {
+  function appearance(series) {
     var peaks = series.map(peak);
     return none$2(series).sort(function (a, b) {
       return peaks[a] - peaks[b];
@@ -33186,12 +31879,13 @@
     return j;
   }
 
-  function ascending$2 (series) {
+  function ascending$2(series) {
     var sums = series.map(sum$2);
     return none$2(series).sort(function (a, b) {
       return sums[a] - sums[b];
     });
   }
+
   function sum$2(series) {
     var s = 0,
         i = -1,
@@ -33205,11 +31899,11 @@
     return s;
   }
 
-  function descending$1 (series) {
+  function descending$1(series) {
     return ascending$2(series).reverse();
   }
 
-  function insideOut (series) {
+  function insideOut(series) {
     var n = series.length,
         i,
         j,
@@ -33235,11 +31929,9 @@
     return bottoms.reverse().concat(tops);
   }
 
-  function reverse$1 (series) {
+  function reverse$1(series) {
     return none$2(series).reverse();
   }
-
-
 
   var paths = /*#__PURE__*/Object.freeze({
     __proto__: null,
@@ -33295,11 +31987,11 @@
     stackOrderNone: none$2,
     stackOrderReverse: reverse$1
   });
-
   /**
    * Strips HTML and "un-escapes" escape characters.
    * @param {String} input
    */
+
   function htmlDecode(input) {
     if (input.replace(/\s+/g, "") === "") return input;
     var doc = new DOMParser().parseFromString(input.replace(/<[^>]+>/g, ""), "text/html");
@@ -33313,7 +32005,7 @@
   */
 
 
-  function textWidth (text, style) {
+  function textWidth(text, style) {
     style = Object.assign({
       "font-size": 10,
       "font-family": "sans-serif",
@@ -33334,12 +32026,13 @@
     });
     return context.measureText(htmlDecode(text)).width;
   }
-
   /**
       @function trim
       @desc Cross-browser implementation of [trim](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/Trim).
       @param {String} str
   */
+
+
   function trim(str) {
     return str.toString().replace(/^\s+|\s+$/g, "");
   }
@@ -33405,27 +32098,28 @@
 
     return false;
   };
-
   /**
       @function rtl
       @desc Returns `true` if the HTML or body element has either the "dir" HTML attribute or the "direction" CSS property set to "rtl".
   */
 
-  var detectRTL = (function () {
-    return _select("html").attr("dir") === "rtl" || _select("body").attr("dir") === "rtl" || _select("html").style("direction") === "rtl" || _select("body").style("direction") === "rtl";
-  });
 
+  var detectRTL = function detectRTL() {
+    return _select("html").attr("dir") === "rtl" || _select("body").attr("dir") === "rtl" || _select("html").style("direction") === "rtl" || _select("body").style("direction") === "rtl";
+  };
   /**
       @function stringify
       @desc Coerces value into a String.
       @param {String} value
   */
-  function stringify (value) {
+
+
+  function stringify(value) {
     if (value === void 0) value = "undefined";else if (!(typeof value === "string" || value instanceof String)) value = JSON.stringify(value);
     return value;
-  }
+  } // great unicode list: http://asecuritysite.com/coding/asc2
 
-  // great unicode list: http://asecuritysite.com/coding/asc2
+
   var diacritics = [[/[\300-\305]/g, "A"], [/[\340-\345]/g, "a"], [/[\306]/g, "AE"], [/[\346]/g, "ae"], [/[\337]/g, "B"], [/[\307]/g, "C"], [/[\347]/g, "c"], [/[\320\336\376]/g, "D"], [/[\360]/g, "d"], [/[\310-\313]/g, "E"], [/[\350-\353]/g, "e"], [/[\314-\317]/g, "I"], [/[\354-\357]/g, "i"], [/[\321]/g, "N"], [/[\361]/g, "n"], [/[\u014c\322-\326\330]/g, "O"], [/[\u014d\362-\366\370]/g, "o"], [/[\u016a\331-\334]/g, "U"], [/[\u016b\371-\374]/g, "u"], [/[\327]/g, "x"], [/[\335]/g, "Y"], [/[\375\377]/g, "y"]];
   /**
       @function strip
@@ -33433,7 +32127,7 @@
       @param {String} value
   */
 
-  function strip (value) {
+  function strip(value) {
     return "".concat(value).replace(/[^A-Za-z0-9\-_]/g, function (_char) {
       if (_char === " ") return "-";
       var ret = false;
@@ -33447,16 +32141,15 @@
 
       return ret || "";
     });
-  }
-
-  // scraped from http://www.fileformat.info/info/unicode/category/Mc/list.htm
+  } // scraped from http://www.fileformat.info/info/unicode/category/Mc/list.htm
   // and http://www.fileformat.info/info/unicode/category/Mn/list.htm
   // JSON.stringify([].slice.call(document.getElementsByClassName("table-list")[0].getElementsByTagName("tr")).filter(function(d){ return d.getElementsByTagName("a").length && d.getElementsByTagName("a")[0].innerHTML.length === 6; }).map(function(d){ return d.getElementsByTagName("a")[0].innerHTML.replace("U", "u").replace("+", ""); }).sort());
   // The following unicode characters combine to form new characters and should never be split from surrounding characters.
+
+
   var a$1 = ["u0903", "u093B", "u093E", "u093F", "u0940", "u0949", "u094A", "u094B", "u094C", "u094E", "u094F", "u0982", "u0983", "u09BE", "u09BF", "u09C0", "u09C7", "u09C8", "u09CB", "u09CC", "u09D7", "u0A03", "u0A3E", "u0A3F", "u0A40", "u0A83", "u0ABE", "u0ABF", "u0AC0", "u0AC9", "u0ACB", "u0ACC", "u0B02", "u0B03", "u0B3E", "u0B40", "u0B47", "u0B48", "u0B4B", "u0B4C", "u0B57", "u0BBE", "u0BBF", "u0BC1", "u0BC2", "u0BC6", "u0BC7", "u0BC8", "u0BCA", "u0BCB", "u0BCC", "u0BD7", "u0C01", "u0C02", "u0C03", "u0C41", "u0C42", "u0C43", "u0C44", "u0C82", "u0C83", "u0CBE", "u0CC0", "u0CC1", "u0CC2", "u0CC3", "u0CC4", "u0CC7", "u0CC8", "u0CCA", "u0CCB", "u0CD5", "u0CD6", "u0D02", "u0D03", "u0D3E", "u0D3F", "u0D40", "u0D46", "u0D47", "u0D48", "u0D4A", "u0D4B", "u0D4C", "u0D57", "u0D82", "u0D83", "u0DCF", "u0DD0", "u0DD1", "u0DD8", "u0DD9", "u0DDA", "u0DDB", "u0DDC", "u0DDD", "u0DDE", "u0DDF", "u0DF2", "u0DF3", "u0F3E", "u0F3F", "u0F7F", "u102B", "u102C", "u1031", "u1038", "u103B", "u103C", "u1056", "u1057", "u1062", "u1063", "u1064", "u1067", "u1068", "u1069", "u106A", "u106B", "u106C", "u106D", "u1083", "u1084", "u1087", "u1088", "u1089", "u108A", "u108B", "u108C", "u108F", "u109A", "u109B", "u109C", "u17B6", "u17BE", "u17BF", "u17C0", "u17C1", "u17C2", "u17C3", "u17C4", "u17C5", "u17C7", "u17C8", "u1923", "u1924", "u1925", "u1926", "u1929", "u192A", "u192B", "u1930", "u1931", "u1933", "u1934", "u1935", "u1936", "u1937", "u1938", "u1A19", "u1A1A", "u1A55", "u1A57", "u1A61", "u1A63", "u1A64", "u1A6D", "u1A6E", "u1A6F", "u1A70", "u1A71", "u1A72", "u1B04", "u1B35", "u1B3B", "u1B3D", "u1B3E", "u1B3F", "u1B40", "u1B41", "u1B43", "u1B44", "u1B82", "u1BA1", "u1BA6", "u1BA7", "u1BAA", "u1BE7", "u1BEA", "u1BEB", "u1BEC", "u1BEE", "u1BF2", "u1BF3", "u1C24", "u1C25", "u1C26", "u1C27", "u1C28", "u1C29", "u1C2A", "u1C2B", "u1C34", "u1C35", "u1CE1", "u1CF2", "u1CF3", "u302E", "u302F", "uA823", "uA824", "uA827", "uA880", "uA881", "uA8B4", "uA8B5", "uA8B6", "uA8B7", "uA8B8", "uA8B9", "uA8BA", "uA8BB", "uA8BC", "uA8BD", "uA8BE", "uA8BF", "uA8C0", "uA8C1", "uA8C2", "uA8C3", "uA952", "uA953", "uA983", "uA9B4", "uA9B5", "uA9BA", "uA9BB", "uA9BD", "uA9BE", "uA9BF", "uA9C0", "uAA2F", "uAA30", "uAA33", "uAA34", "uAA4D", "uAA7B", "uAA7D", "uAAEB", "uAAEE", "uAAEF", "uAAF5", "uABE3", "uABE4", "uABE6", "uABE7", "uABE9", "uABEA", "uABEC"];
   var b = ["u0300", "u0301", "u0302", "u0303", "u0304", "u0305", "u0306", "u0307", "u0308", "u0309", "u030A", "u030B", "u030C", "u030D", "u030E", "u030F", "u0310", "u0311", "u0312", "u0313", "u0314", "u0315", "u0316", "u0317", "u0318", "u0319", "u031A", "u031B", "u031C", "u031D", "u031E", "u031F", "u0320", "u0321", "u0322", "u0323", "u0324", "u0325", "u0326", "u0327", "u0328", "u0329", "u032A", "u032B", "u032C", "u032D", "u032E", "u032F", "u0330", "u0331", "u0332", "u0333", "u0334", "u0335", "u0336", "u0337", "u0338", "u0339", "u033A", "u033B", "u033C", "u033D", "u033E", "u033F", "u0340", "u0341", "u0342", "u0343", "u0344", "u0345", "u0346", "u0347", "u0348", "u0349", "u034A", "u034B", "u034C", "u034D", "u034E", "u034F", "u0350", "u0351", "u0352", "u0353", "u0354", "u0355", "u0356", "u0357", "u0358", "u0359", "u035A", "u035B", "u035C", "u035D", "u035E", "u035F", "u0360", "u0361", "u0362", "u0363", "u0364", "u0365", "u0366", "u0367", "u0368", "u0369", "u036A", "u036B", "u036C", "u036D", "u036E", "u036F", "u0483", "u0484", "u0485", "u0486", "u0487", "u0591", "u0592", "u0593", "u0594", "u0595", "u0596", "u0597", "u0598", "u0599", "u059A", "u059B", "u059C", "u059D", "u059E", "u059F", "u05A0", "u05A1", "u05A2", "u05A3", "u05A4", "u05A5", "u05A6", "u05A7", "u05A8", "u05A9", "u05AA", "u05AB", "u05AC", "u05AD", "u05AE", "u05AF", "u05B0", "u05B1", "u05B2", "u05B3", "u05B4", "u05B5", "u05B6", "u05B7", "u05B8", "u05B9", "u05BA", "u05BB", "u05BC", "u05BD", "u05BF", "u05C1", "u05C2", "u05C4", "u05C5", "u05C7", "u0610", "u0611", "u0612", "u0613", "u0614", "u0615", "u0616", "u0617", "u0618", "u0619", "u061A", "u064B", "u064C", "u064D", "u064E", "u064F", "u0650", "u0651", "u0652", "u0653", "u0654", "u0655", "u0656", "u0657", "u0658", "u0659", "u065A", "u065B", "u065C", "u065D", "u065E", "u065F", "u0670", "u06D6", "u06D7", "u06D8", "u06D9", "u06DA", "u06DB", "u06DC", "u06DF", "u06E0", "u06E1", "u06E2", "u06E3", "u06E4", "u06E7", "u06E8", "u06EA", "u06EB", "u06EC", "u06ED", "u0711", "u0730", "u0731", "u0732", "u0733", "u0734", "u0735", "u0736", "u0737", "u0738", "u0739", "u073A", "u073B", "u073C", "u073D", "u073E", "u073F", "u0740", "u0741", "u0742", "u0743", "u0744", "u0745", "u0746", "u0747", "u0748", "u0749", "u074A", "u07A6", "u07A7", "u07A8", "u07A9", "u07AA", "u07AB", "u07AC", "u07AD", "u07AE", "u07AF", "u07B0", "u07EB", "u07EC", "u07ED", "u07EE", "u07EF", "u07F0", "u07F1", "u07F2", "u07F3", "u0816", "u0817", "u0818", "u0819", "u081B", "u081C", "u081D", "u081E", "u081F", "u0820", "u0821", "u0822", "u0823", "u0825", "u0826", "u0827", "u0829", "u082A", "u082B", "u082C", "u082D", "u0859", "u085A", "u085B", "u08E3", "u08E4", "u08E5", "u08E6", "u08E7", "u08E8", "u08E9", "u08EA", "u08EB", "u08EC", "u08ED", "u08EE", "u08EF", "u08F0", "u08F1", "u08F2", "u08F3", "u08F4", "u08F5", "u08F6", "u08F7", "u08F8", "u08F9", "u08FA", "u08FB", "u08FC", "u08FD", "u08FE", "u08FF", "u0900", "u0901", "u0902", "u093A", "u093C", "u0941", "u0942", "u0943", "u0944", "u0945", "u0946", "u0947", "u0948", "u094D", "u0951", "u0952", "u0953", "u0954", "u0955", "u0956", "u0957", "u0962", "u0963", "u0981", "u09BC", "u09C1", "u09C2", "u09C3", "u09C4", "u09CD", "u09E2", "u09E3", "u0A01", "u0A02", "u0A3C", "u0A41", "u0A42", "u0A47", "u0A48", "u0A4B", "u0A4C", "u0A4D", "u0A51", "u0A70", "u0A71", "u0A75", "u0A81", "u0A82", "u0ABC", "u0AC1", "u0AC2", "u0AC3", "u0AC4", "u0AC5", "u0AC7", "u0AC8", "u0ACD", "u0AE2", "u0AE3", "u0B01", "u0B3C", "u0B3F", "u0B41", "u0B42", "u0B43", "u0B44", "u0B4D", "u0B56", "u0B62", "u0B63", "u0B82", "u0BC0", "u0BCD", "u0C00", "u0C3E", "u0C3F", "u0C40", "u0C46", "u0C47", "u0C48", "u0C4A", "u0C4B", "u0C4C", "u0C4D", "u0C55", "u0C56", "u0C62", "u0C63", "u0C81", "u0CBC", "u0CBF", "u0CC6", "u0CCC", "u0CCD", "u0CE2", "u0CE3", "u0D01", "u0D41", "u0D42", "u0D43", "u0D44", "u0D4D", "u0D62", "u0D63", "u0DCA", "u0DD2", "u0DD3", "u0DD4", "u0DD6", "u0E31", "u0E34", "u0E35", "u0E36", "u0E37", "u0E38", "u0E39", "u0E3A", "u0E47", "u0E48", "u0E49", "u0E4A", "u0E4B", "u0E4C", "u0E4D", "u0E4E", "u0EB1", "u0EB4", "u0EB5", "u0EB6", "u0EB7", "u0EB8", "u0EB9", "u0EBB", "u0EBC", "u0EC8", "u0EC9", "u0ECA", "u0ECB", "u0ECC", "u0ECD", "u0F18", "u0F19", "u0F35", "u0F37", "u0F39", "u0F71", "u0F72", "u0F73", "u0F74", "u0F75", "u0F76", "u0F77", "u0F78", "u0F79", "u0F7A", "u0F7B", "u0F7C", "u0F7D", "u0F7E", "u0F80", "u0F81", "u0F82", "u0F83", "u0F84", "u0F86", "u0F87", "u0F8D", "u0F8E", "u0F8F", "u0F90", "u0F91", "u0F92", "u0F93", "u0F94", "u0F95", "u0F96", "u0F97", "u0F99", "u0F9A", "u0F9B", "u0F9C", "u0F9D", "u0F9E", "u0F9F", "u0FA0", "u0FA1", "u0FA2", "u0FA3", "u0FA4", "u0FA5", "u0FA6", "u0FA7", "u0FA8", "u0FA9", "u0FAA", "u0FAB", "u0FAC", "u0FAD", "u0FAE", "u0FAF", "u0FB0", "u0FB1", "u0FB2", "u0FB3", "u0FB4", "u0FB5", "u0FB6", "u0FB7", "u0FB8", "u0FB9", "u0FBA", "u0FBB", "u0FBC", "u0FC6", "u102D", "u102E", "u102F", "u1030", "u1032", "u1033", "u1034", "u1035", "u1036", "u1037", "u1039", "u103A", "u103D", "u103E", "u1058", "u1059", "u105E", "u105F", "u1060", "u1071", "u1072", "u1073", "u1074", "u1082", "u1085", "u1086", "u108D", "u109D", "u135D", "u135E", "u135F", "u1712", "u1713", "u1714", "u1732", "u1733", "u1734", "u1752", "u1753", "u1772", "u1773", "u17B4", "u17B5", "u17B7", "u17B8", "u17B9", "u17BA", "u17BB", "u17BC", "u17BD", "u17C6", "u17C9", "u17CA", "u17CB", "u17CC", "u17CD", "u17CE", "u17CF", "u17D0", "u17D1", "u17D2", "u17D3", "u17DD", "u180B", "u180C", "u180D", "u18A9", "u1920", "u1921", "u1922", "u1927", "u1928", "u1932", "u1939", "u193A", "u193B", "u1A17", "u1A18", "u1A1B", "u1A56", "u1A58", "u1A59", "u1A5A", "u1A5B", "u1A5C", "u1A5D", "u1A5E", "u1A60", "u1A62", "u1A65", "u1A66", "u1A67", "u1A68", "u1A69", "u1A6A", "u1A6B", "u1A6C", "u1A73", "u1A74", "u1A75", "u1A76", "u1A77", "u1A78", "u1A79", "u1A7A", "u1A7B", "u1A7C", "u1A7F", "u1AB0", "u1AB1", "u1AB2", "u1AB3", "u1AB4", "u1AB5", "u1AB6", "u1AB7", "u1AB8", "u1AB9", "u1ABA", "u1ABB", "u1ABC", "u1ABD", "u1B00", "u1B01", "u1B02", "u1B03", "u1B34", "u1B36", "u1B37", "u1B38", "u1B39", "u1B3A", "u1B3C", "u1B42", "u1B6B", "u1B6C", "u1B6D", "u1B6E", "u1B6F", "u1B70", "u1B71", "u1B72", "u1B73", "u1B80", "u1B81", "u1BA2", "u1BA3", "u1BA4", "u1BA5", "u1BA8", "u1BA9", "u1BAB", "u1BAC", "u1BAD", "u1BE6", "u1BE8", "u1BE9", "u1BED", "u1BEF", "u1BF0", "u1BF1", "u1C2C", "u1C2D", "u1C2E", "u1C2F", "u1C30", "u1C31", "u1C32", "u1C33", "u1C36", "u1C37", "u1CD0", "u1CD1", "u1CD2", "u1CD4", "u1CD5", "u1CD6", "u1CD7", "u1CD8", "u1CD9", "u1CDA", "u1CDB", "u1CDC", "u1CDD", "u1CDE", "u1CDF", "u1CE0", "u1CE2", "u1CE3", "u1CE4", "u1CE5", "u1CE6", "u1CE7", "u1CE8", "u1CED", "u1CF4", "u1CF8", "u1CF9", "u1DC0", "u1DC1", "u1DC2", "u1DC3", "u1DC4", "u1DC5", "u1DC6", "u1DC7", "u1DC8", "u1DC9", "u1DCA", "u1DCB", "u1DCC", "u1DCD", "u1DCE", "u1DCF", "u1DD0", "u1DD1", "u1DD2", "u1DD3", "u1DD4", "u1DD5", "u1DD6", "u1DD7", "u1DD8", "u1DD9", "u1DDA", "u1DDB", "u1DDC", "u1DDD", "u1DDE", "u1DDF", "u1DE0", "u1DE1", "u1DE2", "u1DE3", "u1DE4", "u1DE5", "u1DE6", "u1DE7", "u1DE8", "u1DE9", "u1DEA", "u1DEB", "u1DEC", "u1DED", "u1DEE", "u1DEF", "u1DF0", "u1DF1", "u1DF2", "u1DF3", "u1DF4", "u1DF5", "u1DFC", "u1DFD", "u1DFE", "u1DFF", "u20D0", "u20D1", "u20D2", "u20D3", "u20D4", "u20D5", "u20D6", "u20D7", "u20D8", "u20D9", "u20DA", "u20DB", "u20DC", "u20E1", "u20E5", "u20E6", "u20E7", "u20E8", "u20E9", "u20EA", "u20EB", "u20EC", "u20ED", "u20EE", "u20EF", "u20F0", "u2CEF", "u2CF0", "u2CF1", "u2D7F", "u2DE0", "u2DE1", "u2DE2", "u2DE3", "u2DE4", "u2DE5", "u2DE6", "u2DE7", "u2DE8", "u2DE9", "u2DEA", "u2DEB", "u2DEC", "u2DED", "u2DEE", "u2DEF", "u2DF0", "u2DF1", "u2DF2", "u2DF3", "u2DF4", "u2DF5", "u2DF6", "u2DF7", "u2DF8", "u2DF9", "u2DFA", "u2DFB", "u2DFC", "u2DFD", "u2DFE", "u2DFF", "u302A", "u302B", "u302C", "u302D", "u3099", "u309A", "uA66F", "uA674", "uA675", "uA676", "uA677", "uA678", "uA679", "uA67A", "uA67B", "uA67C", "uA67D", "uA69E", "uA69F", "uA6F0", "uA6F1", "uA802", "uA806", "uA80B", "uA825", "uA826", "uA8C4", "uA8E0", "uA8E1", "uA8E2", "uA8E3", "uA8E4", "uA8E5", "uA8E6", "uA8E7", "uA8E8", "uA8E9", "uA8EA", "uA8EB", "uA8EC", "uA8ED", "uA8EE", "uA8EF", "uA8F0", "uA8F1", "uA926", "uA927", "uA928", "uA929", "uA92A", "uA92B", "uA92C", "uA92D", "uA947", "uA948", "uA949", "uA94A", "uA94B", "uA94C", "uA94D", "uA94E", "uA94F", "uA950", "uA951", "uA980", "uA981", "uA982", "uA9B3", "uA9B6", "uA9B7", "uA9B8", "uA9B9", "uA9BC", "uA9E5", "uAA29", "uAA2A", "uAA2B", "uAA2C", "uAA2D", "uAA2E", "uAA31", "uAA32", "uAA35", "uAA36", "uAA43", "uAA4C", "uAA7C", "uAAB0", "uAAB2", "uAAB3", "uAAB4", "uAAB7", "uAAB8", "uAABE", "uAABF", "uAAC1", "uAAEC", "uAAED", "uAAF6", "uABE5", "uABE8", "uABED", "uFB1E", "uFE00", "uFE01", "uFE02", "uFE03", "uFE04", "uFE05", "uFE06", "uFE07", "uFE08", "uFE09", "uFE0A", "uFE0B", "uFE0C", "uFE0D", "uFE0E", "uFE0F", "uFE20", "uFE21", "uFE22", "uFE23", "uFE24", "uFE25", "uFE26", "uFE27", "uFE28", "uFE29", "uFE2A", "uFE2B", "uFE2C", "uFE2D", "uFE2E", "uFE2F"];
   var combiningMarks = a$1.concat(b);
-
   var splitChars = ["-", ";", ":", "&", "|", "u0E2F", // thai character pairannoi
   "u0EAF", // lao ellipsis
   "u0EC6", // lao ko la (word repetition)
@@ -33498,7 +32191,7 @@
       @param {String} sentence
   */
 
-  function textSplit (sentence) {
+  function textSplit(sentence) {
     if (!noSpaceLanguage.test(sentence)) return stringify(sentence).match(splitWords).filter(function (w) {
       return w.length;
     });
@@ -33507,13 +32200,13 @@
       return [d];
     }));
   }
-
   /**
       @function textWrap
       @desc Based on the defined styles and dimensions, breaks a string into an array of strings for each line of text.
   */
 
-  function textWrap () {
+
+  function textWrap() {
     var fontFamily = "sans-serif",
         fontSize = 10,
         fontWeight = 400,
@@ -33676,29 +32369,29 @@
     return textWrap;
   }
 
-  function _typeof$3(obj) {
+  function _typeof$2(obj) {
     "@babel/helpers - typeof";
 
     if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") {
-      _typeof$3 = function _typeof(obj) {
+      _typeof$2 = function _typeof(obj) {
         return typeof obj;
       };
     } else {
-      _typeof$3 = function _typeof(obj) {
+      _typeof$2 = function _typeof(obj) {
         return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
       };
     }
 
-    return _typeof$3(obj);
+    return _typeof$2(obj);
   }
 
-  function _classCallCheck$3(instance, Constructor) {
+  function _classCallCheck$2(instance, Constructor) {
     if (!(instance instanceof Constructor)) {
       throw new TypeError("Cannot call a class as a function");
     }
   }
 
-  function _defineProperties$3(target, props) {
+  function _defineProperties$2(target, props) {
     for (var i = 0; i < props.length; i++) {
       var descriptor = props[i];
       descriptor.enumerable = descriptor.enumerable || false;
@@ -33708,13 +32401,13 @@
     }
   }
 
-  function _createClass$3(Constructor, protoProps, staticProps) {
-    if (protoProps) _defineProperties$3(Constructor.prototype, protoProps);
-    if (staticProps) _defineProperties$3(Constructor, staticProps);
+  function _createClass$2(Constructor, protoProps, staticProps) {
+    if (protoProps) _defineProperties$2(Constructor.prototype, protoProps);
+    if (staticProps) _defineProperties$2(Constructor, staticProps);
     return Constructor;
   }
 
-  function _inherits$1(subClass, superClass) {
+  function _inherits(subClass, superClass) {
     if (typeof superClass !== "function" && superClass !== null) {
       throw new TypeError("Super expression must either be null or a function");
     }
@@ -33726,46 +32419,46 @@
         configurable: true
       }
     });
-    if (superClass) _setPrototypeOf$1(subClass, superClass);
+    if (superClass) _setPrototypeOf(subClass, superClass);
   }
 
-  function _setPrototypeOf$1(o, p) {
-    _setPrototypeOf$1 = Object.setPrototypeOf || function _setPrototypeOf(o, p) {
+  function _setPrototypeOf(o, p) {
+    _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) {
       o.__proto__ = p;
       return o;
     };
 
-    return _setPrototypeOf$1(o, p);
+    return _setPrototypeOf(o, p);
   }
 
-  function _createSuper$1(Derived) {
-    var hasNativeReflectConstruct = _isNativeReflectConstruct$1();
+  function _createSuper(Derived) {
+    var hasNativeReflectConstruct = _isNativeReflectConstruct();
 
     return function _createSuperInternal() {
-      var Super = _getPrototypeOf$1(Derived),
+      var Super = _getPrototypeOf(Derived),
           result;
 
       if (hasNativeReflectConstruct) {
-        var NewTarget = _getPrototypeOf$1(this).constructor;
+        var NewTarget = _getPrototypeOf(this).constructor;
 
         result = Reflect.construct(Super, arguments, NewTarget);
       } else {
         result = Super.apply(this, arguments);
       }
 
-      return _possibleConstructorReturn$1(this, result);
+      return _possibleConstructorReturn(this, result);
     };
   }
 
-  function _possibleConstructorReturn$1(self, call) {
-    if (call && (_typeof$3(call) === "object" || typeof call === "function")) {
+  function _possibleConstructorReturn(self, call) {
+    if (call && (_typeof$2(call) === "object" || typeof call === "function")) {
       return call;
     }
 
-    return _assertThisInitialized$1(self);
+    return _assertThisInitialized(self);
   }
 
-  function _assertThisInitialized$1(self) {
+  function _assertThisInitialized(self) {
     if (self === void 0) {
       throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
     }
@@ -33773,7 +32466,7 @@
     return self;
   }
 
-  function _isNativeReflectConstruct$1() {
+  function _isNativeReflectConstruct() {
     if (typeof Reflect === "undefined" || !Reflect.construct) return false;
     if (Reflect.construct.sham) return false;
     if (typeof Proxy === "function") return true;
@@ -33786,12 +32479,13 @@
     }
   }
 
-  function _getPrototypeOf$1(o) {
-    _getPrototypeOf$1 = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) {
+  function _getPrototypeOf(o) {
+    _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) {
       return o.__proto__ || Object.getPrototypeOf(o);
     };
-    return _getPrototypeOf$1(o);
+    return _getPrototypeOf(o);
   }
+
   var defaultHtmlLookup = {
     i: "font-style: italic;",
     em: "font-style: italic;",
@@ -33805,9 +32499,9 @@
   */
 
   var TextBox = /*#__PURE__*/function (_BaseClass) {
-    _inherits$1(TextBox, _BaseClass);
+    _inherits(TextBox, _BaseClass);
 
-    var _super = _createSuper$1(TextBox);
+    var _super = _createSuper(TextBox);
     /**
         @memberof TextBox
         @desc Invoked when creating a new class instance, and sets any default parameters.
@@ -33818,7 +32512,7 @@
     function TextBox() {
       var _this;
 
-      _classCallCheck$3(this, TextBox);
+      _classCallCheck$2(this, TextBox);
 
       _this = _super.call(this);
       _this._ariaHidden = constant$6("false");
@@ -33877,7 +32571,7 @@
     */
 
 
-    _createClass$3(TextBox, [{
+    _createClass$2(TextBox, [{
       key: "render",
       value: function render(callback) {
         var _this2 = this;
@@ -34045,7 +32739,7 @@
           return "d3plus-textBox-".concat(strip(d.id));
         }).call(rotate).merge(boxes);
         var rtl = detectRTL();
-        update.style("pointer-events", function (d) {
+        update.order().style("pointer-events", function (d) {
           return _this2._pointerEvents(d.data, d.i);
         }).each(function (d) {
           /**
@@ -34545,7 +33239,6 @@
 
     return TextBox;
   }(BaseClass);
-
   /**
       @function pointDistanceSquared
       @desc Returns the squared euclidean distance between two points.
@@ -34553,12 +33246,13 @@
       @param {Array} p2 The second point, which should always be an `[x, y]` formatted Array.
       @returns {Number}
   */
-  var pointDistanceSquared = (function (p1, p2) {
+
+
+  var pointDistanceSquared = function pointDistanceSquared(p1, p2) {
     var dx = p2[0] - p1[0],
         dy = p2[1] - p1[1];
     return dx * dx + dy * dy;
-  });
-
+  };
   /**
       @function pointDistance
       @desc Calculates the pixel distance between two points.
@@ -34567,33 +33261,34 @@
       @returns {Number}
   */
 
-  var pointDistance = (function (p1, p2) {
-    return Math.sqrt(pointDistanceSquared(p1, p2));
-  });
 
-  function _typeof$4(obj) {
+  var pointDistance = function pointDistance(p1, p2) {
+    return Math.sqrt(pointDistanceSquared(p1, p2));
+  };
+
+  function _typeof$3(obj) {
     "@babel/helpers - typeof";
 
     if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") {
-      _typeof$4 = function _typeof(obj) {
+      _typeof$3 = function _typeof(obj) {
         return typeof obj;
       };
     } else {
-      _typeof$4 = function _typeof(obj) {
+      _typeof$3 = function _typeof(obj) {
         return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
       };
     }
 
-    return _typeof$4(obj);
+    return _typeof$3(obj);
   }
 
-  function _classCallCheck$4(instance, Constructor) {
+  function _classCallCheck$3(instance, Constructor) {
     if (!(instance instanceof Constructor)) {
       throw new TypeError("Cannot call a class as a function");
     }
   }
 
-  function _defineProperties$4(target, props) {
+  function _defineProperties$3(target, props) {
     for (var i = 0; i < props.length; i++) {
       var descriptor = props[i];
       descriptor.enumerable = descriptor.enumerable || false;
@@ -34603,13 +33298,13 @@
     }
   }
 
-  function _createClass$4(Constructor, protoProps, staticProps) {
-    if (protoProps) _defineProperties$4(Constructor.prototype, protoProps);
-    if (staticProps) _defineProperties$4(Constructor, staticProps);
+  function _createClass$3(Constructor, protoProps, staticProps) {
+    if (protoProps) _defineProperties$3(Constructor.prototype, protoProps);
+    if (staticProps) _defineProperties$3(Constructor, staticProps);
     return Constructor;
   }
 
-  function _inherits$2(subClass, superClass) {
+  function _inherits$1(subClass, superClass) {
     if (typeof superClass !== "function" && superClass !== null) {
       throw new TypeError("Super expression must either be null or a function");
     }
@@ -34621,46 +33316,46 @@
         configurable: true
       }
     });
-    if (superClass) _setPrototypeOf$2(subClass, superClass);
+    if (superClass) _setPrototypeOf$1(subClass, superClass);
   }
 
-  function _setPrototypeOf$2(o, p) {
-    _setPrototypeOf$2 = Object.setPrototypeOf || function _setPrototypeOf(o, p) {
+  function _setPrototypeOf$1(o, p) {
+    _setPrototypeOf$1 = Object.setPrototypeOf || function _setPrototypeOf(o, p) {
       o.__proto__ = p;
       return o;
     };
 
-    return _setPrototypeOf$2(o, p);
+    return _setPrototypeOf$1(o, p);
   }
 
-  function _createSuper$2(Derived) {
-    var hasNativeReflectConstruct = _isNativeReflectConstruct$2();
+  function _createSuper$1(Derived) {
+    var hasNativeReflectConstruct = _isNativeReflectConstruct$1();
 
     return function _createSuperInternal() {
-      var Super = _getPrototypeOf$2(Derived),
+      var Super = _getPrototypeOf$1(Derived),
           result;
 
       if (hasNativeReflectConstruct) {
-        var NewTarget = _getPrototypeOf$2(this).constructor;
+        var NewTarget = _getPrototypeOf$1(this).constructor;
 
         result = Reflect.construct(Super, arguments, NewTarget);
       } else {
         result = Super.apply(this, arguments);
       }
 
-      return _possibleConstructorReturn$2(this, result);
+      return _possibleConstructorReturn$1(this, result);
     };
   }
 
-  function _possibleConstructorReturn$2(self, call) {
-    if (call && (_typeof$4(call) === "object" || typeof call === "function")) {
+  function _possibleConstructorReturn$1(self, call) {
+    if (call && (_typeof$3(call) === "object" || typeof call === "function")) {
       return call;
     }
 
-    return _assertThisInitialized$2(self);
+    return _assertThisInitialized$1(self);
   }
 
-  function _assertThisInitialized$2(self) {
+  function _assertThisInitialized$1(self) {
     if (self === void 0) {
       throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
     }
@@ -34668,7 +33363,7 @@
     return self;
   }
 
-  function _isNativeReflectConstruct$2() {
+  function _isNativeReflectConstruct$1() {
     if (typeof Reflect === "undefined" || !Reflect.construct) return false;
     if (Reflect.construct.sham) return false;
     if (typeof Proxy === "function") return true;
@@ -34681,11 +33376,11 @@
     }
   }
 
-  function _getPrototypeOf$2(o) {
-    _getPrototypeOf$2 = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) {
+  function _getPrototypeOf$1(o) {
+    _getPrototypeOf$1 = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) {
       return o.__proto__ || Object.getPrototypeOf(o);
     };
-    return _getPrototypeOf$2(o);
+    return _getPrototypeOf$1(o);
   }
   /**
       @class Shape
@@ -34693,10 +33388,11 @@
       @desc An abstracted class for generating shapes.
   */
 
-  var Shape = /*#__PURE__*/function (_BaseClass) {
-    _inherits$2(Shape, _BaseClass);
 
-    var _super = _createSuper$2(Shape);
+  var Shape = /*#__PURE__*/function (_BaseClass) {
+    _inherits$1(Shape, _BaseClass);
+
+    var _super = _createSuper$1(Shape);
     /**
         @memberof Shape
         @desc Invoked when creating a new class instance, and sets any default parameters.
@@ -34709,7 +33405,7 @@
 
       var tagName = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : "g";
 
-      _classCallCheck$4(this, Shape);
+      _classCallCheck$3(this, Shape);
 
       _this = _super.call(this);
       _this._activeOpacity = 0.25;
@@ -34794,7 +33490,7 @@
     */
 
 
-    _createClass$4(Shape, [{
+    _createClass$3(Shape, [{
       key: "_aes",
       value: function _aes() {
         return {};
@@ -35759,7 +34455,6 @@
 
     return Shape;
   }(BaseClass);
-
   /**
    * de Casteljau's algorithm for drawing and splitting bezier curves.
    * Inspired by https://pomax.github.io/bezierinfo/
@@ -35770,6 +34465,8 @@
    * @return {Object} An object { left, right } where left is the segment from 0..t and
    *   right is the segment from t..1.
    */
+
+
   function decasteljau(points, t) {
     var left = [];
     var right = [];
@@ -35874,9 +34571,11 @@
 
     for (var i = 0; i < segmentCount - 1; i++) {
       var tRelative = tIncrement / (1 - tIncrement * i);
-      var split = decasteljau(remainingCurve, tRelative);
-      segments.push(split.left);
-      remainingCurve = split.right;
+
+      var _split = decasteljau(remainingCurve, tRelative);
+
+      segments.push(_split.left);
+      remainingCurve = _split.right;
     } // last segment is just to the end from the last point
 
 
@@ -35909,7 +34608,7 @@
     return splitCurveAsPoints(points, segmentCount).map(pointsToCommand);
   }
 
-  var commandTokenRegex = /[MLCSTQAHVmlcstqahv]|-?[\d.e+-]+/g;
+  var commandTokenRegex = /[MLCSTQAHVZmlcstqahv]|-?[\d.e+-]+/g;
   /**
    * List of params for each command type in a path `d` attribute
    */
@@ -35923,7 +34622,8 @@
     S: ['x2', 'y2', 'x', 'y'],
     Q: ['x1', 'y1', 'x', 'y'],
     T: ['x', 'y'],
-    A: ['rx', 'ry', 'xAxisRotation', 'largeArcFlag', 'sweepFlag', 'x', 'y']
+    A: ['rx', 'ry', 'xAxisRotation', 'largeArcFlag', 'sweepFlag', 'x', 'y'],
+    Z: []
   }; // Add lower case entries too matching uppercase (e.g. 'm' == 'M')
 
   Object.keys(typeMap).forEach(function (key) {
@@ -36136,7 +34836,7 @@
    */
 
 
-  function makeCommands(d) {
+  function pathCommandsFromString(d) {
     // split into valid tokens
     var tokens = (d || '').match(commandTokenRegex) || [];
     var commands = [];
@@ -36152,8 +34852,8 @@
           type: tokens[i]
         }; // add each of the expected args for this command:
 
-        for (var a = 0; a < commandArgs.length; ++a) {
-          command[commandArgs[a]] = +tokens[i + a + 1];
+        for (var _a = 0; _a < commandArgs.length; ++_a) {
+          command[commandArgs[_a]] = +tokens[i + _a + 1];
         } // need to increment our token index appropriately since
         // we consumed token args
 
@@ -36170,24 +34870,39 @@
    * the same number of points. This allows for a smooth transition when they
    * have a different number of points.
    *
-   * Ignores the `Z` character in paths unless both A and B end with it.
+   * Ignores the `Z` command in paths unless both A and B end with it.
    *
-   * @param {String} a The `d` attribute for a path
-   * @param {String} b The `d` attribute for a path
+   * This function works directly with arrays of command objects instead of with
+   * path `d` strings (see interpolatePath for working with `d` strings).
+   *
+   * @param {Object[]} aCommandsInput Array of path commands
+   * @param {Object[]} bCommandsInput Array of path commands
    * @param {Function} excludeSegment a function that takes a start command object and
    *   end command object and returns true if the segment should be excluded from splitting.
-   * @returns {Function} Interpolation function that maps t ([0, 1]) to a path `d` string.
+   * @returns {Function} Interpolation function that maps t ([0, 1]) to an array of path commands.
    */
 
 
-  function interpolatePath(a, b, excludeSegment) {
-    var aCommands = makeCommands(a);
-    var bCommands = makeCommands(b);
+  function interpolatePathCommands(aCommandsInput, bCommandsInput, excludeSegment) {
+    // make a copy so we don't mess with the input arrays
+    var aCommands = aCommandsInput == null ? [] : aCommandsInput.slice();
+    var bCommands = bCommandsInput == null ? [] : bCommandsInput.slice(); // both input sets are empty, so we don't interpolate
 
     if (!aCommands.length && !bCommands.length) {
       return function nullInterpolator() {
-        return '';
+        return [];
       };
+    } // do we add Z during interpolation? yes if both have it. (we'd expect both to have it or not)
+
+
+    var addZ = (aCommands.length === 0 || aCommands[aCommands.length - 1].type === 'Z') && (bCommands.length === 0 || bCommands[bCommands.length - 1].type === 'Z'); // we temporarily remove Z
+
+    if (aCommands.length > 0 && aCommands[aCommands.length - 1].type === 'Z') {
+      aCommands.pop();
+    }
+
+    if (bCommands.length > 0 && bCommands[bCommands.length - 1].type === 'Z') {
+      bCommands.pop();
     } // if A is empty, treat it as if it used to contain just the first point
     // of B. This makes it so the line extends out of from that first point.
 
@@ -36218,29 +34933,36 @@
     }); // create mutable interpolated command objects
 
     var interpolatedCommands = aCommands.map(function (aCommand) {
-      return _objectSpread2({}, aCommand);
+      return _objectSpread({}, aCommand);
     });
-    var addZ = (a == null || a[a.length - 1] === 'Z') && (b == null || b[b.length - 1] === 'Z');
-    return function pathInterpolator(t) {
+
+    if (addZ) {
+      interpolatedCommands.push({
+        type: 'Z'
+      });
+    }
+
+    return function pathCommandInterpolator(t) {
       // at 1 return the final value without the extensions used during interpolation
       if (t === 1) {
-        return b == null ? '' : b;
+        return bCommandsInput == null ? [] : bCommandsInput;
       } // interpolate the commands using the mutable interpolated command objs
       // we can skip at t=0 since we copied aCommands to begin
 
 
       if (t > 0) {
         for (var i = 0; i < interpolatedCommands.length; ++i) {
+          // if (interpolatedCommands[i].type === 'Z') continue;
           var aCommand = aCommands[i];
           var bCommand = bCommands[i];
           var interpolatedCommand = interpolatedCommands[i];
 
           var _iterator = _createForOfIteratorHelper(typeMap[interpolatedCommand.type]),
-              _step;
+              _step3;
 
           try {
-            for (_iterator.s(); !(_step = _iterator.n()).done;) {
-              var arg = _step.value;
+            for (_iterator.s(); !(_step3 = _iterator.n()).done;) {
+              var arg = _step3.value;
               interpolatedCommand[arg] = (1 - t) * aCommand[arg] + t * bCommand[arg]; // do not use floats for flags (#27), round to integer
 
               if (arg === 'largeArcFlag' || arg === 'sweepFlag') {
@@ -36253,18 +34975,54 @@
             _iterator.f();
           }
         }
-      } // convert to a string (fastest concat: https://jsperf.com/join-concat/150)
+      }
 
+      return interpolatedCommands;
+    };
+  }
+  /**
+   * Interpolate from A to B by extending A and B during interpolation to have
+   * the same number of points. This allows for a smooth transition when they
+   * have a different number of points.
+   *
+   * Ignores the `Z` character in paths unless both A and B end with it.
+   *
+   * @param {String} a The `d` attribute for a path
+   * @param {String} b The `d` attribute for a path
+   * @param {Function} excludeSegment a function that takes a start command object and
+   *   end command object and returns true if the segment should be excluded from splitting.
+   * @returns {Function} Interpolation function that maps t ([0, 1]) to a path `d` string.
+   */
+
+
+  function interpolatePath(a, b, excludeSegment) {
+    var aCommands = pathCommandsFromString(a);
+    var bCommands = pathCommandsFromString(b);
+
+    if (!aCommands.length && !bCommands.length) {
+      return function nullInterpolator() {
+        return '';
+      };
+    }
+
+    var commandInterpolator = interpolatePathCommands(aCommands, bCommands, excludeSegment);
+    return function pathStringInterpolator(t) {
+      // at 1 return the final value without the extensions used during interpolation
+      if (t === 1) {
+        return b == null ? '' : b;
+      }
+
+      var interpolatedCommands = commandInterpolator(t); // convert to a string (fastest concat: https://jsperf.com/join-concat/150)
 
       var interpolatedString = '';
 
       var _iterator2 = _createForOfIteratorHelper(interpolatedCommands),
-          _step2;
+          _step4;
 
       try {
-        for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
-          var _interpolatedCommand = _step2.value;
-          interpolatedString += commandToString(_interpolatedCommand);
+        for (_iterator2.s(); !(_step4 = _iterator2.n()).done;) {
+          var interpolatedCommand = _step4.value;
+          interpolatedString += commandToString(interpolatedCommand);
         }
       } catch (err) {
         _iterator2.e(err);
@@ -36272,15 +35030,11 @@
         _iterator2.f();
       }
 
-      if (addZ) {
-        interpolatedString += 'Z';
-      }
-
       return interpolatedString;
     };
   }
 
-  function polygonArea (polygon) {
+  function polygonArea(polygon) {
     var i = -1,
         n = polygon.length,
         a,
@@ -36296,7 +35050,7 @@
     return area / 2;
   }
 
-  function polygonCentroid (polygon) {
+  function polygonCentroid(polygon) {
     var i = -1,
         n = polygon.length,
         x = 0,
@@ -36317,7 +35071,7 @@
     return k *= 3, [x / k, y / k];
   }
 
-  function polygonContains$1 (polygon, point) {
+  function polygonContains$1(polygon, point) {
     var n = polygon.length,
         p = polygon[n - 1],
         x = point[0],
@@ -36336,7 +35090,6 @@
 
     return inside;
   }
-
   /**
       @function lineIntersection
       @desc Finds the intersection point (if there is one) of the lines p1q1 and p2q2.
@@ -36346,7 +35099,9 @@
       @param {Array} q2 The second point of the second line segment, which should always be an `[x, y]` formatted Array.
       @returns {Boolean}
   */
-  function lineIntersection (p1, q1, p2, q2) {
+
+
+  function lineIntersection(p1, q1, p2, q2) {
     // allow for some margins due to numerical errors
     var eps = 1e-9; // find the intersection point between the two infinite lines
 
@@ -36361,6 +35116,128 @@
     var px = (cross1 * dx2 - cross2 * dx1) / denom,
         py = (cross1 * dy2 - cross2 * dy1) / denom;
     return [px, py];
+  }
+
+  function _slicedToArray(arr, i) {
+    return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _unsupportedIterableToArray(arr, i) || _nonIterableRest();
+  }
+
+  function _nonIterableRest() {
+    throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.");
+  }
+
+  function _unsupportedIterableToArray(o, minLen) {
+    if (!o) return;
+    if (typeof o === "string") return _arrayLikeToArray(o, minLen);
+    var n = Object.prototype.toString.call(o).slice(8, -1);
+    if (n === "Object" && o.constructor) n = o.constructor.name;
+    if (n === "Map" || n === "Set") return Array.from(o);
+    if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen);
+  }
+
+  function _arrayLikeToArray(arr, len) {
+    if (len == null || len > arr.length) len = arr.length;
+
+    for (var i = 0, arr2 = new Array(len); i < len; i++) {
+      arr2[i] = arr[i];
+    }
+
+    return arr2;
+  }
+
+  function _iterableToArrayLimit(arr, i) {
+    if (typeof Symbol === "undefined" || !(Symbol.iterator in Object(arr))) return;
+    var _arr = [];
+    var _n = true;
+    var _d = false;
+    var _e = undefined;
+
+    try {
+      for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) {
+        _arr.push(_s.value);
+
+        if (i && _arr.length === i) break;
+      }
+    } catch (err) {
+      _d = true;
+      _e = err;
+    } finally {
+      try {
+        if (!_n && _i["return"] != null) _i["return"]();
+      } finally {
+        if (_d) throw _e;
+      }
+    }
+
+    return _arr;
+  }
+
+  function _arrayWithHoles(arr) {
+    if (Array.isArray(arr)) return arr;
+  }
+  /**
+      @function segmentBoxContains
+      @desc Checks whether a point is inside the bounding box of a line segment.
+      @param {Array} s1 The first point of the line segment to be used for the bounding box, which should always be an `[x, y]` formatted Array.
+      @param {Array} s2 The second point of the line segment to be used for the bounding box, which should always be an `[x, y]` formatted Array.
+      @param {Array} p The point to be checked, which should always be an `[x, y]` formatted Array.
+      @returns {Boolean}
+  */
+
+
+  function segmentBoxContains(s1, s2, p) {
+    var eps = 1e-9,
+        _p = _slicedToArray(p, 2),
+        px = _p[0],
+        py = _p[1];
+
+    return !(px < Math.min(s1[0], s2[0]) - eps || px > Math.max(s1[0], s2[0]) + eps || py < Math.min(s1[1], s2[1]) - eps || py > Math.max(s1[1], s2[1]) + eps);
+  }
+  /**
+      @function segmentsIntersect
+      @desc Checks whether the line segments p1q1 && p2q2 intersect.
+      @param {Array} p1 The first point of the first line segment, which should always be an `[x, y]` formatted Array.
+      @param {Array} q1 The second point of the first line segment, which should always be an `[x, y]` formatted Array.
+      @param {Array} p2 The first point of the second line segment, which should always be an `[x, y]` formatted Array.
+      @param {Array} q2 The second point of the second line segment, which should always be an `[x, y]` formatted Array.
+      @returns {Boolean}
+  */
+
+
+  function segmentsIntersect(p1, q1, p2, q2) {
+    var p = lineIntersection(p1, q1, p2, q2);
+    if (!p) return false;
+    return segmentBoxContains(p1, q1, p) && segmentBoxContains(p2, q2, p);
+  }
+  /**
+      @function polygonInside
+      @desc Checks if one polygon is inside another polygon.
+      @param {Array} polyA An Array of `[x, y]` points to be used as the inner polygon, checking if it is inside polyA.
+      @param {Array} polyB An Array of `[x, y]` points to be used as the containing polygon.
+      @returns {Boolean}
+  */
+
+
+  function polygonInside(polyA, polyB) {
+    var iA = -1;
+    var nA = polyA.length;
+    var nB = polyB.length;
+    var bA = polyA[nA - 1];
+
+    while (++iA < nA) {
+      var aA = bA;
+      bA = polyA[iA];
+      var iB = -1;
+      var bB = polyB[nB - 1];
+
+      while (++iB < nB) {
+        var aB = bB;
+        bB = polyB[iB];
+        if (segmentsIntersect(aA, bA, aB, bB)) return false;
+      }
+    }
+
+    return polygonContains$1(polyB, polyA[0]);
   }
 
   function _slicedToArray$1(arr, i) {
@@ -36421,128 +35298,6 @@
     if (Array.isArray(arr)) return arr;
   }
   /**
-      @function segmentBoxContains
-      @desc Checks whether a point is inside the bounding box of a line segment.
-      @param {Array} s1 The first point of the line segment to be used for the bounding box, which should always be an `[x, y]` formatted Array.
-      @param {Array} s2 The second point of the line segment to be used for the bounding box, which should always be an `[x, y]` formatted Array.
-      @param {Array} p The point to be checked, which should always be an `[x, y]` formatted Array.
-      @returns {Boolean}
-  */
-
-
-  function segmentBoxContains (s1, s2, p) {
-    var eps = 1e-9,
-        _p = _slicedToArray$1(p, 2),
-        px = _p[0],
-        py = _p[1];
-
-    return !(px < Math.min(s1[0], s2[0]) - eps || px > Math.max(s1[0], s2[0]) + eps || py < Math.min(s1[1], s2[1]) - eps || py > Math.max(s1[1], s2[1]) + eps);
-  }
-
-  /**
-      @function segmentsIntersect
-      @desc Checks whether the line segments p1q1 && p2q2 intersect.
-      @param {Array} p1 The first point of the first line segment, which should always be an `[x, y]` formatted Array.
-      @param {Array} q1 The second point of the first line segment, which should always be an `[x, y]` formatted Array.
-      @param {Array} p2 The first point of the second line segment, which should always be an `[x, y]` formatted Array.
-      @param {Array} q2 The second point of the second line segment, which should always be an `[x, y]` formatted Array.
-      @returns {Boolean}
-  */
-
-  function segmentsIntersect (p1, q1, p2, q2) {
-    var p = lineIntersection(p1, q1, p2, q2);
-    if (!p) return false;
-    return segmentBoxContains(p1, q1, p) && segmentBoxContains(p2, q2, p);
-  }
-
-  /**
-      @function polygonInside
-      @desc Checks if one polygon is inside another polygon.
-      @param {Array} polyA An Array of `[x, y]` points to be used as the inner polygon, checking if it is inside polyA.
-      @param {Array} polyB An Array of `[x, y]` points to be used as the containing polygon.
-      @returns {Boolean}
-  */
-
-  function polygonInside (polyA, polyB) {
-    var iA = -1;
-    var nA = polyA.length;
-    var nB = polyB.length;
-    var bA = polyA[nA - 1];
-
-    while (++iA < nA) {
-      var aA = bA;
-      bA = polyA[iA];
-      var iB = -1;
-      var bB = polyB[nB - 1];
-
-      while (++iB < nB) {
-        var aB = bB;
-        bB = polyB[iB];
-        if (segmentsIntersect(aA, bA, aB, bB)) return false;
-      }
-    }
-
-    return polygonContains$1(polyB, polyA[0]);
-  }
-
-  function _slicedToArray$2(arr, i) {
-    return _arrayWithHoles$2(arr) || _iterableToArrayLimit$2(arr, i) || _unsupportedIterableToArray$2(arr, i) || _nonIterableRest$2();
-  }
-
-  function _nonIterableRest$2() {
-    throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.");
-  }
-
-  function _unsupportedIterableToArray$2(o, minLen) {
-    if (!o) return;
-    if (typeof o === "string") return _arrayLikeToArray$2(o, minLen);
-    var n = Object.prototype.toString.call(o).slice(8, -1);
-    if (n === "Object" && o.constructor) n = o.constructor.name;
-    if (n === "Map" || n === "Set") return Array.from(o);
-    if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray$2(o, minLen);
-  }
-
-  function _arrayLikeToArray$2(arr, len) {
-    if (len == null || len > arr.length) len = arr.length;
-
-    for (var i = 0, arr2 = new Array(len); i < len; i++) {
-      arr2[i] = arr[i];
-    }
-
-    return arr2;
-  }
-
-  function _iterableToArrayLimit$2(arr, i) {
-    if (typeof Symbol === "undefined" || !(Symbol.iterator in Object(arr))) return;
-    var _arr = [];
-    var _n = true;
-    var _d = false;
-    var _e = undefined;
-
-    try {
-      for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) {
-        _arr.push(_s.value);
-
-        if (i && _arr.length === i) break;
-      }
-    } catch (err) {
-      _d = true;
-      _e = err;
-    } finally {
-      try {
-        if (!_n && _i["return"] != null) _i["return"]();
-      } finally {
-        if (_d) throw _e;
-      }
-    }
-
-    return _arr;
-  }
-
-  function _arrayWithHoles$2(arr) {
-    if (Array.isArray(arr)) return arr;
-  }
-  /**
       @function polygonRayCast
       @desc Gives the two closest intersection points between a ray cast from a point inside a polygon. The two points should lie on opposite sides of the origin.
       @param {Array} poly The polygon to test against, which should be an `[x, y]` formatted Array.
@@ -36551,13 +35306,14 @@
       @returns {Array} An array containing two values, the closest point on the left and the closest point on the right. If either point cannot be found, that value will be `null`.
   */
 
-  function polygonRayCast (poly, origin) {
+
+  function polygonRayCast(poly, origin) {
     var alpha = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 0;
     var eps = 1e-9;
     origin = [origin[0] + eps * Math.cos(alpha), origin[1] + eps * Math.sin(alpha)];
 
     var _origin = origin,
-        _origin2 = _slicedToArray$2(_origin, 2),
+        _origin2 = _slicedToArray$1(_origin, 2),
         x0 = _origin2[0],
         y0 = _origin2[1];
 
@@ -36596,7 +35352,6 @@
 
     return [closestPointLeft, closestPointRight];
   }
-
   /**
       @function pointRotate
       @desc Rotates a point around a given origin.
@@ -36605,7 +35360,9 @@
       @param {Array} [origin = [0, 0]] The origin point of the rotation, which should always be an `[x, y]` formatted Array.
       @returns {Boolean}
   */
-  function pointRotate (p, alpha) {
+
+
+  function pointRotate(p, alpha) {
     var origin = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : [0, 0];
     var cosAlpha = Math.cos(alpha),
         sinAlpha = Math.sin(alpha),
@@ -36613,7 +35370,6 @@
         yshifted = p[1] - origin[1];
     return [cosAlpha * xshifted - sinAlpha * yshifted + origin[0], sinAlpha * xshifted + cosAlpha * yshifted + origin[1]];
   }
-
   /**
       @function polygonRotate
       @desc Rotates a point around a given origin.
@@ -36623,13 +35379,13 @@
       @returns {Boolean}
   */
 
-  var polygonRotate = (function (poly, alpha) {
+
+  var polygonRotate = function polygonRotate(poly, alpha) {
     var origin = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : [0, 0];
     return poly.map(function (p) {
       return pointRotate(p, alpha, origin);
     });
-  });
-
+  };
   /**
       @desc square distance from a point to a segment
       @param {Array} point
@@ -36637,6 +35393,7 @@
       @param {Array} segmentAnchor2
       @private
   */
+
 
   function getSqSegDist(p, p1, p2) {
     var x = p1[0],
@@ -36736,11 +35493,10 @@
       @param {Array} poly An Array of points that represent a polygon.
       @param {Number} [tolerance = 1] Affects the amount of simplification (in the same metric as the point coordinates).
       @param {Boolean} [highestQuality = false] Excludes distance-based preprocessing step which leads to highest quality simplification but runs ~10-20 times slower.
+   */
 
-  */
 
-
-  var simplify = (function (poly) {
+  var simplify = function simplify(poly) {
     var tolerance = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 1;
     var highestQuality = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : false;
     if (poly.length <= 2) return poly;
@@ -36748,26 +35504,26 @@
     poly = highestQuality ? poly : simplifyRadialDist(poly, sqTolerance);
     poly = simplifyDouglasPeucker(poly, sqTolerance);
     return poly;
-  });
+  };
 
-  function _slicedToArray$3(arr, i) {
-    return _arrayWithHoles$3(arr) || _iterableToArrayLimit$3(arr, i) || _unsupportedIterableToArray$3(arr, i) || _nonIterableRest$3();
+  function _slicedToArray$2(arr, i) {
+    return _arrayWithHoles$2(arr) || _iterableToArrayLimit$2(arr, i) || _unsupportedIterableToArray$2(arr, i) || _nonIterableRest$2();
   }
 
-  function _nonIterableRest$3() {
+  function _nonIterableRest$2() {
     throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.");
   }
 
-  function _unsupportedIterableToArray$3(o, minLen) {
+  function _unsupportedIterableToArray$2(o, minLen) {
     if (!o) return;
-    if (typeof o === "string") return _arrayLikeToArray$3(o, minLen);
+    if (typeof o === "string") return _arrayLikeToArray$2(o, minLen);
     var n = Object.prototype.toString.call(o).slice(8, -1);
     if (n === "Object" && o.constructor) n = o.constructor.name;
     if (n === "Map" || n === "Set") return Array.from(o);
-    if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray$3(o, minLen);
+    if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray$2(o, minLen);
   }
 
-  function _arrayLikeToArray$3(arr, len) {
+  function _arrayLikeToArray$2(arr, len) {
     if (len == null || len > arr.length) len = arr.length;
 
     for (var i = 0, arr2 = new Array(len); i < len; i++) {
@@ -36777,7 +35533,7 @@
     return arr2;
   }
 
-  function _iterableToArrayLimit$3(arr, i) {
+  function _iterableToArrayLimit$2(arr, i) {
     if (typeof Symbol === "undefined" || !(Symbol.iterator in Object(arr))) return;
     var _arr = [];
     var _n = true;
@@ -36804,7 +35560,7 @@
     return _arr;
   }
 
-  function _arrayWithHoles$3(arr) {
+  function _arrayWithHoles$2(arr) {
     if (Array.isArray(arr)) return arr;
   }
 
@@ -36844,7 +35600,7 @@
       @return {LargestRect}
   */
 
-  function largestRect (poly) {
+  function largestRect(poly) {
     var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
 
     if (poly.length < 3) {
@@ -36893,14 +35649,14 @@
     var _extent = extent(poly, function (d) {
       return d[0];
     }),
-        _extent2 = _slicedToArray$3(_extent, 2),
+        _extent2 = _slicedToArray$2(_extent, 2),
         minx = _extent2[0],
         maxx = _extent2[1];
 
     var _extent3 = extent(poly, function (d) {
       return d[1];
     }),
-        _extent4 = _slicedToArray$3(_extent3, 2),
+        _extent4 = _slicedToArray$2(_extent3, 2),
         miny = _extent4[0],
         maxy = _extent4[1]; // simplify polygon
 
@@ -36916,7 +35672,7 @@
       return d[0];
     });
 
-    var _extent6 = _slicedToArray$3(_extent5, 2);
+    var _extent6 = _slicedToArray$2(_extent5, 2);
 
     minx = _extent6[0];
     maxx = _extent6[1];
@@ -36925,7 +35681,7 @@
       return d[1];
     });
 
-    var _extent8 = _slicedToArray$3(_extent7, 2);
+    var _extent8 = _slicedToArray$2(_extent7, 2);
 
     miny = _extent8[0];
     maxy = _extent8[1];
@@ -36978,12 +35734,12 @@
         var origOrigin = origins[i]; // generate improved origins
 
         var _polygonRayCast = polygonRayCast(poly, origOrigin, angleRad),
-            _polygonRayCast2 = _slicedToArray$3(_polygonRayCast, 2),
+            _polygonRayCast2 = _slicedToArray$2(_polygonRayCast, 2),
             p1W = _polygonRayCast2[0],
             p2W = _polygonRayCast2[1];
 
         var _polygonRayCast3 = polygonRayCast(poly, origOrigin, angleRad + Math.PI / 2),
-            _polygonRayCast4 = _slicedToArray$3(_polygonRayCast3, 2),
+            _polygonRayCast4 = _slicedToArray$2(_polygonRayCast3, 2),
             p1H = _polygonRayCast4[0],
             p2H = _polygonRayCast4[1];
 
@@ -37011,7 +35767,7 @@
           });
 
           var _polygonRayCast5 = polygonRayCast(poly, origin, angleRad),
-              _polygonRayCast6 = _slicedToArray$3(_polygonRayCast5, 2),
+              _polygonRayCast6 = _slicedToArray$2(_polygonRayCast5, 2),
               _p1W = _polygonRayCast6[0],
               _p2W = _polygonRayCast6[1];
 
@@ -37020,7 +35776,7 @@
           var maxWidth = 2 * Math.sqrt(minSqDistW);
 
           var _polygonRayCast7 = polygonRayCast(poly, origin, angleRad + Math.PI / 2),
-              _polygonRayCast8 = _slicedToArray$3(_polygonRayCast7, 2),
+              _polygonRayCast8 = _slicedToArray$2(_polygonRayCast7, 2),
               _p1H = _polygonRayCast8[0],
               _p2H = _polygonRayCast8[1];
 
@@ -37051,7 +35807,7 @@
               var width = (left + right) / 2;
               var height = width / aRatio;
 
-              var _origin = _slicedToArray$3(origin, 2),
+              var _origin = _slicedToArray$2(origin, 2),
                   cx = _origin[0],
                   cy = _origin[1];
 
@@ -37101,6 +35857,432 @@
       events: events
     }) : maxRect;
   }
+
+  function _typeof$4(obj) {
+    "@babel/helpers - typeof";
+
+    if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") {
+      _typeof$4 = function _typeof(obj) {
+        return typeof obj;
+      };
+    } else {
+      _typeof$4 = function _typeof(obj) {
+        return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
+      };
+    }
+
+    return _typeof$4(obj);
+  }
+
+  function _classCallCheck$4(instance, Constructor) {
+    if (!(instance instanceof Constructor)) {
+      throw new TypeError("Cannot call a class as a function");
+    }
+  }
+
+  function _defineProperties$4(target, props) {
+    for (var i = 0; i < props.length; i++) {
+      var descriptor = props[i];
+      descriptor.enumerable = descriptor.enumerable || false;
+      descriptor.configurable = true;
+      if ("value" in descriptor) descriptor.writable = true;
+      Object.defineProperty(target, descriptor.key, descriptor);
+    }
+  }
+
+  function _createClass$4(Constructor, protoProps, staticProps) {
+    if (protoProps) _defineProperties$4(Constructor.prototype, protoProps);
+    if (staticProps) _defineProperties$4(Constructor, staticProps);
+    return Constructor;
+  }
+
+  function _get(target, property, receiver) {
+    if (typeof Reflect !== "undefined" && Reflect.get) {
+      _get = Reflect.get;
+    } else {
+      _get = function _get(target, property, receiver) {
+        var base = _superPropBase(target, property);
+
+        if (!base) return;
+        var desc = Object.getOwnPropertyDescriptor(base, property);
+
+        if (desc.get) {
+          return desc.get.call(receiver);
+        }
+
+        return desc.value;
+      };
+    }
+
+    return _get(target, property, receiver || target);
+  }
+
+  function _superPropBase(object, property) {
+    while (!Object.prototype.hasOwnProperty.call(object, property)) {
+      object = _getPrototypeOf$2(object);
+      if (object === null) break;
+    }
+
+    return object;
+  }
+
+  function _inherits$2(subClass, superClass) {
+    if (typeof superClass !== "function" && superClass !== null) {
+      throw new TypeError("Super expression must either be null or a function");
+    }
+
+    subClass.prototype = Object.create(superClass && superClass.prototype, {
+      constructor: {
+        value: subClass,
+        writable: true,
+        configurable: true
+      }
+    });
+    if (superClass) _setPrototypeOf$2(subClass, superClass);
+  }
+
+  function _setPrototypeOf$2(o, p) {
+    _setPrototypeOf$2 = Object.setPrototypeOf || function _setPrototypeOf(o, p) {
+      o.__proto__ = p;
+      return o;
+    };
+
+    return _setPrototypeOf$2(o, p);
+  }
+
+  function _createSuper$2(Derived) {
+    var hasNativeReflectConstruct = _isNativeReflectConstruct$2();
+
+    return function _createSuperInternal() {
+      var Super = _getPrototypeOf$2(Derived),
+          result;
+
+      if (hasNativeReflectConstruct) {
+        var NewTarget = _getPrototypeOf$2(this).constructor;
+
+        result = Reflect.construct(Super, arguments, NewTarget);
+      } else {
+        result = Super.apply(this, arguments);
+      }
+
+      return _possibleConstructorReturn$2(this, result);
+    };
+  }
+
+  function _possibleConstructorReturn$2(self, call) {
+    if (call && (_typeof$4(call) === "object" || typeof call === "function")) {
+      return call;
+    }
+
+    return _assertThisInitialized$2(self);
+  }
+
+  function _assertThisInitialized$2(self) {
+    if (self === void 0) {
+      throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
+    }
+
+    return self;
+  }
+
+  function _isNativeReflectConstruct$2() {
+    if (typeof Reflect === "undefined" || !Reflect.construct) return false;
+    if (Reflect.construct.sham) return false;
+    if (typeof Proxy === "function") return true;
+
+    try {
+      Date.prototype.toString.call(Reflect.construct(Date, [], function () {}));
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  function _getPrototypeOf$2(o) {
+    _getPrototypeOf$2 = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) {
+      return o.__proto__ || Object.getPrototypeOf(o);
+    };
+    return _getPrototypeOf$2(o);
+  }
+  /**
+      @class Area
+      @extends Shape
+      @desc Creates SVG areas based on an array of data.
+  */
+
+
+  var Area = /*#__PURE__*/function (_Shape) {
+    _inherits$2(Area, _Shape);
+
+    var _super = _createSuper$2(Area);
+    /**
+        @memberof Area
+        @desc Invoked when creating a new class instance, and overrides any default parameters inherited from Shape.
+        @private
+    */
+
+
+    function Area() {
+      var _this;
+
+      _classCallCheck$4(this, Area);
+
+      _this = _super.call(this);
+      _this._curve = "linear";
+
+      _this._defined = function () {
+        return true;
+      };
+
+      _this._labelBounds = function (d, i, aes) {
+        var r = largestRect(aes.points);
+        if (!r) return null;
+        return {
+          angle: r.angle,
+          width: r.width,
+          height: r.height,
+          x: r.cx - r.width / 2 - _this._x(d, i),
+          y: r.cy - r.height / 2 - _this._y(d, i)
+        };
+      };
+
+      _this._labelConfig = Object.assign(_this._labelConfig, {
+        textAnchor: "middle",
+        verticalAlign: "middle"
+      });
+      _this._name = "Area";
+      _this._x = accessor("x");
+      _this._x0 = accessor("x");
+      _this._x1 = null;
+      _this._y = constant$6(0);
+      _this._y0 = constant$6(0);
+      _this._y1 = accessor("y");
+      return _this;
+    }
+    /**
+        @memberof Area
+        @desc Given a specific data point and index, returns the aesthetic properties of the shape.
+        @param {Object} *data point*
+        @param {Number} *index*
+        @private
+    */
+
+
+    _createClass$4(Area, [{
+      key: "_aes",
+      value: function _aes(d) {
+        var _this2 = this;
+
+        var values = d.values.slice().sort(function (a, b) {
+          return _this2._y1 ? _this2._x(a) - _this2._x(b) : _this2._y(a) - _this2._y(b);
+        });
+        var points1 = values.map(function (v, z) {
+          return [_this2._x0(v, z), _this2._y0(v, z)];
+        });
+        var points2 = values.reverse().map(function (v, z) {
+          return _this2._y1 ? [_this2._x(v, z), _this2._y1(v, z)] : [_this2._x1(v, z), _this2._y(v, z)];
+        });
+        var points = points1.concat(points2);
+        if (points1[0][1] > points2[0][1]) points = points.reverse();
+        points.push(points[0]);
+        return {
+          points: points
+        };
+      }
+      /**
+          @memberof Area
+          @desc Filters/manipulates the data array before binding each point to an SVG group.
+          @param {Array} [*data* = the data array to be filtered]
+          @private
+      */
+
+    }, {
+      key: "_dataFilter",
+      value: function _dataFilter(data) {
+        var _this3 = this;
+
+        var areas = nest().key(this._id).entries(data).map(function (d) {
+          d.data = objectMerge(d.values);
+          d.i = data.indexOf(d.values[0]);
+          var x = extent(d.values.map(_this3._x).concat(d.values.map(_this3._x0)).concat(_this3._x1 ? d.values.map(_this3._x1) : []));
+          d.xR = x;
+          d.width = x[1] - x[0];
+          d.x = x[0] + d.width / 2;
+          var y = extent(d.values.map(_this3._y).concat(d.values.map(_this3._y0)).concat(_this3._y1 ? d.values.map(_this3._y1) : []));
+          d.yR = y;
+          d.height = y[1] - y[0];
+          d.y = y[0] + d.height / 2;
+          d.nested = true;
+          d.translate = [d.x, d.y];
+          d.__d3plusShape__ = true;
+          return d;
+        });
+
+        areas.key = function (d) {
+          return d.key;
+        };
+
+        return areas;
+      }
+      /**
+          @memberof Area
+          @desc Draws the area polygons.
+          @param {Function} [*callback*]
+          @chainable
+      */
+
+    }, {
+      key: "render",
+      value: function render(callback) {
+        var _this4 = this;
+
+        _get(_getPrototypeOf$2(Area.prototype), "render", this).call(this, callback);
+
+        var path = this._path = area$1().defined(this._defined).curve(paths["curve".concat(this._curve.charAt(0).toUpperCase()).concat(this._curve.slice(1))]).x(this._x).x0(this._x0).x1(this._x1).y(this._y).y0(this._y0).y1(this._y1);
+        var exitPath = area$1().defined(function (d) {
+          return d;
+        }).curve(paths["curve".concat(this._curve.charAt(0).toUpperCase()).concat(this._curve.slice(1))]).x(this._x).y(this._y).x0(function (d, i) {
+          return _this4._x1 ? _this4._x0(d, i) + (_this4._x1(d, i) - _this4._x0(d, i)) / 2 : _this4._x0(d, i);
+        }).x1(function (d, i) {
+          return _this4._x1 ? _this4._x0(d, i) + (_this4._x1(d, i) - _this4._x0(d, i)) / 2 : _this4._x0(d, i);
+        }).y0(function (d, i) {
+          return _this4._y1 ? _this4._y0(d, i) + (_this4._y1(d, i) - _this4._y0(d, i)) / 2 : _this4._y0(d, i);
+        }).y1(function (d, i) {
+          return _this4._y1 ? _this4._y0(d, i) + (_this4._y1(d, i) - _this4._y0(d, i)) / 2 : _this4._y0(d, i);
+        });
+
+        this._enter.append("path").attr("transform", function (d) {
+          return "translate(".concat(-d.xR[0] - d.width / 2, ", ").concat(-d.yR[0] - d.height / 2, ")");
+        }).attr("d", function (d) {
+          return exitPath(d.values);
+        }).call(this._applyStyle.bind(this)).transition(this._transition).attrTween("d", function (d) {
+          return interpolatePath(_select(this).attr("d"), path(d.values));
+        });
+
+        this._update.select("path").transition(this._transition).attr("transform", function (d) {
+          return "translate(".concat(-d.xR[0] - d.width / 2, ", ").concat(-d.yR[0] - d.height / 2, ")");
+        }).attrTween("d", function (d) {
+          return interpolatePath(_select(this).attr("d"), path(d.values));
+        }).call(this._applyStyle.bind(this));
+
+        this._exit.select("path").transition(this._transition).attrTween("d", function (d) {
+          return interpolatePath(_select(this).attr("d"), exitPath(d.values));
+        });
+
+        return this;
+      }
+      /**
+          @memberof Area
+          @desc If *value* is specified, sets the area curve to the specified string and returns the current class instance. If *value* is not specified, returns the current area curve.
+          @param {String} [*value* = "linear"]
+          @chainable
+      */
+
+    }, {
+      key: "curve",
+      value: function curve(_) {
+        return arguments.length ? (this._curve = _, this) : this._curve;
+      }
+      /**
+          @memberof Area
+          @desc If *value* is specified, sets the defined accessor to the specified function and returns the current class instance. If *value* is not specified, returns the current defined accessor.
+          @param {Function} [*value*]
+          @chainable
+      */
+
+    }, {
+      key: "defined",
+      value: function defined(_) {
+        return arguments.length ? (this._defined = _, this) : this._defined;
+      }
+      /**
+          @memberof Area
+          @desc If *value* is specified, sets the x accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current x accessor.
+          @param {Function|Number} [*value*]
+          @chainable
+      */
+
+    }, {
+      key: "x",
+      value: function x(_) {
+        if (!arguments.length) return this._x;
+        this._x = typeof _ === "function" ? _ : constant$6(_);
+        this._x0 = this._x;
+        return this;
+      }
+      /**
+          @memberof Area
+          @desc If *value* is specified, sets the x0 accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current x0 accessor.
+          @param {Function|Number} [*value*]
+          @chainable
+      */
+
+    }, {
+      key: "x0",
+      value: function x0(_) {
+        if (!arguments.length) return this._x0;
+        this._x0 = typeof _ === "function" ? _ : constant$6(_);
+        this._x = this._x0;
+        return this;
+      }
+      /**
+          @memberof Area
+          @desc If *value* is specified, sets the x1 accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current x1 accessor.
+          @param {Function|Number|null} [*value*]
+          @chainable
+      */
+
+    }, {
+      key: "x1",
+      value: function x1(_) {
+        return arguments.length ? (this._x1 = typeof _ === "function" || _ === null ? _ : constant$6(_), this) : this._x1;
+      }
+      /**
+          @memberof Area
+          @desc If *value* is specified, sets the y accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current y accessor.
+          @param {Function|Number} [*value*]
+          @chainable
+      */
+
+    }, {
+      key: "y",
+      value: function y(_) {
+        if (!arguments.length) return this._y;
+        this._y = typeof _ === "function" ? _ : constant$6(_);
+        this._y0 = this._y;
+        return this;
+      }
+      /**
+          @memberof Area
+          @desc If *value* is specified, sets the y0 accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current y0 accessor.
+          @param {Function|Number} [*value*]
+          @chainable
+      */
+
+    }, {
+      key: "y0",
+      value: function y0(_) {
+        if (!arguments.length) return this._y0;
+        this._y0 = typeof _ === "function" ? _ : constant$6(_);
+        this._y = this._y0;
+        return this;
+      }
+      /**
+          @memberof Area
+          @desc If *value* is specified, sets the y1 accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current y1 accessor.
+          @param {Function|Number|null} [*value*]
+          @chainable
+      */
+
+    }, {
+      key: "y1",
+      value: function y1(_) {
+        return arguments.length ? (this._y1 = typeof _ === "function" || _ === null ? _ : constant$6(_), this) : this._y1;
+      }
+    }]);
+
+    return Area;
+  }(Shape);
 
   function _typeof$5(obj) {
     "@babel/helpers - typeof";
@@ -37249,440 +36431,16 @@
     return _getPrototypeOf$3(o);
   }
   /**
-      @class Area
-      @extends Shape
-      @desc Creates SVG areas based on an array of data.
-  */
-
-  var Area = /*#__PURE__*/function (_Shape) {
-    _inherits$3(Area, _Shape);
-
-    var _super = _createSuper$3(Area);
-    /**
-        @memberof Area
-        @desc Invoked when creating a new class instance, and overrides any default parameters inherited from Shape.
-        @private
-    */
-
-
-    function Area() {
-      var _this;
-
-      _classCallCheck$5(this, Area);
-
-      _this = _super.call(this);
-      _this._curve = "linear";
-
-      _this._defined = function () {
-        return true;
-      };
-
-      _this._labelBounds = function (d, i, aes) {
-        var r = largestRect(aes.points);
-        if (!r) return null;
-        return {
-          angle: r.angle,
-          width: r.width,
-          height: r.height,
-          x: r.cx - r.width / 2 - _this._x(d, i),
-          y: r.cy - r.height / 2 - _this._y(d, i)
-        };
-      };
-
-      _this._labelConfig = Object.assign(_this._labelConfig, {
-        textAnchor: "middle",
-        verticalAlign: "middle"
-      });
-      _this._name = "Area";
-      _this._x = accessor("x");
-      _this._x0 = accessor("x");
-      _this._x1 = null;
-      _this._y = constant$6(0);
-      _this._y0 = constant$6(0);
-      _this._y1 = accessor("y");
-      return _this;
-    }
-    /**
-        @memberof Area
-        @desc Given a specific data point and index, returns the aesthetic properties of the shape.
-        @param {Object} *data point*
-        @param {Number} *index*
-        @private
-    */
-
-
-    _createClass$5(Area, [{
-      key: "_aes",
-      value: function _aes(d) {
-        var _this2 = this;
-
-        var values = d.values.slice().sort(function (a, b) {
-          return _this2._y1 ? _this2._x(a) - _this2._x(b) : _this2._y(a) - _this2._y(b);
-        });
-        var points1 = values.map(function (v, z) {
-          return [_this2._x0(v, z), _this2._y0(v, z)];
-        });
-        var points2 = values.reverse().map(function (v, z) {
-          return _this2._y1 ? [_this2._x(v, z), _this2._y1(v, z)] : [_this2._x1(v, z), _this2._y(v, z)];
-        });
-        var points = points1.concat(points2);
-        if (points1[0][1] > points2[0][1]) points = points.reverse();
-        points.push(points[0]);
-        return {
-          points: points
-        };
-      }
-      /**
-          @memberof Area
-          @desc Filters/manipulates the data array before binding each point to an SVG group.
-          @param {Array} [*data* = the data array to be filtered]
-          @private
-      */
-
-    }, {
-      key: "_dataFilter",
-      value: function _dataFilter(data) {
-        var _this3 = this;
-
-        var areas = nest().key(this._id).entries(data).map(function (d) {
-          d.data = objectMerge(d.values);
-          d.i = data.indexOf(d.values[0]);
-          var x = extent(d.values.map(_this3._x).concat(d.values.map(_this3._x0)).concat(_this3._x1 ? d.values.map(_this3._x1) : []));
-          d.xR = x;
-          d.width = x[1] - x[0];
-          d.x = x[0] + d.width / 2;
-          var y = extent(d.values.map(_this3._y).concat(d.values.map(_this3._y0)).concat(_this3._y1 ? d.values.map(_this3._y1) : []));
-          d.yR = y;
-          d.height = y[1] - y[0];
-          d.y = y[0] + d.height / 2;
-          d.nested = true;
-          d.translate = [d.x, d.y];
-          d.__d3plusShape__ = true;
-          return d;
-        });
-
-        areas.key = function (d) {
-          return d.key;
-        };
-
-        return areas;
-      }
-      /**
-          @memberof Area
-          @desc Draws the area polygons.
-          @param {Function} [*callback*]
-          @chainable
-      */
-
-    }, {
-      key: "render",
-      value: function render(callback) {
-        var _this4 = this;
-
-        _get$1(_getPrototypeOf$3(Area.prototype), "render", this).call(this, callback);
-
-        var path = this._path = area$1().defined(this._defined).curve(paths["curve".concat(this._curve.charAt(0).toUpperCase()).concat(this._curve.slice(1))]).x(this._x).x0(this._x0).x1(this._x1).y(this._y).y0(this._y0).y1(this._y1);
-        var exitPath = area$1().defined(function (d) {
-          return d;
-        }).curve(paths["curve".concat(this._curve.charAt(0).toUpperCase()).concat(this._curve.slice(1))]).x(this._x).y(this._y).x0(function (d, i) {
-          return _this4._x1 ? _this4._x0(d, i) + (_this4._x1(d, i) - _this4._x0(d, i)) / 2 : _this4._x0(d, i);
-        }).x1(function (d, i) {
-          return _this4._x1 ? _this4._x0(d, i) + (_this4._x1(d, i) - _this4._x0(d, i)) / 2 : _this4._x0(d, i);
-        }).y0(function (d, i) {
-          return _this4._y1 ? _this4._y0(d, i) + (_this4._y1(d, i) - _this4._y0(d, i)) / 2 : _this4._y0(d, i);
-        }).y1(function (d, i) {
-          return _this4._y1 ? _this4._y0(d, i) + (_this4._y1(d, i) - _this4._y0(d, i)) / 2 : _this4._y0(d, i);
-        });
-
-        this._enter.append("path").attr("transform", function (d) {
-          return "translate(".concat(-d.xR[0] - d.width / 2, ", ").concat(-d.yR[0] - d.height / 2, ")");
-        }).attr("d", function (d) {
-          return exitPath(d.values);
-        }).call(this._applyStyle.bind(this)).transition(this._transition).attrTween("d", function (d) {
-          return interpolatePath(_select(this).attr("d"), path(d.values));
-        });
-
-        this._update.select("path").transition(this._transition).attr("transform", function (d) {
-          return "translate(".concat(-d.xR[0] - d.width / 2, ", ").concat(-d.yR[0] - d.height / 2, ")");
-        }).attrTween("d", function (d) {
-          return interpolatePath(_select(this).attr("d"), path(d.values));
-        }).call(this._applyStyle.bind(this));
-
-        this._exit.select("path").transition(this._transition).attrTween("d", function (d) {
-          return interpolatePath(_select(this).attr("d"), exitPath(d.values));
-        });
-
-        return this;
-      }
-      /**
-          @memberof Area
-          @desc If *value* is specified, sets the area curve to the specified string and returns the current class instance. If *value* is not specified, returns the current area curve.
-          @param {String} [*value* = "linear"]
-          @chainable
-      */
-
-    }, {
-      key: "curve",
-      value: function curve(_) {
-        return arguments.length ? (this._curve = _, this) : this._curve;
-      }
-      /**
-          @memberof Area
-          @desc If *value* is specified, sets the defined accessor to the specified function and returns the current class instance. If *value* is not specified, returns the current defined accessor.
-          @param {Function} [*value*]
-          @chainable
-      */
-
-    }, {
-      key: "defined",
-      value: function defined(_) {
-        return arguments.length ? (this._defined = _, this) : this._defined;
-      }
-      /**
-          @memberof Area
-          @desc If *value* is specified, sets the x accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current x accessor.
-          @param {Function|Number} [*value*]
-          @chainable
-      */
-
-    }, {
-      key: "x",
-      value: function x(_) {
-        if (!arguments.length) return this._x;
-        this._x = typeof _ === "function" ? _ : constant$6(_);
-        this._x0 = this._x;
-        return this;
-      }
-      /**
-          @memberof Area
-          @desc If *value* is specified, sets the x0 accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current x0 accessor.
-          @param {Function|Number} [*value*]
-          @chainable
-      */
-
-    }, {
-      key: "x0",
-      value: function x0(_) {
-        if (!arguments.length) return this._x0;
-        this._x0 = typeof _ === "function" ? _ : constant$6(_);
-        this._x = this._x0;
-        return this;
-      }
-      /**
-          @memberof Area
-          @desc If *value* is specified, sets the x1 accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current x1 accessor.
-          @param {Function|Number|null} [*value*]
-          @chainable
-      */
-
-    }, {
-      key: "x1",
-      value: function x1(_) {
-        return arguments.length ? (this._x1 = typeof _ === "function" || _ === null ? _ : constant$6(_), this) : this._x1;
-      }
-      /**
-          @memberof Area
-          @desc If *value* is specified, sets the y accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current y accessor.
-          @param {Function|Number} [*value*]
-          @chainable
-      */
-
-    }, {
-      key: "y",
-      value: function y(_) {
-        if (!arguments.length) return this._y;
-        this._y = typeof _ === "function" ? _ : constant$6(_);
-        this._y0 = this._y;
-        return this;
-      }
-      /**
-          @memberof Area
-          @desc If *value* is specified, sets the y0 accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current y0 accessor.
-          @param {Function|Number} [*value*]
-          @chainable
-      */
-
-    }, {
-      key: "y0",
-      value: function y0(_) {
-        if (!arguments.length) return this._y0;
-        this._y0 = typeof _ === "function" ? _ : constant$6(_);
-        this._y = this._y0;
-        return this;
-      }
-      /**
-          @memberof Area
-          @desc If *value* is specified, sets the y1 accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current y1 accessor.
-          @param {Function|Number|null} [*value*]
-          @chainable
-      */
-
-    }, {
-      key: "y1",
-      value: function y1(_) {
-        return arguments.length ? (this._y1 = typeof _ === "function" || _ === null ? _ : constant$6(_), this) : this._y1;
-      }
-    }]);
-
-    return Area;
-  }(Shape);
-
-  function _typeof$6(obj) {
-    "@babel/helpers - typeof";
-
-    if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") {
-      _typeof$6 = function _typeof(obj) {
-        return typeof obj;
-      };
-    } else {
-      _typeof$6 = function _typeof(obj) {
-        return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
-      };
-    }
-
-    return _typeof$6(obj);
-  }
-
-  function _classCallCheck$6(instance, Constructor) {
-    if (!(instance instanceof Constructor)) {
-      throw new TypeError("Cannot call a class as a function");
-    }
-  }
-
-  function _defineProperties$6(target, props) {
-    for (var i = 0; i < props.length; i++) {
-      var descriptor = props[i];
-      descriptor.enumerable = descriptor.enumerable || false;
-      descriptor.configurable = true;
-      if ("value" in descriptor) descriptor.writable = true;
-      Object.defineProperty(target, descriptor.key, descriptor);
-    }
-  }
-
-  function _createClass$6(Constructor, protoProps, staticProps) {
-    if (protoProps) _defineProperties$6(Constructor.prototype, protoProps);
-    if (staticProps) _defineProperties$6(Constructor, staticProps);
-    return Constructor;
-  }
-
-  function _get$2(target, property, receiver) {
-    if (typeof Reflect !== "undefined" && Reflect.get) {
-      _get$2 = Reflect.get;
-    } else {
-      _get$2 = function _get(target, property, receiver) {
-        var base = _superPropBase$2(target, property);
-
-        if (!base) return;
-        var desc = Object.getOwnPropertyDescriptor(base, property);
-
-        if (desc.get) {
-          return desc.get.call(receiver);
-        }
-
-        return desc.value;
-      };
-    }
-
-    return _get$2(target, property, receiver || target);
-  }
-
-  function _superPropBase$2(object, property) {
-    while (!Object.prototype.hasOwnProperty.call(object, property)) {
-      object = _getPrototypeOf$4(object);
-      if (object === null) break;
-    }
-
-    return object;
-  }
-
-  function _inherits$4(subClass, superClass) {
-    if (typeof superClass !== "function" && superClass !== null) {
-      throw new TypeError("Super expression must either be null or a function");
-    }
-
-    subClass.prototype = Object.create(superClass && superClass.prototype, {
-      constructor: {
-        value: subClass,
-        writable: true,
-        configurable: true
-      }
-    });
-    if (superClass) _setPrototypeOf$4(subClass, superClass);
-  }
-
-  function _setPrototypeOf$4(o, p) {
-    _setPrototypeOf$4 = Object.setPrototypeOf || function _setPrototypeOf(o, p) {
-      o.__proto__ = p;
-      return o;
-    };
-
-    return _setPrototypeOf$4(o, p);
-  }
-
-  function _createSuper$4(Derived) {
-    var hasNativeReflectConstruct = _isNativeReflectConstruct$4();
-
-    return function _createSuperInternal() {
-      var Super = _getPrototypeOf$4(Derived),
-          result;
-
-      if (hasNativeReflectConstruct) {
-        var NewTarget = _getPrototypeOf$4(this).constructor;
-
-        result = Reflect.construct(Super, arguments, NewTarget);
-      } else {
-        result = Super.apply(this, arguments);
-      }
-
-      return _possibleConstructorReturn$4(this, result);
-    };
-  }
-
-  function _possibleConstructorReturn$4(self, call) {
-    if (call && (_typeof$6(call) === "object" || typeof call === "function")) {
-      return call;
-    }
-
-    return _assertThisInitialized$4(self);
-  }
-
-  function _assertThisInitialized$4(self) {
-    if (self === void 0) {
-      throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
-    }
-
-    return self;
-  }
-
-  function _isNativeReflectConstruct$4() {
-    if (typeof Reflect === "undefined" || !Reflect.construct) return false;
-    if (Reflect.construct.sham) return false;
-    if (typeof Proxy === "function") return true;
-
-    try {
-      Date.prototype.toString.call(Reflect.construct(Date, [], function () {}));
-      return true;
-    } catch (e) {
-      return false;
-    }
-  }
-
-  function _getPrototypeOf$4(o) {
-    _getPrototypeOf$4 = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) {
-      return o.__proto__ || Object.getPrototypeOf(o);
-    };
-    return _getPrototypeOf$4(o);
-  }
-  /**
       @class Bar
       @extends Shape
       @desc Creates SVG areas based on an array of data.
   */
 
-  var Bar = /*#__PURE__*/function (_Shape) {
-    _inherits$4(Bar, _Shape);
 
-    var _super = _createSuper$4(Bar);
+  var Bar = /*#__PURE__*/function (_Shape) {
+    _inherits$3(Bar, _Shape);
+
+    var _super = _createSuper$3(Bar);
     /**
         @memberof Bar
         @desc Invoked when creating a new class instance, and overrides any default parameters inherited from Shape.
@@ -37693,7 +36451,7 @@
     function Bar() {
       var _this;
 
-      _classCallCheck$6(this, Bar);
+      _classCallCheck$5(this, Bar);
 
       _this = _super.call(this, "rect");
       _this._name = "Bar";
@@ -37725,12 +36483,12 @@
     */
 
 
-    _createClass$6(Bar, [{
+    _createClass$5(Bar, [{
       key: "render",
       value: function render(callback) {
         var _this2 = this;
 
-        _get$2(_getPrototypeOf$4(Bar.prototype), "render", this).call(this, callback);
+        _get$1(_getPrototypeOf$3(Bar.prototype), "render", this).call(this, callback);
 
         var enter = this._enter.attr("width", function (d, i) {
           return _this2._x1 === null ? _this2._getWidth(d, i) : 0;
@@ -37948,6 +36706,278 @@
     return Bar;
   }(Shape);
 
+  function _typeof$6(obj) {
+    "@babel/helpers - typeof";
+
+    if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") {
+      _typeof$6 = function _typeof(obj) {
+        return typeof obj;
+      };
+    } else {
+      _typeof$6 = function _typeof(obj) {
+        return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
+      };
+    }
+
+    return _typeof$6(obj);
+  }
+
+  function _classCallCheck$6(instance, Constructor) {
+    if (!(instance instanceof Constructor)) {
+      throw new TypeError("Cannot call a class as a function");
+    }
+  }
+
+  function _defineProperties$6(target, props) {
+    for (var i = 0; i < props.length; i++) {
+      var descriptor = props[i];
+      descriptor.enumerable = descriptor.enumerable || false;
+      descriptor.configurable = true;
+      if ("value" in descriptor) descriptor.writable = true;
+      Object.defineProperty(target, descriptor.key, descriptor);
+    }
+  }
+
+  function _createClass$6(Constructor, protoProps, staticProps) {
+    if (protoProps) _defineProperties$6(Constructor.prototype, protoProps);
+    if (staticProps) _defineProperties$6(Constructor, staticProps);
+    return Constructor;
+  }
+
+  function _get$2(target, property, receiver) {
+    if (typeof Reflect !== "undefined" && Reflect.get) {
+      _get$2 = Reflect.get;
+    } else {
+      _get$2 = function _get(target, property, receiver) {
+        var base = _superPropBase$2(target, property);
+
+        if (!base) return;
+        var desc = Object.getOwnPropertyDescriptor(base, property);
+
+        if (desc.get) {
+          return desc.get.call(receiver);
+        }
+
+        return desc.value;
+      };
+    }
+
+    return _get$2(target, property, receiver || target);
+  }
+
+  function _superPropBase$2(object, property) {
+    while (!Object.prototype.hasOwnProperty.call(object, property)) {
+      object = _getPrototypeOf$4(object);
+      if (object === null) break;
+    }
+
+    return object;
+  }
+
+  function _inherits$4(subClass, superClass) {
+    if (typeof superClass !== "function" && superClass !== null) {
+      throw new TypeError("Super expression must either be null or a function");
+    }
+
+    subClass.prototype = Object.create(superClass && superClass.prototype, {
+      constructor: {
+        value: subClass,
+        writable: true,
+        configurable: true
+      }
+    });
+    if (superClass) _setPrototypeOf$4(subClass, superClass);
+  }
+
+  function _setPrototypeOf$4(o, p) {
+    _setPrototypeOf$4 = Object.setPrototypeOf || function _setPrototypeOf(o, p) {
+      o.__proto__ = p;
+      return o;
+    };
+
+    return _setPrototypeOf$4(o, p);
+  }
+
+  function _createSuper$4(Derived) {
+    var hasNativeReflectConstruct = _isNativeReflectConstruct$4();
+
+    return function _createSuperInternal() {
+      var Super = _getPrototypeOf$4(Derived),
+          result;
+
+      if (hasNativeReflectConstruct) {
+        var NewTarget = _getPrototypeOf$4(this).constructor;
+
+        result = Reflect.construct(Super, arguments, NewTarget);
+      } else {
+        result = Super.apply(this, arguments);
+      }
+
+      return _possibleConstructorReturn$4(this, result);
+    };
+  }
+
+  function _possibleConstructorReturn$4(self, call) {
+    if (call && (_typeof$6(call) === "object" || typeof call === "function")) {
+      return call;
+    }
+
+    return _assertThisInitialized$4(self);
+  }
+
+  function _assertThisInitialized$4(self) {
+    if (self === void 0) {
+      throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
+    }
+
+    return self;
+  }
+
+  function _isNativeReflectConstruct$4() {
+    if (typeof Reflect === "undefined" || !Reflect.construct) return false;
+    if (Reflect.construct.sham) return false;
+    if (typeof Proxy === "function") return true;
+
+    try {
+      Date.prototype.toString.call(Reflect.construct(Date, [], function () {}));
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  function _getPrototypeOf$4(o) {
+    _getPrototypeOf$4 = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) {
+      return o.__proto__ || Object.getPrototypeOf(o);
+    };
+    return _getPrototypeOf$4(o);
+  }
+  /**
+      @class Circle
+      @extends Shape
+      @desc Creates SVG circles based on an array of data.
+  */
+
+
+  var Circle = /*#__PURE__*/function (_Shape) {
+    _inherits$4(Circle, _Shape);
+
+    var _super = _createSuper$4(Circle);
+    /**
+        @memberof Circle
+        @desc Invoked when creating a new class instance, and overrides any default parameters inherited from Shape.
+        @private
+    */
+
+
+    function Circle() {
+      var _this;
+
+      _classCallCheck$6(this, Circle);
+
+      _this = _super.call(this, "circle");
+
+      _this._labelBounds = function (d, i, s) {
+        return {
+          width: s.r * 1.5,
+          height: s.r * 1.5,
+          x: -s.r * 0.75,
+          y: -s.r * 0.75
+        };
+      };
+
+      _this._labelConfig = assign(_this._labelConfig, {
+        textAnchor: "middle",
+        verticalAlign: "middle"
+      });
+      _this._name = "Circle";
+      _this._r = accessor("r");
+      return _this;
+    }
+    /**
+        @memberof Circle
+        @desc Provides the default positioning to the <rect> elements.
+        @private
+    */
+
+
+    _createClass$6(Circle, [{
+      key: "_applyPosition",
+      value: function _applyPosition(elem) {
+        var _this2 = this;
+
+        elem.attr("r", function (d, i) {
+          return _this2._r(d, i);
+        }).attr("x", function (d, i) {
+          return -_this2._r(d, i) / 2;
+        }).attr("y", function (d, i) {
+          return -_this2._r(d, i) / 2;
+        });
+      }
+      /**
+          @memberof Circle
+          @desc Draws the circles.
+          @param {Function} [*callback*]
+          @chainable
+      */
+
+    }, {
+      key: "render",
+      value: function render(callback) {
+        _get$2(_getPrototypeOf$4(Circle.prototype), "render", this).call(this, callback);
+
+        var enter = this._enter.call(this._applyStyle.bind(this));
+
+        var update = this._update;
+
+        if (this._duration) {
+          enter.attr("r", 0).attr("x", 0).attr("y", 0).transition(this._transition).call(this._applyPosition.bind(this));
+          update = update.transition(this._transition);
+
+          this._exit.transition(this._transition).attr("r", 0).attr("x", 0).attr("y", 0);
+        } else {
+          enter.call(this._applyPosition.bind(this));
+        }
+
+        update.call(this._applyStyle.bind(this)).call(this._applyPosition.bind(this));
+        return this;
+      }
+      /**
+          @memberof Circle
+          @desc Given a specific data point and index, returns the aesthetic properties of the shape.
+          @param {Object} *data point*
+          @param {Number} *index*
+          @private
+      */
+
+    }, {
+      key: "_aes",
+      value: function _aes(d, i) {
+        return {
+          r: this._r(d, i)
+        };
+      }
+      /**
+          @memberof Circle
+          @desc If *value* is specified, sets the radius accessor to the specified function or number and returns the current class instance.
+          @param {Function|Number} [*value*]
+          @chainable
+          @example
+      function(d) {
+      return d.r;
+      }
+      */
+
+    }, {
+      key: "r",
+      value: function r(_) {
+        return arguments.length ? (this._r = typeof _ === "function" ? _ : constant$6(_), this) : this._r;
+      }
+    }]);
+
+    return Circle;
+  }(Shape);
+
   function _typeof$7(obj) {
     "@babel/helpers - typeof";
 
@@ -38095,96 +37125,74 @@
     return _getPrototypeOf$5(o);
   }
   /**
-      @class Circle
+      @class Rect
       @extends Shape
-      @desc Creates SVG circles based on an array of data.
+      @desc Creates SVG rectangles based on an array of data. See [this example](https://d3plus.org/examples/d3plus-shape/getting-started/) for help getting started using the rectangle generator.
   */
 
-  var Circle = /*#__PURE__*/function (_Shape) {
-    _inherits$5(Circle, _Shape);
 
-    var _super = _createSuper$5(Circle);
+  var Rect = /*#__PURE__*/function (_Shape) {
+    _inherits$5(Rect, _Shape);
+
+    var _super = _createSuper$5(Rect);
     /**
-        @memberof Circle
+        @memberof Rect
         @desc Invoked when creating a new class instance, and overrides any default parameters inherited from Shape.
         @private
     */
 
 
-    function Circle() {
+    function Rect() {
       var _this;
 
-      _classCallCheck$7(this, Circle);
+      _classCallCheck$7(this, Rect);
 
-      _this = _super.call(this, "circle");
+      _this = _super.call(this, "rect");
+      _this._height = accessor("height");
 
       _this._labelBounds = function (d, i, s) {
         return {
-          width: s.r * 1.5,
-          height: s.r * 1.5,
-          x: -s.r * 0.75,
-          y: -s.r * 0.75
+          width: s.width,
+          height: s.height,
+          x: -s.width / 2,
+          y: -s.height / 2
         };
       };
 
-      _this._labelConfig = assign(_this._labelConfig, {
-        textAnchor: "middle",
-        verticalAlign: "middle"
-      });
-      _this._name = "Circle";
-      _this._r = accessor("r");
+      _this._name = "Rect";
+      _this._width = accessor("width");
       return _this;
     }
     /**
-        @memberof Circle
-        @desc Provides the default positioning to the <rect> elements.
-        @private
+        @memberof Rect
+        @desc Draws the rectangles.
+        @param {Function} [*callback*]
+        @chainable
     */
 
 
-    _createClass$7(Circle, [{
-      key: "_applyPosition",
-      value: function _applyPosition(elem) {
-        var _this2 = this;
-
-        elem.attr("r", function (d, i) {
-          return _this2._r(d, i);
-        }).attr("x", function (d, i) {
-          return -_this2._r(d, i) / 2;
-        }).attr("y", function (d, i) {
-          return -_this2._r(d, i) / 2;
-        });
-      }
-      /**
-          @memberof Circle
-          @desc Draws the circles.
-          @param {Function} [*callback*]
-          @chainable
-      */
-
-    }, {
+    _createClass$7(Rect, [{
       key: "render",
       value: function render(callback) {
-        _get$3(_getPrototypeOf$5(Circle.prototype), "render", this).call(this, callback);
+        _get$3(_getPrototypeOf$5(Rect.prototype), "render", this).call(this, callback);
 
-        var enter = this._enter.call(this._applyStyle.bind(this));
+        var enter = this._enter.attr("width", 0).attr("height", 0).attr("x", 0).attr("y", 0).call(this._applyStyle.bind(this));
 
         var update = this._update;
 
         if (this._duration) {
-          enter.attr("r", 0).attr("x", 0).attr("y", 0).transition(this._transition).call(this._applyPosition.bind(this));
+          enter = enter.transition(this._transition);
           update = update.transition(this._transition);
 
-          this._exit.transition(this._transition).attr("r", 0).attr("x", 0).attr("y", 0);
-        } else {
-          enter.call(this._applyPosition.bind(this));
+          this._exit.transition(this._transition).attr("width", 0).attr("height", 0).attr("x", 0).attr("y", 0);
         }
 
+        enter.call(this._applyPosition.bind(this));
         update.call(this._applyStyle.bind(this)).call(this._applyPosition.bind(this));
         return this;
       }
       /**
-          @memberof Circle
+          @memberof Rect
           @desc Given a specific data point and index, returns the aesthetic properties of the shape.
           @param {Object} *data point*
           @param {Number} *index*
@@ -38195,28 +37203,67 @@
       key: "_aes",
       value: function _aes(d, i) {
         return {
-          r: this._r(d, i)
+          width: this._width(d, i),
+          height: this._height(d, i)
         };
       }
       /**
-          @memberof Circle
-          @desc If *value* is specified, sets the radius accessor to the specified function or number and returns the current class instance.
+          @memberof Rect
+          @desc Provides the default positioning to the <rect> elements.
+          @param {D3Selection} *elem*
+          @private
+      */
+
+    }, {
+      key: "_applyPosition",
+      value: function _applyPosition(elem) {
+        var _this2 = this;
+
+        elem.attr("width", function (d, i) {
+          return _this2._width(d, i);
+        }).attr("height", function (d, i) {
+          return _this2._height(d, i);
+        }).attr("x", function (d, i) {
+          return -_this2._width(d, i) / 2;
+        }).attr("y", function (d, i) {
+          return -_this2._height(d, i) / 2;
+        });
+      }
+      /**
+          @memberof Rect
+          @desc If *value* is specified, sets the height accessor to the specified function or number and returns the current class instance.
           @param {Function|Number} [*value*]
           @chainable
           @example
       function(d) {
-      return d.r;
+      return d.height;
       }
       */
 
     }, {
-      key: "r",
-      value: function r(_) {
-        return arguments.length ? (this._r = typeof _ === "function" ? _ : constant$6(_), this) : this._r;
+      key: "height",
+      value: function height(_) {
+        return arguments.length ? (this._height = typeof _ === "function" ? _ : constant$6(_), this) : this._height;
+      }
+      /**
+          @memberof Rect
+          @desc If *value* is specified, sets the width accessor to the specified function or number and returns the current class instance.
+          @param {Function|Number} [*value*]
+          @chainable
+          @example
+      function(d) {
+      return d.width;
+      }
+      */
+
+    }, {
+      key: "width",
+      value: function width(_) {
+        return arguments.length ? (this._width = typeof _ === "function" ? _ : constant$6(_), this) : this._width;
       }
     }]);
 
-    return Circle;
+    return Rect;
   }(Shape);
 
   function _typeof$8(obj) {
@@ -38366,302 +37413,16 @@
     return _getPrototypeOf$6(o);
   }
   /**
-      @class Rect
-      @extends Shape
-      @desc Creates SVG rectangles based on an array of data. See [this example](https://d3plus.org/examples/d3plus-shape/getting-started/) for help getting started using the rectangle generator.
-  */
-
-  var Rect = /*#__PURE__*/function (_Shape) {
-    _inherits$6(Rect, _Shape);
-
-    var _super = _createSuper$6(Rect);
-    /**
-        @memberof Rect
-        @desc Invoked when creating a new class instance, and overrides any default parameters inherited from Shape.
-        @private
-    */
-
-
-    function Rect() {
-      var _this;
-
-      _classCallCheck$8(this, Rect);
-
-      _this = _super.call(this, "rect");
-      _this._height = accessor("height");
-
-      _this._labelBounds = function (d, i, s) {
-        return {
-          width: s.width,
-          height: s.height,
-          x: -s.width / 2,
-          y: -s.height / 2
-        };
-      };
-
-      _this._name = "Rect";
-      _this._width = accessor("width");
-      return _this;
-    }
-    /**
-        @memberof Rect
-        @desc Draws the rectangles.
-        @param {Function} [*callback*]
-        @chainable
-    */
-
-
-    _createClass$8(Rect, [{
-      key: "render",
-      value: function render(callback) {
-        _get$4(_getPrototypeOf$6(Rect.prototype), "render", this).call(this, callback);
-
-        var enter = this._enter.attr("width", 0).attr("height", 0).attr("x", 0).attr("y", 0).call(this._applyStyle.bind(this));
-
-        var update = this._update;
-
-        if (this._duration) {
-          enter = enter.transition(this._transition);
-          update = update.transition(this._transition);
-
-          this._exit.transition(this._transition).attr("width", 0).attr("height", 0).attr("x", 0).attr("y", 0);
-        }
-
-        enter.call(this._applyPosition.bind(this));
-        update.call(this._applyStyle.bind(this)).call(this._applyPosition.bind(this));
-        return this;
-      }
-      /**
-          @memberof Rect
-          @desc Given a specific data point and index, returns the aesthetic properties of the shape.
-          @param {Object} *data point*
-          @param {Number} *index*
-          @private
-      */
-
-    }, {
-      key: "_aes",
-      value: function _aes(d, i) {
-        return {
-          width: this._width(d, i),
-          height: this._height(d, i)
-        };
-      }
-      /**
-          @memberof Rect
-          @desc Provides the default positioning to the <rect> elements.
-          @param {D3Selection} *elem*
-          @private
-      */
-
-    }, {
-      key: "_applyPosition",
-      value: function _applyPosition(elem) {
-        var _this2 = this;
-
-        elem.attr("width", function (d, i) {
-          return _this2._width(d, i);
-        }).attr("height", function (d, i) {
-          return _this2._height(d, i);
-        }).attr("x", function (d, i) {
-          return -_this2._width(d, i) / 2;
-        }).attr("y", function (d, i) {
-          return -_this2._height(d, i) / 2;
-        });
-      }
-      /**
-          @memberof Rect
-          @desc If *value* is specified, sets the height accessor to the specified function or number and returns the current class instance.
-          @param {Function|Number} [*value*]
-          @chainable
-          @example
-      function(d) {
-      return d.height;
-      }
-      */
-
-    }, {
-      key: "height",
-      value: function height(_) {
-        return arguments.length ? (this._height = typeof _ === "function" ? _ : constant$6(_), this) : this._height;
-      }
-      /**
-          @memberof Rect
-          @desc If *value* is specified, sets the width accessor to the specified function or number and returns the current class instance.
-          @param {Function|Number} [*value*]
-          @chainable
-          @example
-      function(d) {
-      return d.width;
-      }
-      */
-
-    }, {
-      key: "width",
-      value: function width(_) {
-        return arguments.length ? (this._width = typeof _ === "function" ? _ : constant$6(_), this) : this._width;
-      }
-    }]);
-
-    return Rect;
-  }(Shape);
-
-  function _typeof$9(obj) {
-    "@babel/helpers - typeof";
-
-    if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") {
-      _typeof$9 = function _typeof(obj) {
-        return typeof obj;
-      };
-    } else {
-      _typeof$9 = function _typeof(obj) {
-        return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
-      };
-    }
-
-    return _typeof$9(obj);
-  }
-
-  function _classCallCheck$9(instance, Constructor) {
-    if (!(instance instanceof Constructor)) {
-      throw new TypeError("Cannot call a class as a function");
-    }
-  }
-
-  function _defineProperties$9(target, props) {
-    for (var i = 0; i < props.length; i++) {
-      var descriptor = props[i];
-      descriptor.enumerable = descriptor.enumerable || false;
-      descriptor.configurable = true;
-      if ("value" in descriptor) descriptor.writable = true;
-      Object.defineProperty(target, descriptor.key, descriptor);
-    }
-  }
-
-  function _createClass$9(Constructor, protoProps, staticProps) {
-    if (protoProps) _defineProperties$9(Constructor.prototype, protoProps);
-    if (staticProps) _defineProperties$9(Constructor, staticProps);
-    return Constructor;
-  }
-
-  function _get$5(target, property, receiver) {
-    if (typeof Reflect !== "undefined" && Reflect.get) {
-      _get$5 = Reflect.get;
-    } else {
-      _get$5 = function _get(target, property, receiver) {
-        var base = _superPropBase$5(target, property);
-
-        if (!base) return;
-        var desc = Object.getOwnPropertyDescriptor(base, property);
-
-        if (desc.get) {
-          return desc.get.call(receiver);
-        }
-
-        return desc.value;
-      };
-    }
-
-    return _get$5(target, property, receiver || target);
-  }
-
-  function _superPropBase$5(object, property) {
-    while (!Object.prototype.hasOwnProperty.call(object, property)) {
-      object = _getPrototypeOf$7(object);
-      if (object === null) break;
-    }
-
-    return object;
-  }
-
-  function _inherits$7(subClass, superClass) {
-    if (typeof superClass !== "function" && superClass !== null) {
-      throw new TypeError("Super expression must either be null or a function");
-    }
-
-    subClass.prototype = Object.create(superClass && superClass.prototype, {
-      constructor: {
-        value: subClass,
-        writable: true,
-        configurable: true
-      }
-    });
-    if (superClass) _setPrototypeOf$7(subClass, superClass);
-  }
-
-  function _setPrototypeOf$7(o, p) {
-    _setPrototypeOf$7 = Object.setPrototypeOf || function _setPrototypeOf(o, p) {
-      o.__proto__ = p;
-      return o;
-    };
-
-    return _setPrototypeOf$7(o, p);
-  }
-
-  function _createSuper$7(Derived) {
-    var hasNativeReflectConstruct = _isNativeReflectConstruct$7();
-
-    return function _createSuperInternal() {
-      var Super = _getPrototypeOf$7(Derived),
-          result;
-
-      if (hasNativeReflectConstruct) {
-        var NewTarget = _getPrototypeOf$7(this).constructor;
-
-        result = Reflect.construct(Super, arguments, NewTarget);
-      } else {
-        result = Super.apply(this, arguments);
-      }
-
-      return _possibleConstructorReturn$7(this, result);
-    };
-  }
-
-  function _possibleConstructorReturn$7(self, call) {
-    if (call && (_typeof$9(call) === "object" || typeof call === "function")) {
-      return call;
-    }
-
-    return _assertThisInitialized$7(self);
-  }
-
-  function _assertThisInitialized$7(self) {
-    if (self === void 0) {
-      throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
-    }
-
-    return self;
-  }
-
-  function _isNativeReflectConstruct$7() {
-    if (typeof Reflect === "undefined" || !Reflect.construct) return false;
-    if (Reflect.construct.sham) return false;
-    if (typeof Proxy === "function") return true;
-
-    try {
-      Date.prototype.toString.call(Reflect.construct(Date, [], function () {}));
-      return true;
-    } catch (e) {
-      return false;
-    }
-  }
-
-  function _getPrototypeOf$7(o) {
-    _getPrototypeOf$7 = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) {
-      return o.__proto__ || Object.getPrototypeOf(o);
-    };
-    return _getPrototypeOf$7(o);
-  }
-  /**
       @class Line
       @extends Shape
       @desc Creates SVG lines based on an array of data.
   */
 
-  var Line = /*#__PURE__*/function (_Shape) {
-    _inherits$7(Line, _Shape);
 
-    var _super = _createSuper$7(Line);
+  var Line = /*#__PURE__*/function (_Shape) {
+    _inherits$6(Line, _Shape);
+
+    var _super = _createSuper$6(Line);
     /**
         @memberof Line
         @desc Invoked when creating a new class instance, and overrides any default parameters inherited from Shape.
@@ -38672,7 +37433,7 @@
     function Line() {
       var _this;
 
-      _classCallCheck$9(this, Line);
+      _classCallCheck$8(this, Line);
 
       _this = _super.call(this);
       _this._curve = "linear";
@@ -38704,7 +37465,7 @@
     */
 
 
-    _createClass$9(Line, [{
+    _createClass$8(Line, [{
       key: "_dataFilter",
       value: function _dataFilter(data) {
         var _this2 = this;
@@ -38744,7 +37505,7 @@
       value: function render(callback) {
         var _this3 = this;
 
-        _get$5(_getPrototypeOf$7(Line.prototype), "render", this).call(this, callback);
+        _get$4(_getPrototypeOf$6(Line.prototype), "render", this).call(this, callback);
 
         var that = this;
         /**
@@ -38863,29 +37624,29 @@
     return Line;
   }(Shape);
 
-  function _typeof$a(obj) {
+  function _typeof$9(obj) {
     "@babel/helpers - typeof";
 
     if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") {
-      _typeof$a = function _typeof(obj) {
+      _typeof$9 = function _typeof(obj) {
         return typeof obj;
       };
     } else {
-      _typeof$a = function _typeof(obj) {
+      _typeof$9 = function _typeof(obj) {
         return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
       };
     }
 
-    return _typeof$a(obj);
+    return _typeof$9(obj);
   }
 
-  function _classCallCheck$a(instance, Constructor) {
+  function _classCallCheck$9(instance, Constructor) {
     if (!(instance instanceof Constructor)) {
       throw new TypeError("Cannot call a class as a function");
     }
   }
 
-  function _defineProperties$a(target, props) {
+  function _defineProperties$9(target, props) {
     for (var i = 0; i < props.length; i++) {
       var descriptor = props[i];
       descriptor.enumerable = descriptor.enumerable || false;
@@ -38895,13 +37656,13 @@
     }
   }
 
-  function _createClass$a(Constructor, protoProps, staticProps) {
-    if (protoProps) _defineProperties$a(Constructor.prototype, protoProps);
-    if (staticProps) _defineProperties$a(Constructor, staticProps);
+  function _createClass$9(Constructor, protoProps, staticProps) {
+    if (protoProps) _defineProperties$9(Constructor.prototype, protoProps);
+    if (staticProps) _defineProperties$9(Constructor, staticProps);
     return Constructor;
   }
 
-  function _inherits$8(subClass, superClass) {
+  function _inherits$7(subClass, superClass) {
     if (typeof superClass !== "function" && superClass !== null) {
       throw new TypeError("Super expression must either be null or a function");
     }
@@ -38913,46 +37674,46 @@
         configurable: true
       }
     });
-    if (superClass) _setPrototypeOf$8(subClass, superClass);
+    if (superClass) _setPrototypeOf$7(subClass, superClass);
   }
 
-  function _setPrototypeOf$8(o, p) {
-    _setPrototypeOf$8 = Object.setPrototypeOf || function _setPrototypeOf(o, p) {
+  function _setPrototypeOf$7(o, p) {
+    _setPrototypeOf$7 = Object.setPrototypeOf || function _setPrototypeOf(o, p) {
       o.__proto__ = p;
       return o;
     };
 
-    return _setPrototypeOf$8(o, p);
+    return _setPrototypeOf$7(o, p);
   }
 
-  function _createSuper$8(Derived) {
-    var hasNativeReflectConstruct = _isNativeReflectConstruct$8();
+  function _createSuper$7(Derived) {
+    var hasNativeReflectConstruct = _isNativeReflectConstruct$7();
 
     return function _createSuperInternal() {
-      var Super = _getPrototypeOf$8(Derived),
+      var Super = _getPrototypeOf$7(Derived),
           result;
 
       if (hasNativeReflectConstruct) {
-        var NewTarget = _getPrototypeOf$8(this).constructor;
+        var NewTarget = _getPrototypeOf$7(this).constructor;
 
         result = Reflect.construct(Super, arguments, NewTarget);
       } else {
         result = Super.apply(this, arguments);
       }
 
-      return _possibleConstructorReturn$8(this, result);
+      return _possibleConstructorReturn$7(this, result);
     };
   }
 
-  function _possibleConstructorReturn$8(self, call) {
-    if (call && (_typeof$a(call) === "object" || typeof call === "function")) {
+  function _possibleConstructorReturn$7(self, call) {
+    if (call && (_typeof$9(call) === "object" || typeof call === "function")) {
       return call;
     }
 
-    return _assertThisInitialized$8(self);
+    return _assertThisInitialized$7(self);
   }
 
-  function _assertThisInitialized$8(self) {
+  function _assertThisInitialized$7(self) {
     if (self === void 0) {
       throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
     }
@@ -38960,7 +37721,7 @@
     return self;
   }
 
-  function _isNativeReflectConstruct$8() {
+  function _isNativeReflectConstruct$7() {
     if (typeof Reflect === "undefined" || !Reflect.construct) return false;
     if (Reflect.construct.sham) return false;
     if (typeof Proxy === "function") return true;
@@ -38973,12 +37734,13 @@
     }
   }
 
-  function _getPrototypeOf$8(o) {
-    _getPrototypeOf$8 = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) {
+  function _getPrototypeOf$7(o) {
+    _getPrototypeOf$7 = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) {
       return o.__proto__ || Object.getPrototypeOf(o);
     };
-    return _getPrototypeOf$8(o);
+    return _getPrototypeOf$7(o);
   }
+
   var shapes = {
     Circle: Circle,
     Rect: Rect
@@ -38990,9 +37752,9 @@
   */
 
   var Whisker = /*#__PURE__*/function (_BaseClass) {
-    _inherits$8(Whisker, _BaseClass);
+    _inherits$7(Whisker, _BaseClass);
 
-    var _super = _createSuper$8(Whisker);
+    var _super = _createSuper$7(Whisker);
     /**
         @memberof Whisker
         @desc Invoked when creating a new class instance, and overrides any default parameters inherited from BaseClass.
@@ -39003,7 +37765,7 @@
     function Whisker() {
       var _this;
 
-      _classCallCheck$a(this, Whisker);
+      _classCallCheck$9(this, Whisker);
 
       _this = _super.call(this);
       _this._endpoint = accessor("endpoint", "Rect");
@@ -39027,7 +37789,7 @@
     */
 
 
-    _createClass$a(Whisker, [{
+    _createClass$9(Whisker, [{
       key: "render",
       value: function render(callback) {
         var _this2 = this;
@@ -39264,29 +38026,29 @@
     return Whisker;
   }(BaseClass);
 
-  function _typeof$b(obj) {
+  function _typeof$a(obj) {
     "@babel/helpers - typeof";
 
     if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") {
-      _typeof$b = function _typeof(obj) {
+      _typeof$a = function _typeof(obj) {
         return typeof obj;
       };
     } else {
-      _typeof$b = function _typeof(obj) {
+      _typeof$a = function _typeof(obj) {
         return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
       };
     }
 
-    return _typeof$b(obj);
+    return _typeof$a(obj);
   }
 
-  function _classCallCheck$b(instance, Constructor) {
+  function _classCallCheck$a(instance, Constructor) {
     if (!(instance instanceof Constructor)) {
       throw new TypeError("Cannot call a class as a function");
     }
   }
 
-  function _defineProperties$b(target, props) {
+  function _defineProperties$a(target, props) {
     for (var i = 0; i < props.length; i++) {
       var descriptor = props[i];
       descriptor.enumerable = descriptor.enumerable || false;
@@ -39296,13 +38058,13 @@
     }
   }
 
-  function _createClass$b(Constructor, protoProps, staticProps) {
-    if (protoProps) _defineProperties$b(Constructor.prototype, protoProps);
-    if (staticProps) _defineProperties$b(Constructor, staticProps);
+  function _createClass$a(Constructor, protoProps, staticProps) {
+    if (protoProps) _defineProperties$a(Constructor.prototype, protoProps);
+    if (staticProps) _defineProperties$a(Constructor, staticProps);
     return Constructor;
   }
 
-  function _inherits$9(subClass, superClass) {
+  function _inherits$8(subClass, superClass) {
     if (typeof superClass !== "function" && superClass !== null) {
       throw new TypeError("Super expression must either be null or a function");
     }
@@ -39314,46 +38076,46 @@
         configurable: true
       }
     });
-    if (superClass) _setPrototypeOf$9(subClass, superClass);
+    if (superClass) _setPrototypeOf$8(subClass, superClass);
   }
 
-  function _setPrototypeOf$9(o, p) {
-    _setPrototypeOf$9 = Object.setPrototypeOf || function _setPrototypeOf(o, p) {
+  function _setPrototypeOf$8(o, p) {
+    _setPrototypeOf$8 = Object.setPrototypeOf || function _setPrototypeOf(o, p) {
       o.__proto__ = p;
       return o;
     };
 
-    return _setPrototypeOf$9(o, p);
+    return _setPrototypeOf$8(o, p);
   }
 
-  function _createSuper$9(Derived) {
-    var hasNativeReflectConstruct = _isNativeReflectConstruct$9();
+  function _createSuper$8(Derived) {
+    var hasNativeReflectConstruct = _isNativeReflectConstruct$8();
 
     return function _createSuperInternal() {
-      var Super = _getPrototypeOf$9(Derived),
+      var Super = _getPrototypeOf$8(Derived),
           result;
 
       if (hasNativeReflectConstruct) {
-        var NewTarget = _getPrototypeOf$9(this).constructor;
+        var NewTarget = _getPrototypeOf$8(this).constructor;
 
         result = Reflect.construct(Super, arguments, NewTarget);
       } else {
         result = Super.apply(this, arguments);
       }
 
-      return _possibleConstructorReturn$9(this, result);
+      return _possibleConstructorReturn$8(this, result);
     };
   }
 
-  function _possibleConstructorReturn$9(self, call) {
-    if (call && (_typeof$b(call) === "object" || typeof call === "function")) {
+  function _possibleConstructorReturn$8(self, call) {
+    if (call && (_typeof$a(call) === "object" || typeof call === "function")) {
       return call;
     }
 
-    return _assertThisInitialized$9(self);
+    return _assertThisInitialized$8(self);
   }
 
-  function _assertThisInitialized$9(self) {
+  function _assertThisInitialized$8(self) {
     if (self === void 0) {
       throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
     }
@@ -39361,7 +38123,7 @@
     return self;
   }
 
-  function _isNativeReflectConstruct$9() {
+  function _isNativeReflectConstruct$8() {
     if (typeof Reflect === "undefined" || !Reflect.construct) return false;
     if (Reflect.construct.sham) return false;
     if (typeof Proxy === "function") return true;
@@ -39374,12 +38136,13 @@
     }
   }
 
-  function _getPrototypeOf$9(o) {
-    _getPrototypeOf$9 = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) {
+  function _getPrototypeOf$8(o) {
+    _getPrototypeOf$8 = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) {
       return o.__proto__ || Object.getPrototypeOf(o);
     };
-    return _getPrototypeOf$9(o);
+    return _getPrototypeOf$8(o);
   }
+
   var shapes$1 = {
     Circle: Circle,
     Rect: Rect
@@ -39391,9 +38154,9 @@
   */
 
   var Box = /*#__PURE__*/function (_BaseClass) {
-    _inherits$9(Box, _BaseClass);
+    _inherits$8(Box, _BaseClass);
 
-    var _super = _createSuper$9(Box);
+    var _super = _createSuper$8(Box);
     /**
         @memberof Box
         @desc Invoked when creating a new class instance, and overrides any default parameters inherited from BaseClass.
@@ -39404,7 +38167,7 @@
     function Box() {
       var _this;
 
-      _classCallCheck$b(this, Box);
+      _classCallCheck$a(this, Box);
 
       _this = _super.call(this);
       _this._medianConfig = {
@@ -39445,7 +38208,7 @@
     */
 
 
-    _createClass$b(Box, [{
+    _createClass$a(Box, [{
       key: "render",
       value: function render() {
         var _this2 = this;
@@ -39812,7 +38575,7 @@
       @returns {String} [shape = "circle"] The type of shape, which can be either "circle" or "square".
   */
 
-  var shapeEdgePoint = (function (angle, distance) {
+  var shapeEdgePoint = function shapeEdgePoint(angle, distance) {
     var shape = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : "circle";
     if (angle < 0) angle = pi$4 * 2 + angle;
 
@@ -39848,7 +38611,7 @@
     } else if (shape === "circle") {
       return [distance * Math.cos(angle), distance * Math.sin(angle)];
     } else return null;
-  });
+  };
 
   var pi$5 = Math.PI;
   /**
@@ -39859,7 +38622,7 @@
       @returns {Array}
   */
 
-  var path2polygon = (function (path) {
+  var path2polygon = function path2polygon(path) {
     var segmentLength = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 20;
     var poly = [],
         regex = /([MLA])([^MLAZ]+)/ig;
@@ -39889,31 +38652,31 @@
     }
 
     return poly;
-  });
+  };
 
-  function _typeof$c(obj) {
+  function _typeof$b(obj) {
     "@babel/helpers - typeof";
 
     if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") {
-      _typeof$c = function _typeof(obj) {
+      _typeof$b = function _typeof(obj) {
         return typeof obj;
       };
     } else {
-      _typeof$c = function _typeof(obj) {
+      _typeof$b = function _typeof(obj) {
         return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
       };
     }
 
-    return _typeof$c(obj);
+    return _typeof$b(obj);
   }
 
-  function _classCallCheck$c(instance, Constructor) {
+  function _classCallCheck$b(instance, Constructor) {
     if (!(instance instanceof Constructor)) {
       throw new TypeError("Cannot call a class as a function");
     }
   }
 
-  function _defineProperties$c(target, props) {
+  function _defineProperties$b(target, props) {
     for (var i = 0; i < props.length; i++) {
       var descriptor = props[i];
       descriptor.enumerable = descriptor.enumerable || false;
@@ -39923,18 +38686,18 @@
     }
   }
 
-  function _createClass$c(Constructor, protoProps, staticProps) {
-    if (protoProps) _defineProperties$c(Constructor.prototype, protoProps);
-    if (staticProps) _defineProperties$c(Constructor, staticProps);
+  function _createClass$b(Constructor, protoProps, staticProps) {
+    if (protoProps) _defineProperties$b(Constructor.prototype, protoProps);
+    if (staticProps) _defineProperties$b(Constructor, staticProps);
     return Constructor;
   }
 
-  function _get$6(target, property, receiver) {
+  function _get$5(target, property, receiver) {
     if (typeof Reflect !== "undefined" && Reflect.get) {
-      _get$6 = Reflect.get;
+      _get$5 = Reflect.get;
     } else {
-      _get$6 = function _get(target, property, receiver) {
-        var base = _superPropBase$6(target, property);
+      _get$5 = function _get(target, property, receiver) {
+        var base = _superPropBase$5(target, property);
 
         if (!base) return;
         var desc = Object.getOwnPropertyDescriptor(base, property);
@@ -39947,19 +38710,19 @@
       };
     }
 
-    return _get$6(target, property, receiver || target);
+    return _get$5(target, property, receiver || target);
   }
 
-  function _superPropBase$6(object, property) {
+  function _superPropBase$5(object, property) {
     while (!Object.prototype.hasOwnProperty.call(object, property)) {
-      object = _getPrototypeOf$a(object);
+      object = _getPrototypeOf$9(object);
       if (object === null) break;
     }
 
     return object;
   }
 
-  function _inherits$a(subClass, superClass) {
+  function _inherits$9(subClass, superClass) {
     if (typeof superClass !== "function" && superClass !== null) {
       throw new TypeError("Super expression must either be null or a function");
     }
@@ -39971,46 +38734,46 @@
         configurable: true
       }
     });
-    if (superClass) _setPrototypeOf$a(subClass, superClass);
+    if (superClass) _setPrototypeOf$9(subClass, superClass);
   }
 
-  function _setPrototypeOf$a(o, p) {
-    _setPrototypeOf$a = Object.setPrototypeOf || function _setPrototypeOf(o, p) {
+  function _setPrototypeOf$9(o, p) {
+    _setPrototypeOf$9 = Object.setPrototypeOf || function _setPrototypeOf(o, p) {
       o.__proto__ = p;
       return o;
     };
 
-    return _setPrototypeOf$a(o, p);
+    return _setPrototypeOf$9(o, p);
   }
 
-  function _createSuper$a(Derived) {
-    var hasNativeReflectConstruct = _isNativeReflectConstruct$a();
+  function _createSuper$9(Derived) {
+    var hasNativeReflectConstruct = _isNativeReflectConstruct$9();
 
     return function _createSuperInternal() {
-      var Super = _getPrototypeOf$a(Derived),
+      var Super = _getPrototypeOf$9(Derived),
           result;
 
       if (hasNativeReflectConstruct) {
-        var NewTarget = _getPrototypeOf$a(this).constructor;
+        var NewTarget = _getPrototypeOf$9(this).constructor;
 
         result = Reflect.construct(Super, arguments, NewTarget);
       } else {
         result = Super.apply(this, arguments);
       }
 
-      return _possibleConstructorReturn$a(this, result);
+      return _possibleConstructorReturn$9(this, result);
     };
   }
 
-  function _possibleConstructorReturn$a(self, call) {
-    if (call && (_typeof$c(call) === "object" || typeof call === "function")) {
+  function _possibleConstructorReturn$9(self, call) {
+    if (call && (_typeof$b(call) === "object" || typeof call === "function")) {
       return call;
     }
 
-    return _assertThisInitialized$a(self);
+    return _assertThisInitialized$9(self);
   }
 
-  function _assertThisInitialized$a(self) {
+  function _assertThisInitialized$9(self) {
     if (self === void 0) {
       throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
     }
@@ -40018,7 +38781,7 @@
     return self;
   }
 
-  function _isNativeReflectConstruct$a() {
+  function _isNativeReflectConstruct$9() {
     if (typeof Reflect === "undefined" || !Reflect.construct) return false;
     if (Reflect.construct.sham) return false;
     if (typeof Proxy === "function") return true;
@@ -40031,11 +38794,11 @@
     }
   }
 
-  function _getPrototypeOf$a(o) {
-    _getPrototypeOf$a = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) {
+  function _getPrototypeOf$9(o) {
+    _getPrototypeOf$9 = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) {
       return o.__proto__ || Object.getPrototypeOf(o);
     };
-    return _getPrototypeOf$a(o);
+    return _getPrototypeOf$9(o);
   }
   /**
       @class Path
@@ -40043,10 +38806,11 @@
       @desc Creates SVG Paths based on an array of data.
   */
 
-  var Path$1 = /*#__PURE__*/function (_Shape) {
-    _inherits$a(Path, _Shape);
 
-    var _super = _createSuper$a(Path);
+  var Path$1 = /*#__PURE__*/function (_Shape) {
+    _inherits$9(Path, _Shape);
+
+    var _super = _createSuper$9(Path);
     /**
         @memberof Path
         @desc Invoked when creating a new class instance, and overrides any default parameters inherited from Shape.
@@ -40057,7 +38821,7 @@
     function Path() {
       var _this;
 
-      _classCallCheck$c(this, Path);
+      _classCallCheck$b(this, Path);
 
       _this = _super.call(this, "path");
       _this._d = accessor("path");
@@ -40091,7 +38855,7 @@
     */
 
 
-    _createClass$c(Path, [{
+    _createClass$b(Path, [{
       key: "_aes",
       value: function _aes(d, i) {
         return {
@@ -40108,7 +38872,7 @@
     }, {
       key: "render",
       value: function render(callback) {
-        _get$6(_getPrototypeOf$a(Path.prototype), "render", this).call(this, callback);
+        _get$5(_getPrototypeOf$9(Path.prototype), "render", this).call(this, callback);
 
         var enter = this._enter.attr("d", this._d).call(this._applyStyle.bind(this));
 
@@ -40145,8 +38909,6 @@
     return Path;
   }(Shape);
 
-
-
   var shapes$2 = /*#__PURE__*/Object.freeze({
     __proto__: null,
     Image: Image$1,
@@ -40173,14 +38935,14 @@
     shapeEdgePoint: shapeEdgePoint,
     simplify: simplify
   });
-
   /**
     @function dataConcat
     @desc Reduce and concat all the elements included in arrayOfArrays if they are arrays. If it is a JSON object try to concat the array under given key data. If the key doesn't exists in object item, a warning message is lauched to the console. You need to implement DataFormat callback to concat the arrays manually.
     @param {Array} arrayOfArray Array of elements
     @param {String} [data = "data"] The key used for the flat data array if exists inside of the JSON object.
   */
-  var concat = (function (arrayOfArrays) {
+
+  var concat = function concat(arrayOfArrays) {
     var data = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : "data";
     return arrayOfArrays.reduce(function (acc, item) {
       var dataArray = [];
@@ -40197,8 +38959,7 @@
 
       return acc.concat(dataArray);
     }, []);
-  });
-
+  };
   /**
     @function dataFold
     @desc Given a JSON object where the data values and headers have been split into separate key lookups, this function will combine the data values with the headers and returns one large array of objects.
@@ -40206,7 +38967,9 @@
     @param {String} [data = "data"] The key used for the flat data array inside of the JSON object.
     @param {String} [headers = "headers"] The key used for the flat headers array inside of the JSON object.
   */
-  var fold = (function (json) {
+
+
+  var fold = function fold(json) {
     var data = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : "data";
     var headers = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : "headers";
     return json[data].map(function (data) {
@@ -40214,9 +38977,9 @@
         return obj[header] = data[i], obj;
       }, {});
     });
-  });
+  };
 
-  function request (url, callback) {
+  function request(url, callback) {
     var request,
         event = dispatch("beforesend", "progress", "load", "error"),
         _mimeType,
@@ -40354,7 +39117,7 @@
     : xhr.responseText; // "" on error
   }
 
-  function type (defaultMimeType, response) {
+  function type(defaultMimeType, response) {
     return function (url, callback) {
       var r = request(url).mimeType(defaultMimeType).response(response);
 
@@ -40370,11 +39133,9 @@
   var json = type("application/json", function (xhr) {
     return JSON.parse(xhr.responseText);
   });
-
   var text = type("text/plain", function (xhr) {
     return xhr.responseText;
   });
-
   var EOL = {},
       EOF = {},
       QUOTE = 34,
@@ -40426,7 +39187,7 @@
     return isNaN(date) ? "Invalid Date" : formatYear$1(date.getUTCFullYear()) + "-" + pad$1(date.getUTCMonth() + 1, 2) + "-" + pad$1(date.getUTCDate(), 2) + (milliseconds ? "T" + pad$1(hours, 2) + ":" + pad$1(minutes, 2) + ":" + pad$1(seconds, 2) + "." + pad$1(milliseconds, 3) + "Z" : seconds ? "T" + pad$1(hours, 2) + ":" + pad$1(minutes, 2) + ":" + pad$1(seconds, 2) + "Z" : minutes || hours ? "T" + pad$1(hours, 2) + ":" + pad$1(minutes, 2) + "Z" : "");
   }
 
-  function dsv (delimiter) {
+  function dsv(delimiter) {
     var reFormat = new RegExp("[\"" + delimiter + "\n\r]"),
         DELIMITER = delimiter.charCodeAt(0);
 
@@ -40469,6 +39230,7 @@
 
         if (text.charCodeAt(j) === QUOTE) {
           while (I++ < N && text.charCodeAt(I) !== QUOTE || text.charCodeAt(++I) === QUOTE) {
+            ;
           }
 
           if ((i = I) >= N) eof = true;else if ((c = text.charCodeAt(I++)) === NEWLINE) eol = true;else if (c === RETURN) {
@@ -40548,11 +39310,10 @@
 
   var csv = dsv(",");
   var csvParse = csv.parse;
-
   var tsv = dsv("\t");
   var tsvParse = tsv.parse;
 
-  function dsv$1 (defaultMimeType, parse) {
+  function dsv$1(defaultMimeType, parse) {
     return function (url, row, callback) {
       if (arguments.length < 3) callback = row, row = null;
       var r = request(url).mimeType(defaultMimeType);
@@ -40573,23 +39334,22 @@
   }
 
   var csv$1 = dsv$1("text/csv", csvParse);
-
   var tsv$1 = dsv$1("text/tab-separated-values", tsvParse);
 
-  function _typeof$d(obj) {
+  function _typeof$c(obj) {
     "@babel/helpers - typeof";
 
     if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") {
-      _typeof$d = function _typeof(obj) {
+      _typeof$c = function _typeof(obj) {
         return typeof obj;
       };
     } else {
-      _typeof$d = function _typeof(obj) {
+      _typeof$c = function _typeof(obj) {
         return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
       };
     }
 
-    return _typeof$d(obj);
+    return _typeof$c(obj);
   }
   /**
     @function dataLoad
@@ -40600,7 +39360,8 @@
     @param {Function} [callback] A function that is called when the final data is loaded. It is passed 2 variables, any error present and the data loaded.
   */
 
-  function load (path, formatter, key, callback) {
+
+  function load(path, formatter, key, callback) {
     var _this = this;
 
     var parser;
@@ -40649,7 +39410,7 @@
     if (!(path instanceof Array)) path = [path];
 
     var isData = function isData(dataItem) {
-      return typeof dataItem === "string" || _typeof$d(dataItem) === "object" && dataItem.url && dataItem.headers;
+      return typeof dataItem === "string" || _typeof$c(dataItem) === "object" && dataItem.url && dataItem.headers;
     };
 
     var needToLoad = path.find(isData);
@@ -40671,7 +39432,7 @@
       var headers = {},
           url = dataItem;
 
-      if (_typeof$d(dataItem) === "object") {
+      if (_typeof$c(dataItem) === "object") {
         url = dataItem.url;
         headers = dataItem.headers;
       }
@@ -40698,7 +39459,14 @@
           if (_this._cache) _this._lrucache.set("".concat(key, "_").concat(url), data);
 
           if (formatter) {
-            data = formatter(loadedLength(loaded) === 1 ? loaded[0] : loaded);
+            var formatterResponse = formatter(loadedLength(loaded) === 1 ? loaded[0] : loaded);
+
+            if (key === "data" && !(formatterResponse instanceof Array)) {
+              data = formatterResponse.data;
+              delete formatterResponse.data;
+
+              _this.config(formatterResponse);
+            } else data = formatterResponse;
           } else if (key === "data") {
             data = concat(loaded, "data");
           }
@@ -40718,7 +39486,13 @@
       var data = loadedLength(loaded) === 1 ? loaded[0] : loaded;
 
       if (formatter) {
-        data = formatter(loadedLength(loaded) === 1 ? loaded[0] : loaded);
+        var formatterResponse = formatter(loadedLength(loaded) === 1 ? loaded[0] : loaded);
+
+        if (key === "data" && !(formatterResponse instanceof Array)) {
+          data = formatterResponse.data;
+          delete formatterResponse.data;
+          this.config(formatterResponse);
+        } else data = formatterResponse;
       } else if (key === "data") {
         data = concat(loaded, "data");
       }
@@ -40728,13 +39502,13 @@
     }
   }
 
-  function constant$8 (x) {
+  function constant$8(x) {
     return function () {
       return x;
     };
   }
 
-  function BrushEvent (target, type, selection) {
+  function BrushEvent(target, type, selection) {
     this.target = target;
     this.type = type;
     this.selection = selection;
@@ -40743,7 +39517,8 @@
   function nopropagation$1() {
     event$1.stopImmediatePropagation();
   }
-  function noevent$2 () {
+
+  function noevent$2() {
     event$1.preventDefault();
     event$1.stopImmediatePropagation();
   }
@@ -40896,10 +39671,12 @@
   function empty$1(extent) {
     return extent[0][0] === extent[1][0] || extent[0][1] === extent[1][1];
   }
+
   function brushX() {
     return brush$1(X);
   }
-  function brush () {
+
+  function brush() {
     return brush$1(XY);
   }
 
@@ -40916,6 +39693,7 @@
       var overlay = group.property("__brush", initialize).selectAll(".overlay").data([type$1("overlay")]);
       overlay.enter().append("rect").attr("class", "overlay").attr("pointer-events", "all").attr("cursor", cursors.overlay).merge(overlay).each(function () {
         var extent = local(this).extent;
+
         _select(this).attr("x", extent[0][0]).attr("y", extent[0][1]).attr("width", extent[1][0] - extent[0][0]).attr("height", extent[1][1] - extent[0][1]);
       });
       group.selectAll(".selection").data([type$1("selection")]).enter().append("rect").attr("class", "selection").attr("cursor", cursors.selection).attr("fill", "#777").attr("fill-opacity", 0.3).attr("stroke", "#fff").attr("shape-rendering", "crispEdges");
@@ -40993,14 +39771,16 @@
     }
 
     function emitter(that, args, clean) {
-      return !clean && that.__brush.emitter || new Emitter(that, args);
+      var emit = that.__brush.emitter;
+      return emit && (!clean || !emit.clean) ? emit : new Emitter(that, args, clean);
     }
 
-    function Emitter(that, args) {
+    function Emitter(that, args, clean) {
       this.that = that;
       this.args = args;
       this.state = that.__brush;
       this.active = 0;
+      this.clean = clean;
     }
 
     Emitter.prototype = {
@@ -41073,7 +39853,9 @@
       n1 = n0;
       e1 = e0;
       s1 = s0;
+
       var group = _select(that).attr("pointer-events", "none");
+
       var overlay = group.selectAll(".overlay").attr("cursor", cursors[type]);
 
       if (event$1.touches) {
@@ -41081,6 +39863,7 @@
         emit.ended = ended;
       } else {
         var view = _select(event$1.view).on("mousemove.brush", moved, true).on("mouseup.brush", ended, true);
+
         if (keys) view.on("keydown.brush", keydowned, true).on("keyup.brush", keyupped, true);
         dragDisable(event$1.view);
       }
@@ -41324,7 +40107,6 @@
   }
 
   var slice$2 = [].slice;
-
   var noabort = {};
 
   function Queue(size) {
@@ -41459,23 +40241,26 @@
 
   var commonjsGlobal = typeof globalThis !== 'undefined' ? globalThis : typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
 
-  function commonjsRequire () {
-  	throw new Error('Dynamic requires are not currently supported by rollup-plugin-commonjs');
+  function createCommonjsModule(fn, basedir, module) {
+    return module = {
+      path: basedir,
+      exports: {},
+      require: function require(path, base) {
+        return commonjsRequire(path, base === undefined || base === null ? module.path : base);
+      }
+    }, fn(module, module.exports), module.exports;
   }
 
-  function createCommonjsModule(fn, module) {
-  	return module = { exports: {} }, fn(module, module.exports), module.exports;
+  function commonjsRequire() {
+    throw new Error('Dynamic requires are not currently supported by @rollup/plugin-commonjs');
   }
 
   var lrucache = createCommonjsModule(function (module) {
-
     (function (root, factory) {
-
       {
         module.exports = factory();
       }
-    })((typeof window === "undefined" ? "undefined" : _typeof(window)) === 'object' ? window : commonjsGlobal, function () {
-
+    })((typeof window === "undefined" ? "undefined" : _typeof2(window)) === 'object' ? window : commonjsGlobal, function () {
       var undef = void 0;
 
       function LRUCache(capacity) {
@@ -41614,306 +40399,6 @@
       return LRUCache;
     });
   });
-
-  // Computes the decimal coefficient and exponent of the specified number x with
-  // significant digits p, where x is positive and p is in [1, 21] or undefined.
-  // For example, formatDecimal(1.23) returns ["123", 0].
-  function formatDecimal$1 (x, p) {
-    if ((i = (x = p ? x.toExponential(p - 1) : x.toExponential()).indexOf("e")) < 0) return null; // NaN, ±Infinity
-
-    var i,
-        coefficient = x.slice(0, i); // The string returned by toExponential either has the form \d\.\d+e[-+]\d+
-    // (e.g., 1.2e+3) or the form \de[-+]\d+ (e.g., 1e+3).
-
-    return [coefficient.length > 1 ? coefficient[0] + coefficient.slice(2) : coefficient, +x.slice(i + 1)];
-  }
-
-  function exponent$1 (x) {
-    return x = formatDecimal$1(Math.abs(x)), x ? x[1] : NaN;
-  }
-
-  function formatGroup$1 (grouping, thousands) {
-    return function (value, width) {
-      var i = value.length,
-          t = [],
-          j = 0,
-          g = grouping[0],
-          length = 0;
-
-      while (i > 0 && g > 0) {
-        if (length + g + 1 > width) g = Math.max(1, width - length);
-        t.push(value.substring(i -= g, i + g));
-        if ((length += g + 1) > width) break;
-        g = grouping[j = (j + 1) % grouping.length];
-      }
-
-      return t.reverse().join(thousands);
-    };
-  }
-
-  function formatNumerals$1 (numerals) {
-    return function (value) {
-      return value.replace(/[0-9]/g, function (i) {
-        return numerals[+i];
-      });
-    };
-  }
-
-  // [[fill]align][sign][symbol][0][width][,][.precision][~][type]
-  var re$1 = /^(?:(.)?([<>=^]))?([+\-( ])?([$#])?(0)?(\d+)?(,)?(\.\d+)?(~)?([a-z%])?$/i;
-  function formatSpecifier$1(specifier) {
-    if (!(match = re$1.exec(specifier))) throw new Error("invalid format: " + specifier);
-    var match;
-    return new FormatSpecifier$1({
-      fill: match[1],
-      align: match[2],
-      sign: match[3],
-      symbol: match[4],
-      zero: match[5],
-      width: match[6],
-      comma: match[7],
-      precision: match[8] && match[8].slice(1),
-      trim: match[9],
-      type: match[10]
-    });
-  }
-  formatSpecifier$1.prototype = FormatSpecifier$1.prototype; // instanceof
-
-  function FormatSpecifier$1(specifier) {
-    this.fill = specifier.fill === undefined ? " " : specifier.fill + "";
-    this.align = specifier.align === undefined ? ">" : specifier.align + "";
-    this.sign = specifier.sign === undefined ? "-" : specifier.sign + "";
-    this.symbol = specifier.symbol === undefined ? "" : specifier.symbol + "";
-    this.zero = !!specifier.zero;
-    this.width = specifier.width === undefined ? undefined : +specifier.width;
-    this.comma = !!specifier.comma;
-    this.precision = specifier.precision === undefined ? undefined : +specifier.precision;
-    this.trim = !!specifier.trim;
-    this.type = specifier.type === undefined ? "" : specifier.type + "";
-  }
-
-  FormatSpecifier$1.prototype.toString = function () {
-    return this.fill + this.align + this.sign + this.symbol + (this.zero ? "0" : "") + (this.width === undefined ? "" : Math.max(1, this.width | 0)) + (this.comma ? "," : "") + (this.precision === undefined ? "" : "." + Math.max(0, this.precision | 0)) + (this.trim ? "~" : "") + this.type;
-  };
-
-  // Trims insignificant zeros, e.g., replaces 1.2000k with 1.2k.
-  function formatTrim$1 (s) {
-    out: for (var n = s.length, i = 1, i0 = -1, i1; i < n; ++i) {
-      switch (s[i]) {
-        case ".":
-          i0 = i1 = i;
-          break;
-
-        case "0":
-          if (i0 === 0) i0 = i;
-          i1 = i;
-          break;
-
-        default:
-          if (!+s[i]) break out;
-          if (i0 > 0) i0 = 0;
-          break;
-      }
-    }
-
-    return i0 > 0 ? s.slice(0, i0) + s.slice(i1 + 1) : s;
-  }
-
-  var prefixExponent$1;
-  function formatPrefixAuto$1 (x, p) {
-    var d = formatDecimal$1(x, p);
-    if (!d) return x + "";
-    var coefficient = d[0],
-        exponent = d[1],
-        i = exponent - (prefixExponent$1 = Math.max(-8, Math.min(8, Math.floor(exponent / 3))) * 3) + 1,
-        n = coefficient.length;
-    return i === n ? coefficient : i > n ? coefficient + new Array(i - n + 1).join("0") : i > 0 ? coefficient.slice(0, i) + "." + coefficient.slice(i) : "0." + new Array(1 - i).join("0") + formatDecimal$1(x, Math.max(0, p + i - 1))[0]; // less than 1y!
-  }
-
-  function formatRounded$1 (x, p) {
-    var d = formatDecimal$1(x, p);
-    if (!d) return x + "";
-    var coefficient = d[0],
-        exponent = d[1];
-    return exponent < 0 ? "0." + new Array(-exponent).join("0") + coefficient : coefficient.length > exponent + 1 ? coefficient.slice(0, exponent + 1) + "." + coefficient.slice(exponent + 1) : coefficient + new Array(exponent - coefficient.length + 2).join("0");
-  }
-
-  var formatTypes$1 = {
-    "%": function _(x, p) {
-      return (x * 100).toFixed(p);
-    },
-    "b": function b(x) {
-      return Math.round(x).toString(2);
-    },
-    "c": function c(x) {
-      return x + "";
-    },
-    "d": function d(x) {
-      return Math.round(x).toString(10);
-    },
-    "e": function e(x, p) {
-      return x.toExponential(p);
-    },
-    "f": function f(x, p) {
-      return x.toFixed(p);
-    },
-    "g": function g(x, p) {
-      return x.toPrecision(p);
-    },
-    "o": function o(x) {
-      return Math.round(x).toString(8);
-    },
-    "p": function p(x, _p) {
-      return formatRounded$1(x * 100, _p);
-    },
-    "r": formatRounded$1,
-    "s": formatPrefixAuto$1,
-    "X": function X(x) {
-      return Math.round(x).toString(16).toUpperCase();
-    },
-    "x": function x(_x) {
-      return Math.round(_x).toString(16);
-    }
-  };
-
-  function identity$9 (x) {
-    return x;
-  }
-
-  var map$2 = Array.prototype.map,
-      prefixes$1 = ["y", "z", "a", "f", "p", "n", "µ", "m", "", "k", "M", "G", "T", "P", "E", "Z", "Y"];
-  function formatLocale$2 (locale) {
-    var group = locale.grouping === undefined || locale.thousands === undefined ? identity$9 : formatGroup$1(map$2.call(locale.grouping, Number), locale.thousands + ""),
-        currencyPrefix = locale.currency === undefined ? "" : locale.currency[0] + "",
-        currencySuffix = locale.currency === undefined ? "" : locale.currency[1] + "",
-        decimal = locale.decimal === undefined ? "." : locale.decimal + "",
-        numerals = locale.numerals === undefined ? identity$9 : formatNumerals$1(map$2.call(locale.numerals, String)),
-        percent = locale.percent === undefined ? "%" : locale.percent + "",
-        minus = locale.minus === undefined ? "-" : locale.minus + "",
-        nan = locale.nan === undefined ? "NaN" : locale.nan + "";
-
-    function newFormat(specifier) {
-      specifier = formatSpecifier$1(specifier);
-      var fill = specifier.fill,
-          align = specifier.align,
-          sign = specifier.sign,
-          symbol = specifier.symbol,
-          zero = specifier.zero,
-          width = specifier.width,
-          comma = specifier.comma,
-          precision = specifier.precision,
-          trim = specifier.trim,
-          type = specifier.type; // The "n" type is an alias for ",g".
-
-      if (type === "n") comma = true, type = "g"; // The "" type, and any invalid type, is an alias for ".12~g".
-      else if (!formatTypes$1[type]) precision === undefined && (precision = 12), trim = true, type = "g"; // If zero fill is specified, padding goes after sign and before digits.
-
-      if (zero || fill === "0" && align === "=") zero = true, fill = "0", align = "="; // Compute the prefix and suffix.
-      // For SI-prefix, the suffix is lazily computed.
-
-      var prefix = symbol === "$" ? currencyPrefix : symbol === "#" && /[boxX]/.test(type) ? "0" + type.toLowerCase() : "",
-          suffix = symbol === "$" ? currencySuffix : /[%p]/.test(type) ? percent : ""; // What format function should we use?
-      // Is this an integer type?
-      // Can this type generate exponential notation?
-
-      var formatType = formatTypes$1[type],
-          maybeSuffix = /[defgprs%]/.test(type); // Set the default precision if not specified,
-      // or clamp the specified precision to the supported range.
-      // For significant precision, it must be in [1, 21].
-      // For fixed precision, it must be in [0, 20].
-
-      precision = precision === undefined ? 6 : /[gprs]/.test(type) ? Math.max(1, Math.min(21, precision)) : Math.max(0, Math.min(20, precision));
-
-      function format(value) {
-        var valuePrefix = prefix,
-            valueSuffix = suffix,
-            i,
-            n,
-            c;
-
-        if (type === "c") {
-          valueSuffix = formatType(value) + valueSuffix;
-          value = "";
-        } else {
-          value = +value; // Determine the sign. -0 is not less than 0, but 1 / -0 is!
-
-          var valueNegative = value < 0 || 1 / value < 0; // Perform the initial formatting.
-
-          value = isNaN(value) ? nan : formatType(Math.abs(value), precision); // Trim insignificant zeros.
-
-          if (trim) value = formatTrim$1(value); // If a negative value rounds to zero after formatting, and no explicit positive sign is requested, hide the sign.
-
-          if (valueNegative && +value === 0 && sign !== "+") valueNegative = false; // Compute the prefix and suffix.
-
-          valuePrefix = (valueNegative ? sign === "(" ? sign : minus : sign === "-" || sign === "(" ? "" : sign) + valuePrefix;
-          valueSuffix = (type === "s" ? prefixes$1[8 + prefixExponent$1 / 3] : "") + valueSuffix + (valueNegative && sign === "(" ? ")" : ""); // Break the formatted value into the integer “value” part that can be
-          // grouped, and fractional or exponential “suffix” part that is not.
-
-          if (maybeSuffix) {
-            i = -1, n = value.length;
-
-            while (++i < n) {
-              if (c = value.charCodeAt(i), 48 > c || c > 57) {
-                valueSuffix = (c === 46 ? decimal + value.slice(i + 1) : value.slice(i)) + valueSuffix;
-                value = value.slice(0, i);
-                break;
-              }
-            }
-          }
-        } // If the fill character is not "0", grouping is applied before padding.
-
-
-        if (comma && !zero) value = group(value, Infinity); // Compute the padding.
-
-        var length = valuePrefix.length + value.length + valueSuffix.length,
-            padding = length < width ? new Array(width - length + 1).join(fill) : ""; // If the fill character is "0", grouping is applied after padding.
-
-        if (comma && zero) value = group(padding + value, padding.length ? width - valueSuffix.length : Infinity), padding = ""; // Reconstruct the final output based on the desired alignment.
-
-        switch (align) {
-          case "<":
-            value = valuePrefix + value + valueSuffix + padding;
-            break;
-
-          case "=":
-            value = valuePrefix + padding + value + valueSuffix;
-            break;
-
-          case "^":
-            value = padding.slice(0, length = padding.length >> 1) + valuePrefix + value + valueSuffix + padding.slice(length);
-            break;
-
-          default:
-            value = padding + valuePrefix + value + valueSuffix;
-            break;
-        }
-
-        return numerals(value);
-      }
-
-      format.toString = function () {
-        return specifier + "";
-      };
-
-      return format;
-    }
-
-    function formatPrefix(specifier, value) {
-      var f = newFormat((specifier = formatSpecifier$1(specifier), specifier.type = "f", specifier)),
-          e = Math.max(-8, Math.min(8, Math.floor(exponent$1(value) / 3))) * 3,
-          k = Math.pow(10, -e),
-          prefix = prefixes$1[8 + e / 3];
-      return function (value) {
-        return f(k * value) + prefix;
-      };
-    }
-
-    return {
-      format: newFormat,
-      formatPrefix: formatPrefix
-    };
-  }
-
   /**
       @namespace {Object} formatLocale
       @desc A set of default locale formatters used when assigning suffixes and currency in numbers.
@@ -41926,7 +40411,8 @@
         * | delimiters | {thousands: ",", decimal: "."} | Decimal and group separators. |
         * | currency | ["$", ""] | The currency prefix and suffix. |
   */
-  var formatLocale$3 = {
+
+  var formatLocale$2 = {
     "en-GB": {
       separator: "",
       suffixes: ["y", "z", "a", "f", "p", "n", "µ", "m", "", "k", "M", "B", "T", "q", "Q", "Z", "Y"],
@@ -41998,20 +40484,20 @@
     }
   };
 
-  function _typeof$e(obj) {
+  function _typeof$d(obj) {
     "@babel/helpers - typeof";
 
     if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") {
-      _typeof$e = function _typeof(obj) {
+      _typeof$d = function _typeof(obj) {
         return typeof obj;
       };
     } else {
-      _typeof$e = function _typeof(obj) {
+      _typeof$d = function _typeof(obj) {
         return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
       };
     }
 
-    return _typeof$e(obj);
+    return _typeof$d(obj);
   }
 
   var round$1 = function round(x, n) {
@@ -42062,18 +40548,18 @@
   */
 
 
-  function formatAbbreviate (n) {
+  function formatAbbreviate(n) {
     var locale = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : "en-US";
     var precision = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : undefined;
     if (isFinite(n)) n *= 1;else return "N/A";
     var negative = n < 0;
     var length = n.toString().split(".")[0].replace("-", "").length,
-        localeConfig = _typeof$e(locale) === "object" ? locale : formatLocale$3[locale] || formatLocale$3["en-US"],
+        localeConfig = _typeof$d(locale) === "object" ? locale : formatLocale$2[locale] || formatLocale$2["en-US"],
         suffixes = localeConfig.suffixes.map(parseSuffixes);
     var decimal = localeConfig.delimiters.decimal || ".",
         separator = localeConfig.separator || "",
         thousands = localeConfig.delimiters.thousands || ",";
-    var d3plusFormatLocale = formatLocale$2({
+    var d3plusFormatLocale = formatLocale({
       currency: localeConfig.currency || ["$", ""],
       decimal: decimal,
       grouping: localeConfig.grouping || [3],
@@ -42089,14 +40575,15 @@
     return "".concat(negative && val.charAt(0) !== "-" ? "-" : "").concat(val).replace(/(\.[0]*[1-9]*)[0]*$/g, "$1") // removes any trailing zeros
     .replace(/\.[0]*$/g, ""); // removes any trailing decimal point
   }
-
   /**
       @function date
       @summary Parses numbers and strings to valid Javascript Date objects.
       @description Returns a javascript Date object for a given a Number (representing either a 4-digit year or milliseconds since epoch) or a String that is in [valid dateString format](http://dygraphs.com/date-formats.html). Besides the 4-digit year parsing, this function is useful when needing to parse negative (BC) years, which the vanilla Date object cannot parse.
       @param {Number|String} *date*
   */
-  function date$2 (d) {
+
+
+  function date$2(d) {
     // returns if already Date object
     if (d.constructor === Date) return d; // detects if milliseconds
     else if (d.constructor === Number && "".concat(d).length > 5 && d % 1 === 0) return new Date(d);
@@ -42214,7 +40701,7 @@
     }
   };
 
-  function _defineProperty$2(obj, key, value) {
+  function _defineProperty$1(obj, key, value) {
     if (key in obj) {
       Object.defineProperty(obj, key, {
         value: value,
@@ -42230,20 +40717,20 @@
   }
 
   function _toConsumableArray(arr) {
-    return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _unsupportedIterableToArray$4(arr) || _nonIterableSpread();
+    return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _unsupportedIterableToArray$3(arr) || _nonIterableSpread();
   }
 
   function _nonIterableSpread() {
     throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.");
   }
 
-  function _unsupportedIterableToArray$4(o, minLen) {
+  function _unsupportedIterableToArray$3(o, minLen) {
     if (!o) return;
-    if (typeof o === "string") return _arrayLikeToArray$4(o, minLen);
+    if (typeof o === "string") return _arrayLikeToArray$3(o, minLen);
     var n = Object.prototype.toString.call(o).slice(8, -1);
     if (n === "Object" && o.constructor) n = o.constructor.name;
     if (n === "Map" || n === "Set") return Array.from(o);
-    if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray$4(o, minLen);
+    if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray$3(o, minLen);
   }
 
   function _iterableToArray(iter) {
@@ -42251,10 +40738,10 @@
   }
 
   function _arrayWithoutHoles(arr) {
-    if (Array.isArray(arr)) return _arrayLikeToArray$4(arr);
+    if (Array.isArray(arr)) return _arrayLikeToArray$3(arr);
   }
 
-  function _arrayLikeToArray$4(arr, len) {
+  function _arrayLikeToArray$3(arr, len) {
     if (len == null || len > arr.length) len = arr.length;
 
     for (var i = 0, arr2 = new Array(len); i < len; i++) {
@@ -42264,29 +40751,29 @@
     return arr2;
   }
 
-  function _typeof$f(obj) {
+  function _typeof$e(obj) {
     "@babel/helpers - typeof";
 
     if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") {
-      _typeof$f = function _typeof(obj) {
+      _typeof$e = function _typeof(obj) {
         return typeof obj;
       };
     } else {
-      _typeof$f = function _typeof(obj) {
+      _typeof$e = function _typeof(obj) {
         return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
       };
     }
 
-    return _typeof$f(obj);
+    return _typeof$e(obj);
   }
 
-  function _classCallCheck$d(instance, Constructor) {
+  function _classCallCheck$c(instance, Constructor) {
     if (!(instance instanceof Constructor)) {
       throw new TypeError("Cannot call a class as a function");
     }
   }
 
-  function _defineProperties$d(target, props) {
+  function _defineProperties$c(target, props) {
     for (var i = 0; i < props.length; i++) {
       var descriptor = props[i];
       descriptor.enumerable = descriptor.enumerable || false;
@@ -42296,13 +40783,13 @@
     }
   }
 
-  function _createClass$d(Constructor, protoProps, staticProps) {
-    if (protoProps) _defineProperties$d(Constructor.prototype, protoProps);
-    if (staticProps) _defineProperties$d(Constructor, staticProps);
+  function _createClass$c(Constructor, protoProps, staticProps) {
+    if (protoProps) _defineProperties$c(Constructor.prototype, protoProps);
+    if (staticProps) _defineProperties$c(Constructor, staticProps);
     return Constructor;
   }
 
-  function _inherits$b(subClass, superClass) {
+  function _inherits$a(subClass, superClass) {
     if (typeof superClass !== "function" && superClass !== null) {
       throw new TypeError("Super expression must either be null or a function");
     }
@@ -42314,46 +40801,46 @@
         configurable: true
       }
     });
-    if (superClass) _setPrototypeOf$b(subClass, superClass);
+    if (superClass) _setPrototypeOf$a(subClass, superClass);
   }
 
-  function _setPrototypeOf$b(o, p) {
-    _setPrototypeOf$b = Object.setPrototypeOf || function _setPrototypeOf(o, p) {
+  function _setPrototypeOf$a(o, p) {
+    _setPrototypeOf$a = Object.setPrototypeOf || function _setPrototypeOf(o, p) {
       o.__proto__ = p;
       return o;
     };
 
-    return _setPrototypeOf$b(o, p);
+    return _setPrototypeOf$a(o, p);
   }
 
-  function _createSuper$b(Derived) {
-    var hasNativeReflectConstruct = _isNativeReflectConstruct$b();
+  function _createSuper$a(Derived) {
+    var hasNativeReflectConstruct = _isNativeReflectConstruct$a();
 
     return function _createSuperInternal() {
-      var Super = _getPrototypeOf$b(Derived),
+      var Super = _getPrototypeOf$a(Derived),
           result;
 
       if (hasNativeReflectConstruct) {
-        var NewTarget = _getPrototypeOf$b(this).constructor;
+        var NewTarget = _getPrototypeOf$a(this).constructor;
 
         result = Reflect.construct(Super, arguments, NewTarget);
       } else {
         result = Super.apply(this, arguments);
       }
 
-      return _possibleConstructorReturn$b(this, result);
+      return _possibleConstructorReturn$a(this, result);
     };
   }
 
-  function _possibleConstructorReturn$b(self, call) {
-    if (call && (_typeof$f(call) === "object" || typeof call === "function")) {
+  function _possibleConstructorReturn$a(self, call) {
+    if (call && (_typeof$e(call) === "object" || typeof call === "function")) {
       return call;
     }
 
-    return _assertThisInitialized$b(self);
+    return _assertThisInitialized$a(self);
   }
 
-  function _assertThisInitialized$b(self) {
+  function _assertThisInitialized$a(self) {
     if (self === void 0) {
       throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
     }
@@ -42361,7 +40848,7 @@
     return self;
   }
 
-  function _isNativeReflectConstruct$b() {
+  function _isNativeReflectConstruct$a() {
     if (typeof Reflect === "undefined" || !Reflect.construct) return false;
     if (Reflect.construct.sham) return false;
     if (typeof Proxy === "function") return true;
@@ -42374,11 +40861,11 @@
     }
   }
 
-  function _getPrototypeOf$b(o) {
-    _getPrototypeOf$b = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) {
+  function _getPrototypeOf$a(o) {
+    _getPrototypeOf$a = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) {
       return o.__proto__ || Object.getPrototypeOf(o);
     };
-    return _getPrototypeOf$b(o);
+    return _getPrototypeOf$a(o);
   }
   /**
       @class Axis
@@ -42386,10 +40873,11 @@
       @desc Creates an SVG scale based on an array of data.
   */
 
-  var Axis = /*#__PURE__*/function (_BaseClass) {
-    _inherits$b(Axis, _BaseClass);
 
-    var _super = _createSuper$b(Axis);
+  var Axis = /*#__PURE__*/function (_BaseClass) {
+    _inherits$a(Axis, _BaseClass);
+
+    var _super = _createSuper$a(Axis);
     /**
         @memberof Axis
         @desc Invoked when creating a new class instance, and sets any default parameters.
@@ -42400,7 +40888,7 @@
     function Axis() {
       var _this;
 
-      _classCallCheck$d(this, Axis);
+      _classCallCheck$c(this, Axis);
 
       _this = _super.call(this);
       _this._align = "middle";
@@ -42488,7 +40976,7 @@
     */
 
 
-    _createClass$d(Axis, [{
+    _createClass$c(Axis, [{
       key: "_barPosition",
       value: function _barPosition(bar) {
         var _this$_position = this._position,
@@ -42496,13 +40984,12 @@
             x = _this$_position.x,
             y = _this$_position.y,
             opposite = _this$_position.opposite,
-            domain = this._getDomain(),
             offset = this._margin[opposite],
             position = ["top", "left"].includes(this._orient) ? this._outerBounds[y] + this._outerBounds[height] - offset : this._outerBounds[y] + offset;
-
-        var x1mod = this._scale === "band" ? this._d3Scale.step() - this._d3Scale.bandwidth() : this._scale === "point" ? this._d3Scale.step() * this._d3Scale.padding() * -1 : 0;
-        var x2mod = this._scale === "band" ? this._d3Scale.step() : this._scale === "point" ? this._d3Scale.step() * this._d3Scale.padding() * -1 : 0;
-        bar.call(attrize, this._barConfig).attr("".concat(x, "1"), this._getPosition(domain[0]) - x1mod).attr("".concat(x, "2"), this._getPosition(domain[domain.length - 1]) + x2mod).attr("".concat(y, "1"), position).attr("".concat(y, "2"), position);
+        var x1mod = this._scale === "band" ? this._d3Scale.step() - this._d3Scale.bandwidth() : this._scale === "point" ? this._d3Scale.step() * this._d3Scale.padding() : 0;
+        var x2mod = this._scale === "band" ? this._d3Scale.step() : this._scale === "point" ? this._d3Scale.step() * this._d3Scale.padding() : 0;
+        var sortedDomain = (this._d3Scale ? this._d3Scale.domain() : []).concat(this._d3ScaleNegative ? this._d3ScaleNegative.domain() : []);
+        bar.call(attrize, this._barConfig).attr("".concat(x, "1"), this._getPosition(sortedDomain[0]) - x1mod).attr("".concat(x, "2"), this._getPosition(sortedDomain[sortedDomain.length - 1]) + x2mod).attr("".concat(y, "1"), position).attr("".concat(y, "2"), position);
       }
       /**
           @memberof Axis
@@ -42680,7 +41167,7 @@
           if (isNaN(d)) {
             return d;
           } else if (_this2._scale === "linear" && _this2._tickSuffix === "smallest") {
-            var _locale = _typeof$f(_this2._locale) === "object" ? _this2._locale : formatLocale$3[_this2._locale];
+            var _locale = _typeof$e(_this2._locale) === "object" ? _this2._locale : formatLocale$2[_this2._locale];
 
             var separator = _locale.separator,
                 suffixes = _locale.suffixes;
@@ -42804,13 +41291,12 @@
           labels = (this._labels ? this._scale === "time" ? this._labels.map(date$2) : this._labels : (this._d3Scale ? this._d3Scale.ticks : this._d3ScaleNegative.ticks) ? this._getTicks() : ticks).slice();
 
           if (this._scale === "log") {
-            var tens = labels.filter(function (t) {
-              return Math.abs(t).toString().charAt(0) === "1" && (_this3._d3Scale ? t !== -1 : t !== 1);
+            var tens = labels.filter(function (t, i) {
+              return !i || i === labels.length - 1 || Math.abs(t).toString().charAt(0) === "1" && (_this3._d3Scale ? t !== -1 : t !== 1);
             });
 
             if (tens.length > 2) {
               labels = tens;
-              ticks = tens;
             } else if (labels.length >= 10) {
               labels = labels.filter(function (t) {
                 return t % 5 === 0 || tickFormat(t).substr(-1) === "1";
@@ -43088,9 +41574,9 @@
           return datum.offset = datum.offset ? globalOffset : 0;
         });
         var tBuff = this._shape === "Line" ? 0 : hBuff;
-        var bounds = this._outerBounds = (_this$_outerBounds = {}, _defineProperty$2(_this$_outerBounds, height, (max(textData, function (t) {
+        var bounds = this._outerBounds = (_this$_outerBounds = {}, _defineProperty$1(_this$_outerBounds, height, (max(textData, function (t) {
           return Math.ceil(t[t.rotate || !horizontal ? "width" : "height"] + t.offset);
-        }) || 0) + (textData.length ? p : 0)), _defineProperty$2(_this$_outerBounds, width, rangeOuter[rangeOuter.length - 1] - rangeOuter[0]), _defineProperty$2(_this$_outerBounds, x, rangeOuter[0]), _this$_outerBounds);
+        }) || 0) + (textData.length ? p : 0)), _defineProperty$1(_this$_outerBounds, width, rangeOuter[rangeOuter.length - 1] - rangeOuter[0]), _defineProperty$1(_this$_outerBounds, x, rangeOuter[0]), _this$_outerBounds);
         bounds[height] = max([this._minSize, bounds[height]]);
         margin[this._orient] += hBuff;
         margin[opposite] = this._gridSize !== undefined ? max([this._gridSize, tBuff]) : this["_".concat(height)] - margin[this._orient] - bounds[height] - p;
@@ -43151,7 +41637,7 @@
             size: labels.includes(d) ? size : 0,
             text: labels.includes(d) ? tickFormat(d) : false,
             tick: ticks.includes(d)
-          }, _defineProperty$2(_tickConfig, x, xPos + (_this2._scale === "band" ? _this2._d3Scale.bandwidth() / 2 : 0)), _defineProperty$2(_tickConfig, y, yPos), _tickConfig);
+          }, _defineProperty$1(_tickConfig, x, xPos + (_this2._scale === "band" ? _this2._d3Scale.bandwidth() / 2 : 0)), _defineProperty$1(_tickConfig, y, yPos), _tickConfig);
           return tickConfig;
         });
 
@@ -43620,6 +42106,253 @@
     return Axis;
   }(BaseClass);
 
+  function _typeof$f(obj) {
+    "@babel/helpers - typeof";
+
+    if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") {
+      _typeof$f = function _typeof(obj) {
+        return typeof obj;
+      };
+    } else {
+      _typeof$f = function _typeof(obj) {
+        return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
+      };
+    }
+
+    return _typeof$f(obj);
+  }
+
+  function _classCallCheck$d(instance, Constructor) {
+    if (!(instance instanceof Constructor)) {
+      throw new TypeError("Cannot call a class as a function");
+    }
+  }
+
+  function _defineProperties$d(target, props) {
+    for (var i = 0; i < props.length; i++) {
+      var descriptor = props[i];
+      descriptor.enumerable = descriptor.enumerable || false;
+      descriptor.configurable = true;
+      if ("value" in descriptor) descriptor.writable = true;
+      Object.defineProperty(target, descriptor.key, descriptor);
+    }
+  }
+
+  function _createClass$d(Constructor, protoProps, staticProps) {
+    if (protoProps) _defineProperties$d(Constructor.prototype, protoProps);
+    if (staticProps) _defineProperties$d(Constructor, staticProps);
+    return Constructor;
+  }
+
+  function _inherits$b(subClass, superClass) {
+    if (typeof superClass !== "function" && superClass !== null) {
+      throw new TypeError("Super expression must either be null or a function");
+    }
+
+    subClass.prototype = Object.create(superClass && superClass.prototype, {
+      constructor: {
+        value: subClass,
+        writable: true,
+        configurable: true
+      }
+    });
+    if (superClass) _setPrototypeOf$b(subClass, superClass);
+  }
+
+  function _setPrototypeOf$b(o, p) {
+    _setPrototypeOf$b = Object.setPrototypeOf || function _setPrototypeOf(o, p) {
+      o.__proto__ = p;
+      return o;
+    };
+
+    return _setPrototypeOf$b(o, p);
+  }
+
+  function _createSuper$b(Derived) {
+    var hasNativeReflectConstruct = _isNativeReflectConstruct$b();
+
+    return function _createSuperInternal() {
+      var Super = _getPrototypeOf$b(Derived),
+          result;
+
+      if (hasNativeReflectConstruct) {
+        var NewTarget = _getPrototypeOf$b(this).constructor;
+
+        result = Reflect.construct(Super, arguments, NewTarget);
+      } else {
+        result = Super.apply(this, arguments);
+      }
+
+      return _possibleConstructorReturn$b(this, result);
+    };
+  }
+
+  function _possibleConstructorReturn$b(self, call) {
+    if (call && (_typeof$f(call) === "object" || typeof call === "function")) {
+      return call;
+    }
+
+    return _assertThisInitialized$b(self);
+  }
+
+  function _assertThisInitialized$b(self) {
+    if (self === void 0) {
+      throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
+    }
+
+    return self;
+  }
+
+  function _isNativeReflectConstruct$b() {
+    if (typeof Reflect === "undefined" || !Reflect.construct) return false;
+    if (Reflect.construct.sham) return false;
+    if (typeof Proxy === "function") return true;
+
+    try {
+      Date.prototype.toString.call(Reflect.construct(Date, [], function () {}));
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  function _getPrototypeOf$b(o) {
+    _getPrototypeOf$b = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) {
+      return o.__proto__ || Object.getPrototypeOf(o);
+    };
+    return _getPrototypeOf$b(o);
+  }
+  /**
+      @class Button
+      @extends external:BaseClass
+      @desc Creates a set of HTML radio input elements.
+  */
+
+
+  var Button = /*#__PURE__*/function (_BaseClass) {
+    _inherits$b(Button, _BaseClass);
+
+    var _super = _createSuper$b(Button);
+    /**
+        @memberof Button
+        @desc Invoked when creating a new class instance, and sets any default parameters.
+        @private
+    */
+
+
+    function Button() {
+      var _this;
+
+      _classCallCheck$d(this, Button);
+
+      _this = _super.call(this);
+      _this._buttonStyle = {
+        "font-family": "'Roboto', 'Helvetica Neue', 'HelveticaNeue', 'Helvetica', 'Arial', sans-serif",
+        "font-size": "14px",
+        "margin": "0 5px"
+      };
+      _this._data = [];
+      _this._text = accessor("text");
+      _this._value = accessor("value");
+      return _this;
+    }
+    /**
+        @memberof Button
+        @desc Renders the element to the page.
+        @chainable
+    */
+
+
+    _createClass$d(Button, [{
+      key: "render",
+      value: function render() {
+        var _this2 = this;
+
+        if (this._container === void 0) this.container(_select("body").append("div").node());
+
+        var container = this._container.selectAll("div#d3plus-Form-".concat(this._uuid)).data([0]);
+
+        var svg = this._container.node().tagName.toLowerCase() === "foreignobject";
+        container = container.enter().append(svg ? "xhtml:div" : "div").attr("id", "d3plus-Form-".concat(this._uuid)).attr("class", "d3plus-Form d3plus-Form-Button").merge(container);
+        var button = container.selectAll("button").data(this._data, function (d, i) {
+          return _this2._value(d, i);
+        });
+        button.exit().remove();
+        button = button.enter().append("button").attr("class", "d3plus-Button").attr("type", "button").merge(button).call(stylize, this._buttonStyle).html(function (d, i) {
+          return _this2._text(d, i);
+        });
+
+        for (var event in this._on) {
+          if ({}.hasOwnProperty.call(this._on, event)) button.on(event, this._on[event]);
+        }
+
+        return this;
+      }
+      /**
+          @memberof Button
+          @desc Sets the css styles for the <input type="radio"> elements.
+          @param {Object} [*value*]
+          @chainable
+      */
+
+    }, {
+      key: "buttonStyle",
+      value: function buttonStyle(_) {
+        return arguments.length ? (this._buttonStyle = _, this) : this._buttonStyle;
+      }
+      /**
+          @memberof Button
+          @desc If *selector* is specified, sets the SVG container element to the specified d3 selector or DOM element and returns the current class instance. If *selector* is not specified, returns the current SVG container element, which is `undefined` by default.
+          @param {String|HTMLElement} [*selector*]
+          @chainable
+      */
+
+    }, {
+      key: "container",
+      value: function container(_) {
+        return arguments.length ? (this._container = _select(_), this) : this._container;
+      }
+      /**
+          @memberof Radio
+          @desc Defines the array of values to be created as <button> tags. If no value is passed, the current array is returned.
+          @param {Array} [*value* = []]
+          @chainable
+      */
+
+    }, {
+      key: "data",
+      value: function data(_) {
+        return arguments.length ? (this._data = _, this) : this._data;
+      }
+      /**
+          @memberof Button
+          @desc Sets the inner text for each <button> element.
+          @param {Function|String} [*value* = function(d) { return d.text; }]
+          @chainable
+      */
+
+    }, {
+      key: "text",
+      value: function text(_) {
+        return arguments.length ? (this._text = typeof _ === "function" ? _ : constant$6(_), this) : this._text;
+      }
+      /**
+          @memberof Button
+          @desc Sets the value for each <button> element.
+          @param {Function} [*value* = function(d) { return d.value; }]
+          @chainable
+      */
+
+    }, {
+      key: "value",
+      value: function value(_) {
+        return arguments.length ? (this._value = _, this) : this._value;
+      }
+    }]);
+
+    return Button;
+  }(BaseClass);
+
   function _typeof$g(obj) {
     "@babel/helpers - typeof";
 
@@ -43737,261 +42470,16 @@
     return _getPrototypeOf$c(o);
   }
   /**
-      @class Button
-      @extends external:BaseClass
-      @desc Creates a set of HTML radio input elements.
-  */
-
-  var Button = /*#__PURE__*/function (_BaseClass) {
-    _inherits$c(Button, _BaseClass);
-
-    var _super = _createSuper$c(Button);
-    /**
-        @memberof Button
-        @desc Invoked when creating a new class instance, and sets any default parameters.
-        @private
-    */
-
-
-    function Button() {
-      var _this;
-
-      _classCallCheck$e(this, Button);
-
-      _this = _super.call(this);
-      _this._buttonStyle = {
-        "font-family": "'Roboto', 'Helvetica Neue', 'HelveticaNeue', 'Helvetica', 'Arial', sans-serif",
-        "font-size": "14px",
-        "margin": "0 5px"
-      };
-      _this._data = [];
-      _this._text = accessor("text");
-      _this._value = accessor("value");
-      return _this;
-    }
-    /**
-        @memberof Button
-        @desc Renders the element to the page.
-        @chainable
-    */
-
-
-    _createClass$e(Button, [{
-      key: "render",
-      value: function render() {
-        var _this2 = this;
-
-        if (this._container === void 0) this.container(_select("body").append("div").node());
-
-        var container = this._container.selectAll("div#d3plus-Form-".concat(this._uuid)).data([0]);
-
-        var svg = this._container.node().tagName.toLowerCase() === "foreignobject";
-        container = container.enter().append(svg ? "xhtml:div" : "div").attr("id", "d3plus-Form-".concat(this._uuid)).attr("class", "d3plus-Form d3plus-Form-Button").merge(container);
-        var button = container.selectAll("button").data(this._data, function (d, i) {
-          return _this2._value(d, i);
-        });
-        button.exit().remove();
-        button = button.enter().append("button").attr("class", "d3plus-Button").attr("type", "button").merge(button).call(stylize, this._buttonStyle).html(function (d, i) {
-          return _this2._text(d, i);
-        });
-
-        for (var event in this._on) {
-          if ({}.hasOwnProperty.call(this._on, event)) button.on(event, this._on[event]);
-        }
-
-        return this;
-      }
-      /**
-          @memberof Button
-          @desc Sets the css styles for the <input type="radio"> elements.
-          @param {Object} [*value*]
-          @chainable
-      */
-
-    }, {
-      key: "buttonStyle",
-      value: function buttonStyle(_) {
-        return arguments.length ? (this._buttonStyle = _, this) : this._buttonStyle;
-      }
-      /**
-          @memberof Button
-          @desc If *selector* is specified, sets the SVG container element to the specified d3 selector or DOM element and returns the current class instance. If *selector* is not specified, returns the current SVG container element, which is `undefined` by default.
-          @param {String|HTMLElement} [*selector*]
-          @chainable
-      */
-
-    }, {
-      key: "container",
-      value: function container(_) {
-        return arguments.length ? (this._container = _select(_), this) : this._container;
-      }
-      /**
-          @memberof Radio
-          @desc Defines the array of values to be created as <button> tags. If no value is passed, the current array is returned.
-          @param {Array} [*value* = []]
-          @chainable
-      */
-
-    }, {
-      key: "data",
-      value: function data(_) {
-        return arguments.length ? (this._data = _, this) : this._data;
-      }
-      /**
-          @memberof Button
-          @desc Sets the inner text for each <button> element.
-          @param {Function|String} [*value* = function(d) { return d.text; }]
-          @chainable
-      */
-
-    }, {
-      key: "text",
-      value: function text(_) {
-        return arguments.length ? (this._text = typeof _ === "function" ? _ : constant$6(_), this) : this._text;
-      }
-      /**
-          @memberof Button
-          @desc Sets the value for each <button> element.
-          @param {Function} [*value* = function(d) { return d.value; }]
-          @chainable
-      */
-
-    }, {
-      key: "value",
-      value: function value(_) {
-        return arguments.length ? (this._value = _, this) : this._value;
-      }
-    }]);
-
-    return Button;
-  }(BaseClass);
-
-  function _typeof$h(obj) {
-    "@babel/helpers - typeof";
-
-    if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") {
-      _typeof$h = function _typeof(obj) {
-        return typeof obj;
-      };
-    } else {
-      _typeof$h = function _typeof(obj) {
-        return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
-      };
-    }
-
-    return _typeof$h(obj);
-  }
-
-  function _classCallCheck$f(instance, Constructor) {
-    if (!(instance instanceof Constructor)) {
-      throw new TypeError("Cannot call a class as a function");
-    }
-  }
-
-  function _defineProperties$f(target, props) {
-    for (var i = 0; i < props.length; i++) {
-      var descriptor = props[i];
-      descriptor.enumerable = descriptor.enumerable || false;
-      descriptor.configurable = true;
-      if ("value" in descriptor) descriptor.writable = true;
-      Object.defineProperty(target, descriptor.key, descriptor);
-    }
-  }
-
-  function _createClass$f(Constructor, protoProps, staticProps) {
-    if (protoProps) _defineProperties$f(Constructor.prototype, protoProps);
-    if (staticProps) _defineProperties$f(Constructor, staticProps);
-    return Constructor;
-  }
-
-  function _inherits$d(subClass, superClass) {
-    if (typeof superClass !== "function" && superClass !== null) {
-      throw new TypeError("Super expression must either be null or a function");
-    }
-
-    subClass.prototype = Object.create(superClass && superClass.prototype, {
-      constructor: {
-        value: subClass,
-        writable: true,
-        configurable: true
-      }
-    });
-    if (superClass) _setPrototypeOf$d(subClass, superClass);
-  }
-
-  function _setPrototypeOf$d(o, p) {
-    _setPrototypeOf$d = Object.setPrototypeOf || function _setPrototypeOf(o, p) {
-      o.__proto__ = p;
-      return o;
-    };
-
-    return _setPrototypeOf$d(o, p);
-  }
-
-  function _createSuper$d(Derived) {
-    var hasNativeReflectConstruct = _isNativeReflectConstruct$d();
-
-    return function _createSuperInternal() {
-      var Super = _getPrototypeOf$d(Derived),
-          result;
-
-      if (hasNativeReflectConstruct) {
-        var NewTarget = _getPrototypeOf$d(this).constructor;
-
-        result = Reflect.construct(Super, arguments, NewTarget);
-      } else {
-        result = Super.apply(this, arguments);
-      }
-
-      return _possibleConstructorReturn$d(this, result);
-    };
-  }
-
-  function _possibleConstructorReturn$d(self, call) {
-    if (call && (_typeof$h(call) === "object" || typeof call === "function")) {
-      return call;
-    }
-
-    return _assertThisInitialized$d(self);
-  }
-
-  function _assertThisInitialized$d(self) {
-    if (self === void 0) {
-      throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
-    }
-
-    return self;
-  }
-
-  function _isNativeReflectConstruct$d() {
-    if (typeof Reflect === "undefined" || !Reflect.construct) return false;
-    if (Reflect.construct.sham) return false;
-    if (typeof Proxy === "function") return true;
-
-    try {
-      Date.prototype.toString.call(Reflect.construct(Date, [], function () {}));
-      return true;
-    } catch (e) {
-      return false;
-    }
-  }
-
-  function _getPrototypeOf$d(o) {
-    _getPrototypeOf$d = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) {
-      return o.__proto__ || Object.getPrototypeOf(o);
-    };
-    return _getPrototypeOf$d(o);
-  }
-  /**
       @class Radio
       @extends external:BaseClass
       @desc Creates a set of HTML radio input elements.
   */
 
-  var Radio = /*#__PURE__*/function (_BaseClass) {
-    _inherits$d(Radio, _BaseClass);
 
-    var _super = _createSuper$d(Radio);
+  var Radio = /*#__PURE__*/function (_BaseClass) {
+    _inherits$c(Radio, _BaseClass);
+
+    var _super = _createSuper$c(Radio);
     /**
         @memberof Radio
         @desc Invoked when creating a new class instance, and sets any default parameters.
@@ -44002,7 +42490,7 @@
     function Radio() {
       var _this;
 
-      _classCallCheck$f(this, Radio);
+      _classCallCheck$e(this, Radio);
 
       _this = _super.call(this);
       _this._labelStyle = {
@@ -44030,7 +42518,7 @@
     */
 
 
-    _createClass$f(Radio, [{
+    _createClass$e(Radio, [{
       key: "render",
       value: function render() {
         var _this2 = this;
@@ -44061,12 +42549,16 @@
           return _this2._text(d, i);
         }).each(function (d, i) {
           var checked = that._checked === void 0 ? !i : "".concat(that._value(d, i)) === "".concat(that._checked);
+
           _select(this).classed("active", checked).style("cursor", checked ? "default" : "pointer");
+
           var input = _select(this.nextSibling).property("checked", checked).call(stylize, that._radioStyle).style("cursor", checked ? "default" : "pointer").on("change.d3plus", function () {
             that.checked(this.value);
             radios.each(function (d, i) {
               var checked = "".concat(that._value(d, i)) === "".concat(that._checked);
+
               _select(this).classed("active", checked).style("cursor", checked ? "default" : "pointer");
+
               _select(this.nextSibling).style("cursor", checked ? "default" : "pointer");
             });
           });
@@ -44193,29 +42685,29 @@
     return Radio;
   }(BaseClass);
 
-  function _typeof$i(obj) {
+  function _typeof$h(obj) {
     "@babel/helpers - typeof";
 
     if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") {
-      _typeof$i = function _typeof(obj) {
+      _typeof$h = function _typeof(obj) {
         return typeof obj;
       };
     } else {
-      _typeof$i = function _typeof(obj) {
+      _typeof$h = function _typeof(obj) {
         return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
       };
     }
 
-    return _typeof$i(obj);
+    return _typeof$h(obj);
   }
 
-  function _classCallCheck$g(instance, Constructor) {
+  function _classCallCheck$f(instance, Constructor) {
     if (!(instance instanceof Constructor)) {
       throw new TypeError("Cannot call a class as a function");
     }
   }
 
-  function _defineProperties$g(target, props) {
+  function _defineProperties$f(target, props) {
     for (var i = 0; i < props.length; i++) {
       var descriptor = props[i];
       descriptor.enumerable = descriptor.enumerable || false;
@@ -44225,13 +42717,13 @@
     }
   }
 
-  function _createClass$g(Constructor, protoProps, staticProps) {
-    if (protoProps) _defineProperties$g(Constructor.prototype, protoProps);
-    if (staticProps) _defineProperties$g(Constructor, staticProps);
+  function _createClass$f(Constructor, protoProps, staticProps) {
+    if (protoProps) _defineProperties$f(Constructor.prototype, protoProps);
+    if (staticProps) _defineProperties$f(Constructor, staticProps);
     return Constructor;
   }
 
-  function _inherits$e(subClass, superClass) {
+  function _inherits$d(subClass, superClass) {
     if (typeof superClass !== "function" && superClass !== null) {
       throw new TypeError("Super expression must either be null or a function");
     }
@@ -44243,46 +42735,46 @@
         configurable: true
       }
     });
-    if (superClass) _setPrototypeOf$e(subClass, superClass);
+    if (superClass) _setPrototypeOf$d(subClass, superClass);
   }
 
-  function _setPrototypeOf$e(o, p) {
-    _setPrototypeOf$e = Object.setPrototypeOf || function _setPrototypeOf(o, p) {
+  function _setPrototypeOf$d(o, p) {
+    _setPrototypeOf$d = Object.setPrototypeOf || function _setPrototypeOf(o, p) {
       o.__proto__ = p;
       return o;
     };
 
-    return _setPrototypeOf$e(o, p);
+    return _setPrototypeOf$d(o, p);
   }
 
-  function _createSuper$e(Derived) {
-    var hasNativeReflectConstruct = _isNativeReflectConstruct$e();
+  function _createSuper$d(Derived) {
+    var hasNativeReflectConstruct = _isNativeReflectConstruct$d();
 
     return function _createSuperInternal() {
-      var Super = _getPrototypeOf$e(Derived),
+      var Super = _getPrototypeOf$d(Derived),
           result;
 
       if (hasNativeReflectConstruct) {
-        var NewTarget = _getPrototypeOf$e(this).constructor;
+        var NewTarget = _getPrototypeOf$d(this).constructor;
 
         result = Reflect.construct(Super, arguments, NewTarget);
       } else {
         result = Super.apply(this, arguments);
       }
 
-      return _possibleConstructorReturn$e(this, result);
+      return _possibleConstructorReturn$d(this, result);
     };
   }
 
-  function _possibleConstructorReturn$e(self, call) {
-    if (call && (_typeof$i(call) === "object" || typeof call === "function")) {
+  function _possibleConstructorReturn$d(self, call) {
+    if (call && (_typeof$h(call) === "object" || typeof call === "function")) {
       return call;
     }
 
-    return _assertThisInitialized$e(self);
+    return _assertThisInitialized$d(self);
   }
 
-  function _assertThisInitialized$e(self) {
+  function _assertThisInitialized$d(self) {
     if (self === void 0) {
       throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
     }
@@ -44290,7 +42782,7 @@
     return self;
   }
 
-  function _isNativeReflectConstruct$e() {
+  function _isNativeReflectConstruct$d() {
     if (typeof Reflect === "undefined" || !Reflect.construct) return false;
     if (Reflect.construct.sham) return false;
     if (typeof Proxy === "function") return true;
@@ -44303,11 +42795,11 @@
     }
   }
 
-  function _getPrototypeOf$e(o) {
-    _getPrototypeOf$e = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) {
+  function _getPrototypeOf$d(o) {
+    _getPrototypeOf$d = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) {
       return o.__proto__ || Object.getPrototypeOf(o);
     };
-    return _getPrototypeOf$e(o);
+    return _getPrototypeOf$d(o);
   }
   /**
       @class Select
@@ -44315,10 +42807,11 @@
       @desc Creates an HTML select element.
   */
 
-  var Select = /*#__PURE__*/function (_BaseClass) {
-    _inherits$e(Select, _BaseClass);
 
-    var _super = _createSuper$e(Select);
+  var Select = /*#__PURE__*/function (_BaseClass) {
+    _inherits$d(Select, _BaseClass);
+
+    var _super = _createSuper$d(Select);
     /**
         @memberof Select
         @desc Invoked when creating a new class instance, and sets any default parameters.
@@ -44329,7 +42822,7 @@
     function Select() {
       var _this;
 
-      _classCallCheck$g(this, Select);
+      _classCallCheck$f(this, Select);
 
       _this = _super.call(this);
       _this._labelStyle = {
@@ -44362,7 +42855,7 @@
     */
 
 
-    _createClass$g(Select, [{
+    _createClass$f(Select, [{
       key: "render",
       value: function render() {
         var _this2 = this;
@@ -44511,22 +43004,20 @@
 
     return Select;
   }(BaseClass);
-
   /**
       @desc Sort an array of numbers by their numeric value, ensuring that the array is not changed in place.
-
-  This is necessary because the default behavior of .sort in JavaScript is to sort arrays as string values
-
-  [1, 10, 12, 102, 20].sort()
+   This is necessary because the default behavior of .sort in JavaScript is to sort arrays as string values
+   [1, 10, 12, 102, 20].sort()
   // output
   [1, 10, 102, 12, 20]
-
-      @param {Array<number>} array input array
+       @param {Array<number>} array input array
       @return {Array<number>} sorted array
       @private
       @example
   numericSort([3, 2, 1]) // => [1, 2, 3]
   */
+
+
   function numericSort(array) {
     return array.slice().sort(function (a, b) {
       return a - b;
@@ -44534,8 +43025,7 @@
   }
   /**
       For a sorted input, counting the number of unique values is possible in constant time and constant memory. This is a simple implementation of the algorithm.
-
-      Values are compared with `===`, so objects and non-primitive objects are not handled in any special way.
+       Values are compared with `===`, so objects and non-primitive objects are not handled in any special way.
       @private
       @param {Array} input an array of primitive values.
       @returns {number} count of unique values
@@ -44703,18 +43193,12 @@
   }
   /**
       @desc Ported to ES6 from the excellent [simple-statistics](https://github.com/simple-statistics/simple-statistics) packages.
-
-  Ckmeans clustering is an improvement on heuristic-based clustering approaches like Jenks. The algorithm was developed in [Haizhou Wang and Mingzhou Song](http://journal.r-project.org/archive/2011-2/RJournal_2011-2_Wang+Song.pdf) as a [dynamic programming](https://en.wikipedia.org/wiki/Dynamic_programming) approach to the problem of clustering numeric data into groups with the least within-group sum-of-squared-deviations.
-
-  Minimizing the difference within groups - what Wang & Song refer to as `withinss`, or within sum-of-squares, means that groups are optimally homogenous within and the data is split into representative groups. This is very useful for visualization, where you may want to represent a continuous variable in discrete color or style groups. This function can provide groups that emphasize differences between data.
-
-  Being a dynamic approach, this algorithm is based on two matrices that store incrementally-computed values for squared deviations and backtracking indexes.
-
-  This implementation is based on Ckmeans 3.4.6, which introduced a new divide and conquer approach that improved runtime from O(kn^2) to O(kn log(n)).
-
-  Unlike the [original implementation](https://cran.r-project.org/web/packages/Ckmeans.1d.dp/index.html), this implementation does not include any code to automatically determine the optimal number of clusters: this information needs to be explicitly provided.
-
-  ### References
+   Ckmeans clustering is an improvement on heuristic-based clustering approaches like Jenks. The algorithm was developed in [Haizhou Wang and Mingzhou Song](http://journal.r-project.org/archive/2011-2/RJournal_2011-2_Wang+Song.pdf) as a [dynamic programming](https://en.wikipedia.org/wiki/Dynamic_programming) approach to the problem of clustering numeric data into groups with the least within-group sum-of-squared-deviations.
+   Minimizing the difference within groups - what Wang & Song refer to as `withinss`, or within sum-of-squares, means that groups are optimally homogenous within and the data is split into representative groups. This is very useful for visualization, where you may want to represent a continuous variable in discrete color or style groups. This function can provide groups that emphasize differences between data.
+   Being a dynamic approach, this algorithm is based on two matrices that store incrementally-computed values for squared deviations and backtracking indexes.
+   This implementation is based on Ckmeans 3.4.6, which introduced a new divide and conquer approach that improved runtime from O(kn^2) to O(kn log(n)).
+   Unlike the [original implementation](https://cran.r-project.org/web/packages/Ckmeans.1d.dp/index.html), this implementation does not include any code to automatically determine the optimal number of clusters: this information needs to be explicitly provided.
+   ### References
   _Ckmeans.1d.dp: Optimal k-means Clustering in One Dimension by Dynamic
   Programming_ Haizhou Wang and Mingzhou Song ISSN 2073-4859 from The R Journal Vol. 3/2, December 2011
       @param {Array<number>} data input data, as an array of number values
@@ -44727,7 +43211,7 @@
   */
 
 
-  function ckmeans (data, nClusters) {
+  function ckmeans(data, nClusters) {
     if (nClusters > data.length) {
       throw new Error("Cannot generate more classes than there are data values");
     }
@@ -44758,29 +43242,29 @@
     return clusters;
   }
 
-  function _typeof$j(obj) {
+  function _typeof$i(obj) {
     "@babel/helpers - typeof";
 
     if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") {
-      _typeof$j = function _typeof(obj) {
+      _typeof$i = function _typeof(obj) {
         return typeof obj;
       };
     } else {
-      _typeof$j = function _typeof(obj) {
+      _typeof$i = function _typeof(obj) {
         return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
       };
     }
 
-    return _typeof$j(obj);
+    return _typeof$i(obj);
   }
 
-  function _classCallCheck$h(instance, Constructor) {
+  function _classCallCheck$g(instance, Constructor) {
     if (!(instance instanceof Constructor)) {
       throw new TypeError("Cannot call a class as a function");
     }
   }
 
-  function _defineProperties$h(target, props) {
+  function _defineProperties$g(target, props) {
     for (var i = 0; i < props.length; i++) {
       var descriptor = props[i];
       descriptor.enumerable = descriptor.enumerable || false;
@@ -44790,13 +43274,13 @@
     }
   }
 
-  function _createClass$h(Constructor, protoProps, staticProps) {
-    if (protoProps) _defineProperties$h(Constructor.prototype, protoProps);
-    if (staticProps) _defineProperties$h(Constructor, staticProps);
+  function _createClass$g(Constructor, protoProps, staticProps) {
+    if (protoProps) _defineProperties$g(Constructor.prototype, protoProps);
+    if (staticProps) _defineProperties$g(Constructor, staticProps);
     return Constructor;
   }
 
-  function _inherits$f(subClass, superClass) {
+  function _inherits$e(subClass, superClass) {
     if (typeof superClass !== "function" && superClass !== null) {
       throw new TypeError("Super expression must either be null or a function");
     }
@@ -44808,46 +43292,46 @@
         configurable: true
       }
     });
-    if (superClass) _setPrototypeOf$f(subClass, superClass);
+    if (superClass) _setPrototypeOf$e(subClass, superClass);
   }
 
-  function _setPrototypeOf$f(o, p) {
-    _setPrototypeOf$f = Object.setPrototypeOf || function _setPrototypeOf(o, p) {
+  function _setPrototypeOf$e(o, p) {
+    _setPrototypeOf$e = Object.setPrototypeOf || function _setPrototypeOf(o, p) {
       o.__proto__ = p;
       return o;
     };
 
-    return _setPrototypeOf$f(o, p);
+    return _setPrototypeOf$e(o, p);
   }
 
-  function _createSuper$f(Derived) {
-    var hasNativeReflectConstruct = _isNativeReflectConstruct$f();
+  function _createSuper$e(Derived) {
+    var hasNativeReflectConstruct = _isNativeReflectConstruct$e();
 
     return function _createSuperInternal() {
-      var Super = _getPrototypeOf$f(Derived),
+      var Super = _getPrototypeOf$e(Derived),
           result;
 
       if (hasNativeReflectConstruct) {
-        var NewTarget = _getPrototypeOf$f(this).constructor;
+        var NewTarget = _getPrototypeOf$e(this).constructor;
 
         result = Reflect.construct(Super, arguments, NewTarget);
       } else {
         result = Super.apply(this, arguments);
       }
 
-      return _possibleConstructorReturn$f(this, result);
+      return _possibleConstructorReturn$e(this, result);
     };
   }
 
-  function _possibleConstructorReturn$f(self, call) {
-    if (call && (_typeof$j(call) === "object" || typeof call === "function")) {
+  function _possibleConstructorReturn$e(self, call) {
+    if (call && (_typeof$i(call) === "object" || typeof call === "function")) {
       return call;
     }
 
-    return _assertThisInitialized$f(self);
+    return _assertThisInitialized$e(self);
   }
 
-  function _assertThisInitialized$f(self) {
+  function _assertThisInitialized$e(self) {
     if (self === void 0) {
       throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
     }
@@ -44855,7 +43339,7 @@
     return self;
   }
 
-  function _isNativeReflectConstruct$f() {
+  function _isNativeReflectConstruct$e() {
     if (typeof Reflect === "undefined" || !Reflect.construct) return false;
     if (Reflect.construct.sham) return false;
     if (typeof Proxy === "function") return true;
@@ -44868,11 +43352,11 @@
     }
   }
 
-  function _getPrototypeOf$f(o) {
-    _getPrototypeOf$f = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) {
+  function _getPrototypeOf$e(o) {
+    _getPrototypeOf$e = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) {
       return o.__proto__ || Object.getPrototypeOf(o);
     };
-    return _getPrototypeOf$f(o);
+    return _getPrototypeOf$e(o);
   }
   /**
       @class Legend
@@ -44880,10 +43364,11 @@
       @desc Creates an SVG scale based on an array of data. If *data* is specified, immediately draws based on the specified array and returns the current class instance. If *data* is not specified on instantiation, it can be passed/updated after instantiation using the [data](#shape.data) method.
   */
 
-  var Legend = /*#__PURE__*/function (_BaseClass) {
-    _inherits$f(Legend, _BaseClass);
 
-    var _super = _createSuper$f(Legend);
+  var Legend = /*#__PURE__*/function (_BaseClass) {
+    _inherits$e(Legend, _BaseClass);
+
+    var _super = _createSuper$e(Legend);
     /**
         @memberof Legend
         @desc Invoked when creating a new class instance, and sets any default parameters.
@@ -44894,7 +43379,7 @@
     function Legend() {
       var _this;
 
-      _classCallCheck$h(this, Legend);
+      _classCallCheck$g(this, Legend);
 
       _this = _super.call(this);
       _this._align = "center";
@@ -44982,7 +43467,7 @@
       return _this;
     }
 
-    _createClass$h(Legend, [{
+    _createClass$g(Legend, [{
       key: "_fetchConfig",
       value: function _fetchConfig(key, d, i) {
         var val = this._shapeConfig[key] !== undefined ? this._shapeConfig[key] : this._shapeConfig.labelConfig[key];
@@ -45518,23 +44003,23 @@
     return Legend;
   }(BaseClass);
 
-  function _typeof$k(obj) {
+  function _typeof$j(obj) {
     "@babel/helpers - typeof";
 
     if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") {
-      _typeof$k = function _typeof(obj) {
+      _typeof$j = function _typeof(obj) {
         return typeof obj;
       };
     } else {
-      _typeof$k = function _typeof(obj) {
+      _typeof$j = function _typeof(obj) {
         return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
       };
     }
 
-    return _typeof$k(obj);
+    return _typeof$j(obj);
   }
 
-  function _defineProperty$3(obj, key, value) {
+  function _defineProperty$2(obj, key, value) {
     if (key in obj) {
       Object.defineProperty(obj, key, {
         value: value,
@@ -45549,13 +44034,13 @@
     return obj;
   }
 
-  function _classCallCheck$i(instance, Constructor) {
+  function _classCallCheck$h(instance, Constructor) {
     if (!(instance instanceof Constructor)) {
       throw new TypeError("Cannot call a class as a function");
     }
   }
 
-  function _defineProperties$i(target, props) {
+  function _defineProperties$h(target, props) {
     for (var i = 0; i < props.length; i++) {
       var descriptor = props[i];
       descriptor.enumerable = descriptor.enumerable || false;
@@ -45565,13 +44050,13 @@
     }
   }
 
-  function _createClass$i(Constructor, protoProps, staticProps) {
-    if (protoProps) _defineProperties$i(Constructor.prototype, protoProps);
-    if (staticProps) _defineProperties$i(Constructor, staticProps);
+  function _createClass$h(Constructor, protoProps, staticProps) {
+    if (protoProps) _defineProperties$h(Constructor.prototype, protoProps);
+    if (staticProps) _defineProperties$h(Constructor, staticProps);
     return Constructor;
   }
 
-  function _inherits$g(subClass, superClass) {
+  function _inherits$f(subClass, superClass) {
     if (typeof superClass !== "function" && superClass !== null) {
       throw new TypeError("Super expression must either be null or a function");
     }
@@ -45583,46 +44068,46 @@
         configurable: true
       }
     });
-    if (superClass) _setPrototypeOf$g(subClass, superClass);
+    if (superClass) _setPrototypeOf$f(subClass, superClass);
   }
 
-  function _setPrototypeOf$g(o, p) {
-    _setPrototypeOf$g = Object.setPrototypeOf || function _setPrototypeOf(o, p) {
+  function _setPrototypeOf$f(o, p) {
+    _setPrototypeOf$f = Object.setPrototypeOf || function _setPrototypeOf(o, p) {
       o.__proto__ = p;
       return o;
     };
 
-    return _setPrototypeOf$g(o, p);
+    return _setPrototypeOf$f(o, p);
   }
 
-  function _createSuper$g(Derived) {
-    var hasNativeReflectConstruct = _isNativeReflectConstruct$g();
+  function _createSuper$f(Derived) {
+    var hasNativeReflectConstruct = _isNativeReflectConstruct$f();
 
     return function _createSuperInternal() {
-      var Super = _getPrototypeOf$g(Derived),
+      var Super = _getPrototypeOf$f(Derived),
           result;
 
       if (hasNativeReflectConstruct) {
-        var NewTarget = _getPrototypeOf$g(this).constructor;
+        var NewTarget = _getPrototypeOf$f(this).constructor;
 
         result = Reflect.construct(Super, arguments, NewTarget);
       } else {
         result = Super.apply(this, arguments);
       }
 
-      return _possibleConstructorReturn$g(this, result);
+      return _possibleConstructorReturn$f(this, result);
     };
   }
 
-  function _possibleConstructorReturn$g(self, call) {
-    if (call && (_typeof$k(call) === "object" || typeof call === "function")) {
+  function _possibleConstructorReturn$f(self, call) {
+    if (call && (_typeof$j(call) === "object" || typeof call === "function")) {
       return call;
     }
 
-    return _assertThisInitialized$g(self);
+    return _assertThisInitialized$f(self);
   }
 
-  function _assertThisInitialized$g(self) {
+  function _assertThisInitialized$f(self) {
     if (self === void 0) {
       throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
     }
@@ -45630,7 +44115,7 @@
     return self;
   }
 
-  function _isNativeReflectConstruct$g() {
+  function _isNativeReflectConstruct$f() {
     if (typeof Reflect === "undefined" || !Reflect.construct) return false;
     if (Reflect.construct.sham) return false;
     if (typeof Proxy === "function") return true;
@@ -45643,11 +44128,11 @@
     }
   }
 
-  function _getPrototypeOf$g(o) {
-    _getPrototypeOf$g = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) {
+  function _getPrototypeOf$f(o) {
+    _getPrototypeOf$f = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) {
       return o.__proto__ || Object.getPrototypeOf(o);
     };
-    return _getPrototypeOf$g(o);
+    return _getPrototypeOf$f(o);
   }
   /**
       @class ColorScale
@@ -45655,10 +44140,11 @@
       @desc Creates an SVG scale based on an array of data. If *data* is specified, immediately draws based on the specified array and returns the current class instance. If *data* is not specified on instantiation, it can be passed/updated after instantiation using the [data](#shape.data) method.
   */
 
-  var ColorScale = /*#__PURE__*/function (_BaseClass) {
-    _inherits$g(ColorScale, _BaseClass);
 
-    var _super = _createSuper$g(ColorScale);
+  var ColorScale = /*#__PURE__*/function (_BaseClass) {
+    _inherits$f(ColorScale, _BaseClass);
+
+    var _super = _createSuper$f(ColorScale);
     /**
         @memberof ColorScale
         @desc Invoked when creating a new class instance, and sets any default parameters.
@@ -45669,7 +44155,7 @@
     function ColorScale() {
       var _this;
 
-      _classCallCheck$i(this, ColorScale);
+      _classCallCheck$h(this, ColorScale);
 
       _this = _super.call(this);
       _this._axisClass = new Axis();
@@ -45688,6 +44174,28 @@
       _this._align = "middle";
       _this._buckets = 5;
       _this._bucketAxis = false;
+
+      _this._bucketFormat = function (tick, i, ticks, allValues) {
+        var format = _this._axisConfig.tickFormat ? _this._axisConfig.tickFormat : formatAbbreviate;
+        var next = ticks[i + 1];
+        var prev = i ? ticks[i - 1] : false;
+        var last = i === ticks.length - 1;
+
+        if (tick === next || last) {
+          var suffix = last && tick < max(allValues) ? "+" : "";
+          return "".concat(format(tick)).concat(suffix);
+        } else {
+          var mod = next ? next / 100 : tick / 100;
+          var pow = mod >= 1 || mod <= -1 ? Math.round(mod).toString().length - 1 : mod.toString().split(".")[1].replace(/([1-9])[1-9].*$/, "$1").length * -1;
+          var ten = Math.pow(10, pow);
+          return prev === tick && i === 1 ? "".concat(format(min([tick + ten, allValues.find(function (d) {
+            return d > tick && d < next;
+          })])), " - ").concat(format(next)) : "".concat(format(tick), " - ").concat(format(max([next - ten, allValues.reverse().find(function (d) {
+            return d > tick && d < next;
+          })])));
+        }
+      };
+
       _this._centered = true;
       _this._colorMax = "#0C8040";
       _this._colorMid = "#f7f7f7";
@@ -45715,7 +44223,7 @@
         y: 0
       };
       _this._padding = 5;
-      _this._rectClass = new Rect().parent(_assertThisInitialized$g(_this));
+      _this._rectClass = new Rect().parent(_assertThisInitialized$f(_this));
       _this._rectConfig = {
         stroke: "#444",
         strokeWidth: 1
@@ -45734,7 +44242,7 @@
     */
 
 
-    _createClass$i(ColorScale, [{
+    _createClass$h(ColorScale, [{
       key: "render",
       value: function render(callback) {
         var _this2 = this;
@@ -45758,13 +44266,14 @@
         var negative = domain[0] < this._midpoint;
         var positive = domain[1] > this._midpoint;
         var diverging = negative && positive;
+        var numBuckets = this._buckets instanceof Array ? this._buckets.length : this._buckets;
         var colors = this._color,
             labels,
             ticks;
 
         if (colors && !(colors instanceof Array)) {
-          colors = range(0, this._buckets, 1).map(function (i) {
-            return colorLighter(colors, (i + 1) / _this2._buckets);
+          colors = range(0, numBuckets, 1).map(function (i) {
+            return colorLighter(colors, (i + 1) / numBuckets);
           }).reverse();
         }
 
@@ -45773,32 +44282,37 @@
             return d !== null && typeof d === "number";
           });
 
-          var buckets = min([colors ? colors.length : this._buckets, data.length]);
+          var buckets = min([colors ? colors.length : numBuckets, data.length]);
           var jenks = [];
 
-          if (diverging && this._centered) {
-            var half = Math.floor(buckets / 2);
-            var residual = buckets % 2;
-            var negatives = data.filter(function (d) {
-              return d < _this2._midpoint;
-            });
-            var negativesDeviation = deviation(negatives);
-            var positives = data.concat(this._midpoint).filter(function (d) {
-              return d >= _this2._midpoint;
-            });
-            var positivesDeviation = deviation(positives);
-            var isNegativeMax = negativesDeviation > positivesDeviation ? 1 : 0;
-            var isPositiveMax = positivesDeviation > negativesDeviation ? 1 : 0;
-            var negativeJenks = ckmeans(negatives, half + residual * isNegativeMax);
-            var positiveJenks = ckmeans(positives, half + residual * isPositiveMax);
-            jenks = negativeJenks.concat(positiveJenks);
+          if (this._buckets instanceof Array) {
+            ticks = this._buckets;
           } else {
-            jenks = ckmeans(data, buckets);
+            if (diverging && this._centered) {
+              var half = Math.floor(buckets / 2);
+              var residual = buckets % 2;
+              var negatives = data.filter(function (d) {
+                return d < _this2._midpoint;
+              });
+              var negativesDeviation = deviation(negatives);
+              var positives = data.concat(this._midpoint).filter(function (d) {
+                return d >= _this2._midpoint;
+              });
+              var positivesDeviation = deviation(positives);
+              var isNegativeMax = negativesDeviation > positivesDeviation ? 1 : 0;
+              var isPositiveMax = positivesDeviation > negativesDeviation ? 1 : 0;
+              var negativeJenks = ckmeans(negatives, half + residual * isNegativeMax);
+              var positiveJenks = ckmeans(positives, half + residual * isPositiveMax);
+              jenks = negativeJenks.concat(positiveJenks);
+            } else {
+              jenks = ckmeans(data, buckets);
+            }
+
+            ticks = jenks.map(function (c) {
+              return c[0];
+            });
           }
 
-          ticks = arrayMerge(jenks.map(function (c, i) {
-            return i === jenks.length - 1 ? [c[0], c[c.length - 1]] : [c[0]];
-          }));
           var tickSet = new Set(ticks);
 
           if (ticks.length !== tickSet.size) {
@@ -45835,8 +44349,8 @@
 
               colors = negativeColors.concat(spanningColors).concat(positiveColors);
             } else {
-              colors = range(0, this._buckets, 1).map(function (i) {
-                return colorLighter(_this2._colorMax, i / _this2._buckets);
+              colors = range(0, numBuckets, 1).map(function (i) {
+                return colorLighter(_this2._colorMax, i / numBuckets);
               }).reverse();
             }
           }
@@ -45845,18 +44359,19 @@
             colors = colors.slice(buckets - data.length);
           }
 
-          this._colorScale = threshold().domain(ticks).range(["black"].concat(colors).concat(colors[colors.length - 1]));
+          colors = [colors[0]].concat(colors);
+          this._colorScale = threshold().domain(ticks).range(colors);
         } else {
-          var _buckets;
+          var _buckets = this._buckets instanceof Array ? this._buckets : undefined;
 
           if (diverging && !colors) {
-            var _half = Math.floor(this._buckets / 2);
+            var _half = Math.floor(numBuckets / 2);
 
             var _negativeColors = range(0, _half, 1).map(function (i) {
               return !i ? _this2._colorMin : colorLighter(_this2._colorMin, i / _half);
             });
 
-            var _spanningColors = (this._buckets % 2 ? [0] : []).map(function () {
+            var _spanningColors = (numBuckets % 2 ? [0] : []).map(function () {
               return _this2._colorMid;
             });
 
@@ -45865,14 +44380,17 @@
             }).reverse();
 
             colors = _negativeColors.concat(_spanningColors).concat(_positiveColors);
-            var step = (colors.length - 1) / 2;
-            _buckets = [domain[0], this._midpoint, domain[1]];
-            _buckets = range(domain[0], this._midpoint, -(domain[0] - this._midpoint) / step).concat(range(this._midpoint, domain[1], (domain[1] - this._midpoint) / step)).concat([domain[1]]);
+
+            if (!_buckets) {
+              var step = (colors.length - 1) / 2;
+              _buckets = [domain[0], this._midpoint, domain[1]];
+              _buckets = range(domain[0], this._midpoint, -(domain[0] - this._midpoint) / step).concat(range(this._midpoint, domain[1], (domain[1] - this._midpoint) / step)).concat([domain[1]]);
+            }
           } else {
             if (!colors) {
               if (this._scale === "buckets" || this._scale === "quantile") {
-                colors = range(0, this._buckets, 1).map(function (i) {
-                  return colorLighter(negative ? _this2._colorMin : _this2._colorMax, i / _this2._buckets);
+                colors = range(0, numBuckets, 1).map(function (i) {
+                  return colorLighter(negative ? _this2._colorMin : _this2._colorMax, i / numBuckets);
                 });
                 if (positive) colors = colors.reverse();
               } else {
@@ -45880,27 +44398,30 @@
               }
             }
 
-            if (this._scale === "quantile") {
-              var _step = 1 / (colors.length - 1);
+            if (!_buckets) {
+              if (this._scale === "quantile") {
+                var _step = 1 / (colors.length - 1);
 
-              _buckets = range(0, 1 + _step / 2, _step).map(function (d) {
-                return quantile(allValues, d);
-              });
-            } else if (diverging && this._color && this._centered) {
-              var negativeStep = (this._midpoint - domain[0]) / Math.floor(colors.length / 2);
-              var positiveStep = (domain[1] - this._midpoint) / Math.floor(colors.length / 2);
-              var negativeBuckets = range(domain[0], this._midpoint, negativeStep);
-              var positiveBuckets = range(this._midpoint, domain[1] + positiveStep / 2, positiveStep);
-              _buckets = negativeBuckets.concat(positiveBuckets);
-            } else {
-              var _step2 = (domain[1] - domain[0]) / (colors.length - 1);
+                _buckets = range(0, 1 + _step / 2, _step).map(function (d) {
+                  return quantile(allValues, d);
+                });
+              } else if (diverging && this._color && this._centered) {
+                var negativeStep = (this._midpoint - domain[0]) / Math.floor(colors.length / 2);
+                var positiveStep = (domain[1] - this._midpoint) / Math.floor(colors.length / 2);
+                var negativeBuckets = range(domain[0], this._midpoint, negativeStep);
+                var positiveBuckets = range(this._midpoint, domain[1] + positiveStep / 2, positiveStep);
+                _buckets = negativeBuckets.concat(positiveBuckets);
+              } else {
+                var _step2 = (domain[1] - domain[0]) / (colors.length - 1);
 
-              _buckets = range(domain[0], domain[1] + _step2 / 2, _step2);
+                _buckets = range(domain[0], domain[1] + _step2 / 2, _step2);
+              }
             }
           }
 
           if (this._scale === "buckets" || this._scale === "quantile") {
-            ticks = _buckets.concat([_buckets[_buckets.length - 1]]);
+            ticks = _buckets;
+            colors = [colors[0]].concat(colors);
           } else if (this._scale === "log") {
             var _negativeBuckets = _buckets.filter(function (d) {
               return d < 0;
@@ -45937,7 +44458,7 @@
             if (_buckets.includes(0)) _buckets[_buckets.indexOf(0)] = 1;
           }
 
-          this._colorScale = linear$1().domain(_buckets).range(colors);
+          this._colorScale = (this._scale === "buckets" || this._scale === "quantile" ? threshold : linear$1)().domain(_buckets).range(colors);
         }
 
         var gradient = this._bucketAxis || !["buckets", "jenks", "quantile"].includes(this._scale);
@@ -45972,8 +44493,19 @@
             x: 0,
             y: 0
           };
+          var axisDomain = domain.slice();
+
+          if (this._bucketAxis) {
+            var last = axisDomain[axisDomain.length - 1];
+            var prev = axisDomain[axisDomain.length - 2];
+            var mod = last ? last / 10 : prev / 10;
+            var pow = mod >= 1 || mod <= -1 ? Math.round(mod).toString().length - 1 : mod.toString().split(".")[1].replace(/([1-9])[1-9].*$/, "$1").length * -1;
+            var ten = Math.pow(10, pow);
+            axisDomain[axisDomain.length - 1] = last + ten;
+          }
+
           var axisConfig = assign({
-            domain: horizontal ? domain : domain.reverse(),
+            domain: axisDomain,
             duration: this._duration,
             height: this._height,
             labels: labels || ticks,
@@ -46065,19 +44597,19 @@
           defsEnter.append("linearGradient").attr("id", "gradient-".concat(this._uuid));
           defs = defsEnter.merge(defs);
           defs.select("linearGradient").attr("".concat(x, "1"), horizontal ? "0%" : "100%").attr("".concat(x, "2"), horizontal ? "100%" : "0%").attr("".concat(y, "1"), "0%").attr("".concat(y, "2"), "0%");
-          var stops = defs.select("linearGradient").selectAll("stop").data(horizontal ? colors : colors);
+          var stops = defs.select("linearGradient").selectAll("stop").data(colors);
 
           var scaleDomain = this._colorScale.domain();
 
           var offsetScale = linear$1().domain(scaleRange).range(horizontal ? [0, 100] : [100, 0]);
           stops.enter().append("stop").merge(stops).attr("offset", function (d, i) {
-            return "".concat(offsetScale(axisScale(scaleDomain[i])), "%");
+            return "".concat(i <= scaleDomain.length - 1 ? offsetScale(axisScale(scaleDomain[i])) : 100, "%");
           }).attr("stop-color", String);
           /** determines the width of buckets */
 
           var bucketWidth = function bucketWidth(d, i) {
-            var w = Math.abs(axisScale(ticks[i + 1]) - axisScale(d));
-            return w || 2;
+            var next = ticks[i + 1] || axisDomain[axisDomain.length - 1];
+            return Math.abs(axisScale(next) - axisScale(d));
           };
 
           var rectConfig = assign((_assign = {
@@ -46085,11 +44617,11 @@
             fill: ticks ? function (d) {
               return _this2._colorScale(d);
             } : "url(#gradient-".concat(this._uuid, ")")
-          }, _defineProperty$3(_assign, x, ticks ? function (d, i) {
+          }, _defineProperty$2(_assign, x, ticks ? function (d, i) {
             return axisScale(d) + bucketWidth(d, i) / 2 - (["left", "right"].includes(_this2._orient) ? bucketWidth(d, i) : 0);
-          } : scaleRange[0] + (scaleRange[1] - scaleRange[0]) / 2 + offsets[x]), _defineProperty$3(_assign, y, this._outerBounds[y] + (["top", "left"].includes(this._orient) ? axisBounds[height] : 0) + this._size / 2 + offsets[y]), _defineProperty$3(_assign, width, ticks ? bucketWidth : scaleRange[1] - scaleRange[0]), _defineProperty$3(_assign, height, this._size), _assign), this._rectConfig);
+          } : scaleRange[0] + (scaleRange[1] - scaleRange[0]) / 2 + offsets[x]), _defineProperty$2(_assign, y, this._outerBounds[y] + (["top", "left"].includes(this._orient) ? axisBounds[height] : 0) + this._size / 2 + offsets[y]), _defineProperty$2(_assign, width, ticks ? bucketWidth : scaleRange[1] - scaleRange[0]), _defineProperty$2(_assign, height, this._size), _assign), this._rectConfig);
 
-          this._rectClass.data(ticks ? ticks.slice(0, ticks.length - 1) : [0]).id(function (d, i) {
+          this._rectClass.data(ticks || [0]).id(function (d, i) {
             return i;
           }).select(rectGroup.node()).config(rectConfig).render();
 
@@ -46107,16 +44639,13 @@
           elem("g.d3plus-ColorScale-axis", Object.assign({
             condition: gradient
           }, groupParams));
-          var format = this._axisConfig.tickFormat ? this._axisConfig.tickFormat : formatAbbreviate;
           var legendData = ticks.reduce(function (arr, tick, i) {
-            if (i !== ticks.length - 1) {
-              var next = ticks[i + 1];
-              arr.push({
-                color: colors[i],
-                id: tick === next ? "".concat(format(tick), "+") : "".concat(format(tick), " - ").concat(format(next))
-              });
-            }
+            var label = _this2._bucketFormat.bind(_this2)(tick, i, ticks, allValues);
 
+            arr.push({
+              color: colors[i + 1],
+              id: label
+            });
             return arr;
           }, []);
           var legendConfig = assign({
@@ -46176,8 +44705,8 @@
       }
       /**
           @memberof ColorScale
-          @desc The number of discrete buckets to create in a bucketed color scale. Will be overridden by any custom Array of colors passed to the `color` method.
-          @param {Number} [*value* = 5]
+          @desc The number of discrete buckets to create in a bucketed color scale. Will be overridden by any custom Array of colors passed to the `color` method. Optionally, users can supply an Array of values used to separate buckets, such as `[0, 10, 25, 50, 90]` for a percentage scale. This value would create 4 buckets, with each value representing the break point between each bucket (so 5 values makes 4 buckets).
+          @param {Number|Array} [*value* = 5]
           @chainable
       */
 
@@ -46197,6 +44726,18 @@
       key: "bucketAxis",
       value: function bucketAxis(_) {
         return arguments.length ? (this._bucketAxis = _, this) : this._bucketAxis;
+      }
+      /**
+          @memberof ColorScale
+          @desc A function for formatting the labels associated to each bucket in a bucket-type scale ("jenks", "quantile", etc). The function is passed four arguments: the start value of the current bucket, it's index in the full Array of buckets, the full Array of buckets, and an Array of every value present in the data used to construct the buckets. Keep in mind that the end value for the bucket is not actually the next bucket in the list, but includes every value up until that next bucket value (less than, but not equal to). By default, d3plus will make the end value slightly less than it's current value, so that it does not overlap with the start label for the next bucket.
+          @param {Function} [*value*]
+          @chainable
+      */
+
+    }, {
+      key: "bucketFormat",
+      value: function bucketFormat(_) {
+        return arguments.length ? (this._bucketFormat = _, this) : this._bucketFormat;
       }
       /**
           @memberof ColorScale
@@ -46471,29 +45012,29 @@
     return ColorScale;
   }(BaseClass);
 
-  function _typeof$l(obj) {
+  function _typeof$k(obj) {
     "@babel/helpers - typeof";
 
     if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") {
-      _typeof$l = function _typeof(obj) {
+      _typeof$k = function _typeof(obj) {
         return typeof obj;
       };
     } else {
-      _typeof$l = function _typeof(obj) {
+      _typeof$k = function _typeof(obj) {
         return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
       };
     }
 
-    return _typeof$l(obj);
+    return _typeof$k(obj);
   }
 
-  function _classCallCheck$j(instance, Constructor) {
+  function _classCallCheck$i(instance, Constructor) {
     if (!(instance instanceof Constructor)) {
       throw new TypeError("Cannot call a class as a function");
     }
   }
 
-  function _defineProperties$j(target, props) {
+  function _defineProperties$i(target, props) {
     for (var i = 0; i < props.length; i++) {
       var descriptor = props[i];
       descriptor.enumerable = descriptor.enumerable || false;
@@ -46503,18 +45044,18 @@
     }
   }
 
-  function _createClass$j(Constructor, protoProps, staticProps) {
-    if (protoProps) _defineProperties$j(Constructor.prototype, protoProps);
-    if (staticProps) _defineProperties$j(Constructor, staticProps);
+  function _createClass$i(Constructor, protoProps, staticProps) {
+    if (protoProps) _defineProperties$i(Constructor.prototype, protoProps);
+    if (staticProps) _defineProperties$i(Constructor, staticProps);
     return Constructor;
   }
 
-  function _get$7(target, property, receiver) {
+  function _get$6(target, property, receiver) {
     if (typeof Reflect !== "undefined" && Reflect.get) {
-      _get$7 = Reflect.get;
+      _get$6 = Reflect.get;
     } else {
-      _get$7 = function _get(target, property, receiver) {
-        var base = _superPropBase$7(target, property);
+      _get$6 = function _get(target, property, receiver) {
+        var base = _superPropBase$6(target, property);
 
         if (!base) return;
         var desc = Object.getOwnPropertyDescriptor(base, property);
@@ -46527,19 +45068,19 @@
       };
     }
 
-    return _get$7(target, property, receiver || target);
+    return _get$6(target, property, receiver || target);
   }
 
-  function _superPropBase$7(object, property) {
+  function _superPropBase$6(object, property) {
     while (!Object.prototype.hasOwnProperty.call(object, property)) {
-      object = _getPrototypeOf$h(object);
+      object = _getPrototypeOf$g(object);
       if (object === null) break;
     }
 
     return object;
   }
 
-  function _inherits$h(subClass, superClass) {
+  function _inherits$g(subClass, superClass) {
     if (typeof superClass !== "function" && superClass !== null) {
       throw new TypeError("Super expression must either be null or a function");
     }
@@ -46551,46 +45092,46 @@
         configurable: true
       }
     });
-    if (superClass) _setPrototypeOf$h(subClass, superClass);
+    if (superClass) _setPrototypeOf$g(subClass, superClass);
   }
 
-  function _setPrototypeOf$h(o, p) {
-    _setPrototypeOf$h = Object.setPrototypeOf || function _setPrototypeOf(o, p) {
+  function _setPrototypeOf$g(o, p) {
+    _setPrototypeOf$g = Object.setPrototypeOf || function _setPrototypeOf(o, p) {
       o.__proto__ = p;
       return o;
     };
 
-    return _setPrototypeOf$h(o, p);
+    return _setPrototypeOf$g(o, p);
   }
 
-  function _createSuper$h(Derived) {
-    var hasNativeReflectConstruct = _isNativeReflectConstruct$h();
+  function _createSuper$g(Derived) {
+    var hasNativeReflectConstruct = _isNativeReflectConstruct$g();
 
     return function _createSuperInternal() {
-      var Super = _getPrototypeOf$h(Derived),
+      var Super = _getPrototypeOf$g(Derived),
           result;
 
       if (hasNativeReflectConstruct) {
-        var NewTarget = _getPrototypeOf$h(this).constructor;
+        var NewTarget = _getPrototypeOf$g(this).constructor;
 
         result = Reflect.construct(Super, arguments, NewTarget);
       } else {
         result = Super.apply(this, arguments);
       }
 
-      return _possibleConstructorReturn$h(this, result);
+      return _possibleConstructorReturn$g(this, result);
     };
   }
 
-  function _possibleConstructorReturn$h(self, call) {
-    if (call && (_typeof$l(call) === "object" || typeof call === "function")) {
+  function _possibleConstructorReturn$g(self, call) {
+    if (call && (_typeof$k(call) === "object" || typeof call === "function")) {
       return call;
     }
 
-    return _assertThisInitialized$h(self);
+    return _assertThisInitialized$g(self);
   }
 
-  function _assertThisInitialized$h(self) {
+  function _assertThisInitialized$g(self) {
     if (self === void 0) {
       throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
     }
@@ -46598,7 +45139,7 @@
     return self;
   }
 
-  function _isNativeReflectConstruct$h() {
+  function _isNativeReflectConstruct$g() {
     if (typeof Reflect === "undefined" || !Reflect.construct) return false;
     if (Reflect.construct.sham) return false;
     if (typeof Proxy === "function") return true;
@@ -46611,21 +45152,22 @@
     }
   }
 
-  function _getPrototypeOf$h(o) {
-    _getPrototypeOf$h = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) {
+  function _getPrototypeOf$g(o) {
+    _getPrototypeOf$g = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) {
       return o.__proto__ || Object.getPrototypeOf(o);
     };
-    return _getPrototypeOf$h(o);
+    return _getPrototypeOf$g(o);
   }
   /**
       @class Timeline
       @extends external:Axis
   */
 
-  var Timeline = /*#__PURE__*/function (_Axis) {
-    _inherits$h(Timeline, _Axis);
 
-    var _super = _createSuper$h(Timeline);
+  var Timeline = /*#__PURE__*/function (_Axis) {
+    _inherits$g(Timeline, _Axis);
+
+    var _super = _createSuper$g(Timeline);
     /**
         @memberof Timeline
         @desc Invoked when creating a new class instance, and overrides any default parameters inherited from Axis.
@@ -46636,7 +45178,7 @@
     function Timeline() {
       var _this;
 
-      _classCallCheck$j(this, Timeline);
+      _classCallCheck$i(this, Timeline);
 
       _this = _super.call(this);
       _this._barConfig = Object.assign({}, _this._barConfig, {
@@ -46706,7 +45248,7 @@
     */
 
 
-    _createClass$j(Timeline, [{
+    _createClass$i(Timeline, [{
       key: "_brushBrush",
       value: function _brushBrush() {
         if (event$1.sourceEvent && event$1.sourceEvent.offsetX && event$1.selection !== null && (!this._brushing || this._snapping)) {
@@ -46913,7 +45455,7 @@
         if (this._ticks) this._domain = this._buttonBehaviorCurrent === "ticks" ? [this._ticks[0], this._ticks[this._ticks.length - 1]] : this._ticks.map(date$2);
         this._labels = this._ticks;
 
-        _get$7(_getPrototypeOf$h(Timeline.prototype), "render", this).call(this, callback);
+        _get$6(_getPrototypeOf$g(Timeline.prototype), "render", this).call(this, callback);
 
         var offset = this._outerBounds[y],
             range = this._d3Scale.range();
@@ -47089,7 +45631,6 @@
 
     return Timeline;
   }(Axis);
-
   /**!
    * @fileOverview Kickass library to create and place poppers near their reference elements.
    * @version 1.16.1
@@ -47114,6 +45655,8 @@
    * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
    * SOFTWARE.
    */
+
+
   var isBrowser = typeof window !== 'undefined' && typeof document !== 'undefined' && typeof navigator !== 'undefined';
 
   var timeoutDuration = function () {
@@ -49705,29 +48248,29 @@
   Popper.placements = placements;
   Popper.Defaults = Defaults;
 
-  function _typeof$m(obj) {
+  function _typeof$l(obj) {
     "@babel/helpers - typeof";
 
     if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") {
-      _typeof$m = function _typeof(obj) {
+      _typeof$l = function _typeof(obj) {
         return typeof obj;
       };
     } else {
-      _typeof$m = function _typeof(obj) {
+      _typeof$l = function _typeof(obj) {
         return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
       };
     }
 
-    return _typeof$m(obj);
+    return _typeof$l(obj);
   }
 
-  function _classCallCheck$k(instance, Constructor) {
+  function _classCallCheck$j(instance, Constructor) {
     if (!(instance instanceof Constructor)) {
       throw new TypeError("Cannot call a class as a function");
     }
   }
 
-  function _defineProperties$k(target, props) {
+  function _defineProperties$j(target, props) {
     for (var i = 0; i < props.length; i++) {
       var descriptor = props[i];
       descriptor.enumerable = descriptor.enumerable || false;
@@ -49737,13 +48280,13 @@
     }
   }
 
-  function _createClass$k(Constructor, protoProps, staticProps) {
-    if (protoProps) _defineProperties$k(Constructor.prototype, protoProps);
-    if (staticProps) _defineProperties$k(Constructor, staticProps);
+  function _createClass$j(Constructor, protoProps, staticProps) {
+    if (protoProps) _defineProperties$j(Constructor.prototype, protoProps);
+    if (staticProps) _defineProperties$j(Constructor, staticProps);
     return Constructor;
   }
 
-  function _inherits$i(subClass, superClass) {
+  function _inherits$h(subClass, superClass) {
     if (typeof superClass !== "function" && superClass !== null) {
       throw new TypeError("Super expression must either be null or a function");
     }
@@ -49755,46 +48298,46 @@
         configurable: true
       }
     });
-    if (superClass) _setPrototypeOf$i(subClass, superClass);
+    if (superClass) _setPrototypeOf$h(subClass, superClass);
   }
 
-  function _setPrototypeOf$i(o, p) {
-    _setPrototypeOf$i = Object.setPrototypeOf || function _setPrototypeOf(o, p) {
+  function _setPrototypeOf$h(o, p) {
+    _setPrototypeOf$h = Object.setPrototypeOf || function _setPrototypeOf(o, p) {
       o.__proto__ = p;
       return o;
     };
 
-    return _setPrototypeOf$i(o, p);
+    return _setPrototypeOf$h(o, p);
   }
 
-  function _createSuper$i(Derived) {
-    var hasNativeReflectConstruct = _isNativeReflectConstruct$i();
+  function _createSuper$h(Derived) {
+    var hasNativeReflectConstruct = _isNativeReflectConstruct$h();
 
     return function _createSuperInternal() {
-      var Super = _getPrototypeOf$i(Derived),
+      var Super = _getPrototypeOf$h(Derived),
           result;
 
       if (hasNativeReflectConstruct) {
-        var NewTarget = _getPrototypeOf$i(this).constructor;
+        var NewTarget = _getPrototypeOf$h(this).constructor;
 
         result = Reflect.construct(Super, arguments, NewTarget);
       } else {
         result = Super.apply(this, arguments);
       }
 
-      return _possibleConstructorReturn$i(this, result);
+      return _possibleConstructorReturn$h(this, result);
     };
   }
 
-  function _possibleConstructorReturn$i(self, call) {
-    if (call && (_typeof$m(call) === "object" || typeof call === "function")) {
+  function _possibleConstructorReturn$h(self, call) {
+    if (call && (_typeof$l(call) === "object" || typeof call === "function")) {
       return call;
     }
 
-    return _assertThisInitialized$i(self);
+    return _assertThisInitialized$h(self);
   }
 
-  function _assertThisInitialized$i(self) {
+  function _assertThisInitialized$h(self) {
     if (self === void 0) {
       throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
     }
@@ -49802,7 +48345,7 @@
     return self;
   }
 
-  function _isNativeReflectConstruct$i() {
+  function _isNativeReflectConstruct$h() {
     if (typeof Reflect === "undefined" || !Reflect.construct) return false;
     if (Reflect.construct.sham) return false;
     if (typeof Proxy === "function") return true;
@@ -49815,11 +48358,11 @@
     }
   }
 
-  function _getPrototypeOf$i(o) {
-    _getPrototypeOf$i = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) {
+  function _getPrototypeOf$h(o) {
+    _getPrototypeOf$h = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) {
       return o.__proto__ || Object.getPrototypeOf(o);
     };
-    return _getPrototypeOf$i(o);
+    return _getPrototypeOf$h(o);
   }
   /**
       @class Tooltip
@@ -49827,10 +48370,11 @@
       @desc Creates HTML tooltips in the body of a webpage.
   */
 
-  var Tooltip = /*#__PURE__*/function (_BaseClass) {
-    _inherits$i(Tooltip, _BaseClass);
 
-    var _super = _createSuper$i(Tooltip);
+  var Tooltip = /*#__PURE__*/function (_BaseClass) {
+    _inherits$h(Tooltip, _BaseClass);
+
+    var _super = _createSuper$h(Tooltip);
     /**
         @memberof Tooltip
         @desc Invoked when creating a new class instance, and sets any default parameters.
@@ -49841,7 +48385,7 @@
     function Tooltip() {
       var _this;
 
-      _classCallCheck$k(this, Tooltip);
+      _classCallCheck$j(this, Tooltip);
 
       _this = _super.call(this);
       _this._arrow = accessor("arrow", "");
@@ -49928,13 +48472,15 @@
     */
 
 
-    _createClass$k(Tooltip, [{
+    _createClass$j(Tooltip, [{
       key: "render",
       value: function render(callback) {
         var _this2 = this;
 
         var that = this;
+
         var tooltips = _select("body").selectAll(".".concat(this._className)).data(this._data, this._id);
+
         var enter = tooltips.enter().append("div").attr("class", this._className);
         var update = tooltips.merge(enter);
         /**
@@ -49964,6 +48510,7 @@
         function cellContent(d) {
           if (typeof d === "function") {
             var datum = _select(this.parentNode.parentNode).datum();
+
             return d(datum, that._data.indexOf(datum));
           } else return d;
         }
@@ -49976,6 +48523,7 @@
         function boxStyles(box) {
           box.style("background", that._background).style("".concat(that._prefix, "border-radius"), that._borderRadius).style("pointer-events", that._pointerEvents).style("padding", that._padding).style("width", that._width).style("height", that._height).style("border", function (d, i) {
             var b = _select(this).style("border");
+
             return b !== "0px none rgb(0, 0, 0)" ? b : that._border(d, i);
           });
         }
@@ -50482,13 +49030,13 @@
     return Tooltip;
   }(BaseClass);
 
-  function _classCallCheck$l(instance, Constructor) {
+  function _classCallCheck$k(instance, Constructor) {
     if (!(instance instanceof Constructor)) {
       throw new TypeError("Cannot call a class as a function");
     }
   }
 
-  function _defineProperties$l(target, props) {
+  function _defineProperties$k(target, props) {
     for (var i = 0; i < props.length; i++) {
       var descriptor = props[i];
       descriptor.enumerable = descriptor.enumerable || false;
@@ -50498,9 +49046,9 @@
     }
   }
 
-  function _createClass$l(Constructor, protoProps, staticProps) {
-    if (protoProps) _defineProperties$l(Constructor.prototype, protoProps);
-    if (staticProps) _defineProperties$l(Constructor, staticProps);
+  function _createClass$k(Constructor, protoProps, staticProps) {
+    if (protoProps) _defineProperties$k(Constructor.prototype, protoProps);
+    if (staticProps) _defineProperties$k(Constructor, staticProps);
     return Constructor;
   }
   /**
@@ -50509,6 +49057,7 @@
       @private
   */
 
+
   var Message = /*#__PURE__*/function () {
     /**
         @memberof Message
@@ -50516,7 +49065,7 @@
         @private
     */
     function Message() {
-      _classCallCheck$l(this, Message);
+      _classCallCheck$k(this, Message);
 
       this._isVisible = false;
     }
@@ -50527,7 +49076,7 @@
     */
 
 
-    _createClass$l(Message, [{
+    _createClass$k(Message, [{
       key: "exit",
       value: function exit(elem, duration) {
         elem.transition().duration(duration).style("opacity", 0).transition().remove();
@@ -50577,6 +49126,7 @@
             style = _ref2$style === void 0 ? {} : _ref2$style;
 
         var parent = _select(container);
+
         this.mask = parent.selectAll("div.d3plus-Mask").data(mask ? [mask] : []);
         this.mask = this.mask.enter().append("div").attr("class", "d3plus-Mask").style("opacity", 1).merge(this.mask);
         this.mask.exit().call(this.exit.bind(this), duration);
@@ -50599,14 +49149,14 @@
 
     return Message;
   }();
-
   /**
       @function _drawBack
       @desc Draws a back button if there are states in this._history.
       @private
   */
 
-  function drawBack () {
+
+  function drawBack() {
     var visible = this._history.length;
     var backGroup = elem("g.d3plus-viz-back", {
       parent: this._select,
@@ -50624,14 +49174,14 @@
 
     this._margin.top += visible ? this._backClass.fontSize()() + this._backClass.padding()() * 2 : 0;
   }
-
   /**
       @function _drawColorScale
       @desc Renders the color scale if this._colorScale is not falsey.
       @private
   */
 
-  function drawColorScale () {
+
+  function drawColorScale() {
     var _this = this;
 
     var data = this._data;
@@ -50688,10 +49238,10 @@
     /*
       html2canvas 0.5.0-beta4 <http://html2canvas.hertzen.com>
       Copyright (c) 2016 Niklas von Hertzen
-    
-      Released under  License
+       Released under  License
     */
     (function (f) {
+      var g;
       {
         module.exports = f();
       }
@@ -50729,12 +49279,11 @@
       }({
         1: [function (_dereq_, module, exports) {
           (function (global) {
-
             (function (root) {
               /** Detect free variables */
-              var freeExports = _typeof(exports) == 'object' && exports && !exports.nodeType && exports;
-              var freeModule = _typeof(module) == 'object' && module && !module.nodeType && module;
-              var freeGlobal = _typeof(global) == 'object' && global;
+              var freeExports = _typeof2(exports) == 'object' && exports && !exports.nodeType && exports;
+              var freeModule = _typeof2(module) == 'object' && module && !module.nodeType && module;
+              var freeGlobal = _typeof2(global) == 'object' && global;
 
               if (freeGlobal.global === freeGlobal || freeGlobal.window === freeGlobal || freeGlobal.self === freeGlobal) {
                 root = freeGlobal;
@@ -53955,7 +52504,7 @@
           CanvasRenderer.prototype = Object.create(Renderer.prototype);
 
           CanvasRenderer.prototype.setFillStyle = function (fillStyle) {
-            this.ctx.fillStyle = _typeof(fillStyle) === "object" && !!fillStyle.isColor ? fillStyle.toString() : fillStyle;
+            this.ctx.fillStyle = _typeof2(fillStyle) === "object" && !!fillStyle.isColor ? fillStyle.toString() : fillStyle;
             return this.ctx;
           };
 
@@ -54557,11 +53106,11 @@
       }, {}, [4])(4);
     });
   });
-
   /*
   	Based on rgbcolor.js by Stoyan Stefanov <sstoo@gmail.com>
   	http://www.phpied.com/rgb-color-parser-in-javascript/
   */
+
   var rgbcolor = function rgbcolor(color_string) {
     this.ok = false;
     this.alpha = 1.0; // strip any leading #
@@ -54829,27 +53378,20 @@
       return xml;
     };
   };
-
   /*
-
-  StackBlur - a fast almost Gaussian Blur For Canvas
-
-  Version: 	0.5
+   StackBlur - a fast almost Gaussian Blur For Canvas
+   Version: 	0.5
   Author:		Mario Klingemann
   Contact: 	mario@quasimondo.com
   Website:	http://www.quasimondo.com/StackBlurForCanvas
   Twitter:	@quasimondo
-
-  In case you find this class useful - especially in commercial projects -
+   In case you find this class useful - especially in commercial projects -
   I am not totally unhappy for a small donation to my PayPal account
   mario@quasimondo.de
-
-  Or support me on flattr: 
+   Or support me on flattr: 
   https://flattr.com/thing/72791/StackBlur-a-fast-almost-Gaussian-Blur-Effect-for-CanvasJavascript
-
-  Copyright (c) 2010 Mario Klingemann
-
-  Permission is hereby granted, free of charge, to any person
+   Copyright (c) 2010 Mario Klingemann
+   Permission is hereby granted, free of charge, to any person
   obtaining a copy of this software and associated documentation
   files (the "Software"), to deal in the Software without
   restriction, including without limitation the rights to use,
@@ -54857,11 +53399,9 @@
   copies of the Software, and to permit persons to whom the
   Software is furnished to do so, subject to the following
   conditions:
-
-  The above copyright notice and this permission notice shall be
+   The above copyright notice and this permission notice shall be
   included in all copies or substantial portions of the Software.
-
-  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
   EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
   OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
   NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
@@ -54870,6 +53410,8 @@
   FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
   OTHER DEALINGS IN THE SOFTWARE.
   */
+
+
   var mul_table = [512, 512, 456, 512, 328, 456, 335, 512, 405, 328, 271, 456, 388, 335, 292, 512, 454, 405, 364, 328, 298, 271, 496, 456, 420, 388, 360, 335, 312, 292, 273, 512, 482, 454, 428, 405, 383, 364, 345, 328, 312, 298, 284, 271, 259, 496, 475, 456, 437, 420, 404, 388, 374, 360, 347, 335, 323, 312, 302, 292, 282, 273, 265, 512, 497, 482, 468, 454, 441, 428, 417, 405, 394, 383, 373, 364, 354, 345, 337, 328, 320, 312, 305, 298, 291, 284, 278, 271, 265, 259, 507, 496, 485, 475, 465, 456, 446, 437, 428, 420, 412, 404, 396, 388, 381, 374, 367, 360, 354, 347, 341, 335, 329, 323, 318, 312, 307, 302, 297, 292, 287, 282, 278, 273, 269, 265, 261, 512, 505, 497, 489, 482, 475, 468, 461, 454, 447, 441, 435, 428, 422, 417, 411, 405, 399, 394, 389, 383, 378, 373, 368, 364, 359, 354, 350, 345, 341, 337, 332, 328, 324, 320, 316, 312, 309, 305, 301, 298, 294, 291, 287, 284, 281, 278, 274, 271, 268, 265, 262, 259, 257, 507, 501, 496, 491, 485, 480, 475, 470, 465, 460, 456, 451, 446, 442, 437, 433, 428, 424, 420, 416, 412, 408, 404, 400, 396, 392, 388, 385, 381, 377, 374, 370, 367, 363, 360, 357, 354, 350, 347, 344, 341, 338, 335, 332, 329, 326, 323, 320, 318, 315, 312, 310, 307, 304, 302, 299, 297, 294, 292, 289, 287, 285, 282, 280, 278, 275, 273, 271, 269, 267, 265, 263, 261, 259];
   var shg_table = [9, 11, 12, 13, 13, 14, 14, 15, 15, 15, 15, 16, 16, 16, 16, 17, 17, 17, 17, 17, 17, 17, 18, 18, 18, 18, 18, 18, 18, 18, 18, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24];
 
@@ -55071,11 +53613,10 @@
     this.next = null;
   }
 
-  var stackblur = blur;
-
-  //[4]   	NameStartChar	   ::=   	":" | [A-Z] | "_" | [a-z] | [#xC0-#xD6] | [#xD8-#xF6] | [#xF8-#x2FF] | [#x370-#x37D] | [#x37F-#x1FFF] | [#x200C-#x200D] | [#x2070-#x218F] | [#x2C00-#x2FEF] | [#x3001-#xD7FF] | [#xF900-#xFDCF] | [#xFDF0-#xFFFD] | [#x10000-#xEFFFF]
+  var stackblur = blur; //[4]   	NameStartChar	   ::=   	":" | [A-Z] | "_" | [a-z] | [#xC0-#xD6] | [#xD8-#xF6] | [#xF8-#x2FF] | [#x370-#x37D] | [#x37F-#x1FFF] | [#x200C-#x200D] | [#x2070-#x218F] | [#x2C00-#x2FEF] | [#x3001-#xD7FF] | [#xF900-#xFDCF] | [#xFDF0-#xFFFD] | [#x10000-#xEFFFF]
   //[4a]   	NameChar	   ::=   	NameStartChar | "-" | "." | [0-9] | #xB7 | [#x0300-#x036F] | [#x203F-#x2040]
   //[5]   	Name	   ::=   	NameStartChar (NameChar)*
+
   var nameStartChar = /[A-Z_a-z\xC0-\xD6\xD8-\xF6\u00F8-\u02FF\u0370-\u037D\u037F-\u1FFF\u200C-\u200D\u2070-\u218F\u2C00-\u2FEF\u3001-\uD7FF\uF900-\uFDCF\uFDF0-\uFFFD]/; //\u10000-\uEFFFF
 
   var nameChar = new RegExp("[\\-\\.0-9" + nameStartChar.source.slice(1, -1) + "\\u00B7\\u0300-\\u036F\\u203F-\\u2040]");
@@ -55812,6 +54353,7 @@
   if (!(_set_proto_({}, _set_proto_.prototype) instanceof _set_proto_)) {
     _set_proto_ = function _set_proto_(thiz, parent) {
       function p() {}
+
       p.prototype = parent;
       p = new p();
 
@@ -55840,13 +54382,13 @@
   var sax = {
     XMLReader: XMLReader_1
   };
-
   /*
    * DOM Level 2
    * Object DOMException
    * @see http://www.w3.org/TR/REC-DOM-Level-1/ecma-script-language-binding.html
    * @see http://www.w3.org/TR/2000/REC-DOM-Level-2-Core-20001113/ecma-script-binding.html
    */
+
   function copy$2(src, dest) {
     for (var p in src) {
       dest[p] = src[p];
@@ -55868,6 +54410,7 @@
 
     if (!(pt instanceof Super)) {
       var t = function t() {};
+
       t.prototype = Super.prototype;
       t = new t();
       copy$2(pt, t);
@@ -55932,6 +54475,7 @@
     if (message) this.message = this.message + ": " + message;
     return error;
   }
+
   DOMException.prototype = Error.prototype;
   copy$2(ExceptionCode, DOMException);
   /**
@@ -55941,6 +54485,7 @@
    */
 
   function NodeList() {}
+
   NodeList.prototype = {
     /**
      * The number of nodes in the list. The range of valid child node indices is 0 to length-1 inclusive.
@@ -56157,6 +54702,7 @@
       }
     }
   }
+
   DOMImplementation.prototype = {
     hasFeature: function hasFeature(
     /* string */
@@ -56211,6 +54757,7 @@
    */
 
   function Node$1() {}
+
   Node$1.prototype = {
     firstChild: null,
     lastChild: null,
@@ -56657,6 +55204,7 @@
   function Element$1() {
     this._nsMap = {};
   }
+
   Element$1.prototype = {
     nodeType: ELEMENT_NODE,
     hasAttribute: function hasAttribute(name) {
@@ -56749,11 +55297,13 @@
   _extends$1(Element$1, Node$1);
 
   function Attr() {}
+
   Attr.prototype.nodeType = ATTRIBUTE_NODE;
 
   _extends$1(Attr, Node$1);
 
   function CharacterData() {}
+
   CharacterData.prototype = {
     data: '',
     substringData: function substringData(offset, count) {
@@ -56785,6 +55335,7 @@
   _extends$1(CharacterData, Node$1);
 
   function Text() {}
+
   Text.prototype = {
     nodeName: "#text",
     nodeType: TEXT_NODE,
@@ -56807,6 +55358,7 @@
   _extends$1(Text, CharacterData);
 
   function Comment() {}
+
   Comment.prototype = {
     nodeName: "#comment",
     nodeType: COMMENT_NODE
@@ -56815,6 +55367,7 @@
   _extends$1(Comment, CharacterData);
 
   function CDATASection() {}
+
   CDATASection.prototype = {
     nodeName: "#cdata-section",
     nodeType: CDATA_SECTION_NODE
@@ -56823,26 +55376,31 @@
   _extends$1(CDATASection, CharacterData);
 
   function DocumentType() {}
+
   DocumentType.prototype.nodeType = DOCUMENT_TYPE_NODE;
 
   _extends$1(DocumentType, Node$1);
 
   function Notation() {}
+
   Notation.prototype.nodeType = NOTATION_NODE;
 
   _extends$1(Notation, Node$1);
 
   function Entity() {}
+
   Entity.prototype.nodeType = ENTITY_NODE;
 
   _extends$1(Entity, Node$1);
 
   function EntityReference() {}
+
   EntityReference.prototype.nodeType = ENTITY_REFERENCE_NODE;
 
   _extends$1(EntityReference, Node$1);
 
   function DocumentFragment() {}
+
   DocumentFragment.prototype.nodeName = "#document-fragment";
   DocumentFragment.prototype.nodeType = DOCUMENT_FRAGMENT_NODE;
 
@@ -57146,7 +55704,7 @@
     for (var n in node) {
       var v = node[n];
 
-      if (_typeof(v) != 'object') {
+      if (_typeof2(v) != 'object') {
         if (v != node2[n]) {
           node2[n] = v;
         }
@@ -57267,7 +55825,6 @@
     DOMImplementation: DOMImplementation_1,
     XMLSerializer: XMLSerializer_1
   };
-
   var domParser = createCommonjsModule(function (module, exports) {
     function DOMParser(options) {
       this.options = options || {
@@ -57554,10 +56111,6 @@
     exports.XMLSerializer = dom.XMLSerializer;
     exports.DOMParser = DOMParser; //}
   });
-  var domParser_1 = domParser.DOMImplementation;
-  var domParser_2 = domParser.XMLSerializer;
-  var domParser_3 = domParser.DOMParser;
-
   /*
    * canvg.js - Javascript SVG parser and renderer on Canvas
    * MIT Licensed
@@ -57584,7 +56137,6 @@
       renderCallback: function => will call the function after the first render is completed
       forceRedraw: function => will call the function on every frame, if it returns true, will redraw
   */
-
 
   function canvg(target, s, opts) {
     // no parameters
@@ -60852,14 +59404,15 @@
     }();
     return svg;
   }
-  var canvgBrowser = canvg;
 
+  var canvgBrowser = canvg;
   /**
       @function svgPresets
       @desc Adds SVG default attributes to a d3 selection in order to render it properly.
       @param {Selection} selection
   */
-  function svgPresets (selection) {
+
+  function svgPresets(selection) {
     // sets "stroke-width" attribute to `0` if not defined
     var strokeWidth = selection.attr("stroke-width");
     selection.attr("stroke-width", !strokeWidth ? 0 : strokeWidth); // if there is no stroke, set the stroke color to "transparent" (fixes weird text rendering)
@@ -60872,14 +59425,14 @@
 
     selection.attr("aria-label", null);
   }
-
   /**
       @function htmlPresets
       @desc Adds HTML default styles to a d3 selection in order to render it properly.
       @param {Selection} selection
   */
 
-  function htmlPresets (selection) {
+
+  function htmlPresets(selection) {
     selection.selectAll("*").each(function () {
       var tag = this.tagName.toLowerCase();
 
@@ -60887,30 +59440,31 @@
         var elem = _select(this);
         /* forces minor unnoticible letter-spacing on any element where it is not defined to fix IE */
 
+
         var letterSpacing = elem.style("letter-spacing");
         elem.style("letter-spacing", letterSpacing === "normal" ? "0.1px" : letterSpacing);
       }
     });
   }
 
-  function _slicedToArray$4(arr, i) {
-    return _arrayWithHoles$4(arr) || _iterableToArrayLimit$4(arr, i) || _unsupportedIterableToArray$5(arr, i) || _nonIterableRest$4();
+  function _slicedToArray$3(arr, i) {
+    return _arrayWithHoles$3(arr) || _iterableToArrayLimit$3(arr, i) || _unsupportedIterableToArray$4(arr, i) || _nonIterableRest$3();
   }
 
-  function _nonIterableRest$4() {
+  function _nonIterableRest$3() {
     throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.");
   }
 
-  function _unsupportedIterableToArray$5(o, minLen) {
+  function _unsupportedIterableToArray$4(o, minLen) {
     if (!o) return;
-    if (typeof o === "string") return _arrayLikeToArray$5(o, minLen);
+    if (typeof o === "string") return _arrayLikeToArray$4(o, minLen);
     var n = Object.prototype.toString.call(o).slice(8, -1);
     if (n === "Object" && o.constructor) n = o.constructor.name;
     if (n === "Map" || n === "Set") return Array.from(o);
-    if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray$5(o, minLen);
+    if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray$4(o, minLen);
   }
 
-  function _arrayLikeToArray$5(arr, len) {
+  function _arrayLikeToArray$4(arr, len) {
     if (len == null || len > arr.length) len = arr.length;
 
     for (var i = 0, arr2 = new Array(len); i < len; i++) {
@@ -60920,7 +59474,7 @@
     return arr2;
   }
 
-  function _iterableToArrayLimit$4(arr, i) {
+  function _iterableToArrayLimit$3(arr, i) {
     if (typeof Symbol === "undefined" || !(Symbol.iterator in Object(arr))) return;
     var _arr = [];
     var _n = true;
@@ -60947,9 +59501,10 @@
     return _arr;
   }
 
-  function _arrayWithHoles$4(arr) {
+  function _arrayWithHoles$3(arr) {
     if (Array.isArray(arr)) return arr;
   }
+
   var defaultOptions = {
     background: false,
     callback: function callback() {},
@@ -60972,6 +59527,7 @@
 
   function parseTransform(elem) {
     var property = _select(elem).attr("transform");
+
     var scale = 1,
         x = 0,
         y = 0;
@@ -60986,7 +59542,7 @@
           return parseFloat(d) * scale;
         });
 
-        var _translate$1$replace$2 = _slicedToArray$4(_translate$1$replace$, 2);
+        var _translate$1$replace$2 = _slicedToArray$3(_translate$1$replace$, 2);
 
         x = _translate$1$replace$2[0];
         y = _translate$1$replace$2[1];
@@ -61013,7 +59569,7 @@
   */
 
 
-  function dom2canvas (elem, options) {
+  function dom2canvas(elem, options) {
     if (!elem) return;
     if (!(elem instanceof Array)) elem = [elem];
     options = Object.assign({}, defaultOptions, options);
@@ -61067,8 +59623,11 @@
 
       if (this.tagName) {
         var opacity = _select(this).attr("opacity") || _select(this).style("opacity");
+
         var display = _select(this).style("display");
+
         var visibility = _select(this).style("visibility");
+
         if (display === "none" || visibility === "hidden" || opacity && parseFloat(opacity) === 0) return;
 
         var _tag = this.tagName.toLowerCase();
@@ -61088,9 +59647,12 @@
           }
 
           var x = _select(this).attr("x");
+
           x = x ? parseFloat(x) * transform.scale : 0;
           transform.x += x;
+
           var y = _select(this).attr("y");
+
           y = y ? parseFloat(y) * transform.scale : 0;
           transform.y += y;
           transform.clip = {
@@ -61127,6 +59689,7 @@
         var _elem = this.cloneNode(true);
 
         _select(_elem).call(svgPresets);
+
         layers.push(Object.assign({}, transform, {
           type: "svg",
           value: _elem
@@ -61201,8 +59764,10 @@
 
         _select(_elem2).selectAll("*").each(function () {
           _select(this).call(svgPresets);
+
           if (_select(this).attr("opacity") === "0") this.parentNode.removeChild(this);
         });
+
         layers.push(Object.assign({}, transform, {
           type: "svg",
           value: _elem2,
@@ -61210,7 +59775,7 @@
         }));
       } else if (this.childNodes.length > 0) {
         var _parseTransform = parseTransform(this),
-            _parseTransform2 = _slicedToArray$4(_parseTransform, 3),
+            _parseTransform2 = _slicedToArray$3(_parseTransform, 3),
             scale = _parseTransform2[0],
             _x2 = _parseTransform2[1],
             _y2 = _parseTransform2[2];
@@ -61229,12 +59794,15 @@
 
         if (tag === "line") {
           _select(_elem3).attr("x1", parseFloat(_select(_elem3).attr("x1")) + transform.x);
+
           _select(_elem3).attr("x2", parseFloat(_select(_elem3).attr("x2")) + transform.x);
+
           _select(_elem3).attr("y1", parseFloat(_select(_elem3).attr("y1")) + transform.y);
+
           _select(_elem3).attr("y2", parseFloat(_select(_elem3).attr("y2")) + transform.y);
         } else if (tag === "path") {
           var _parseTransform3 = parseTransform(_elem3),
-              _parseTransform4 = _slicedToArray$4(_parseTransform3, 3),
+              _parseTransform4 = _slicedToArray$3(_parseTransform3, 3),
               _scale = _parseTransform4[0],
               _x3 = _parseTransform4[1],
               _y3 = _parseTransform4[2];
@@ -61243,7 +59811,9 @@
         }
 
         _select(_elem3).call(svgPresets);
+
         var fill = _select(_elem3).attr("fill");
+
         var defFill = fill && fill.indexOf("url") === 0; // if (defFill) select(elem).attr("fill-opacity", 0);
 
         layers.push(Object.assign({}, transform, {
@@ -61254,11 +59824,12 @@
 
         if (defFill) {
           var def = _select(fill.slice(4, -1)).node().cloneNode(true);
+
           var defTag = (def.tagName || "").toLowerCase();
 
           if (defTag === "pattern") {
             var _parseTransform5 = parseTransform(_elem3),
-                _parseTransform6 = _slicedToArray$4(_parseTransform5, 3),
+                _parseTransform6 = _slicedToArray$3(_parseTransform5, 3),
                 _scale2 = _parseTransform6[0],
                 _x4 = _parseTransform6[1],
                 _y4 = _parseTransform6[2];
@@ -61362,6 +59933,7 @@
 
           case "text":
             var parent = _select(layer.style);
+
             var title = layer.value.replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
             var fC = parent.style("color"),
                 fS = parent.style("font-size");
@@ -61399,7 +59971,6 @@
       options.callback(canvas);
     }
   }
-
   /* canvas-toBlob.js
    * A canvas.toBlob() implementation.
    * 2016-05-26
@@ -61416,8 +59987,8 @@
 
   /*! @source http://purl.eligrey.com/github/canvas-toBlob.js/blob/master/canvas-toBlob.js */
 
-  (function (view) {
 
+  (function (view) {
     var Uint8Array = view.Uint8Array,
         HTMLCanvasElement = view.HTMLCanvasElement,
         canvas_proto = HTMLCanvasElement && HTMLCanvasElement.prototype,
@@ -61558,7 +60129,7 @@
 
     /*! @source http://purl.eligrey.com/github/FileSaver.js/blob/master/FileSaver.js */
     var saveAs = saveAs || function (view) {
-
+      // IE <10 is explicitly unsupported
       if (typeof view === "undefined" || typeof navigator !== "undefined" && /MSIE [1-9]\./.test(navigator.userAgent)) {
         return;
       }
@@ -61727,12 +60298,10 @@
     // with an attribute `content` that corresponds to the window
 
 
-    if ( module.exports) {
+    if (module.exports) {
       module.exports.saveAs = saveAs;
     }
   });
-  var FileSaver_1 = FileSaver.saveAs;
-
   var defaultOptions$1 = {
     filename: "download",
     type: "png"
@@ -61747,7 +60316,7 @@
       @param {Object} [renderOptions] Custom options to be passed to the dom2canvas function.
   */
 
-  function saveElement (elem) {
+  function saveElement(elem) {
     var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
     var renderOptions = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
     if (!elem) return;
@@ -61756,7 +60325,7 @@
 
     if (!(elem instanceof Array) && options.type === "svg") {
       var outer = IE ? new XMLSerializer().serializeToString(elem) : elem.outerHTML;
-      FileSaver_1(new Blob([outer], {
+      FileSaver.saveAs(new Blob([outer], {
         type: "application/svg+xml"
       }), "".concat(options.filename, ".svg"));
     }
@@ -61767,7 +60336,7 @@
 
         if (["jpg", "png"].includes(options.type)) {
           canvas.toBlob(function (blob) {
-            return FileSaver_1(blob, "".concat(options.filename, ".").concat(options.type));
+            return FileSaver.saveAs(blob, "".concat(options.filename, ".").concat(options.type));
           });
         } // else if (options.type === "pdf") {
         //   const outputHeight = 11,
@@ -61818,7 +60387,7 @@
       @private
   */
 
-  function drawControls () {
+  function drawControls() {
     var _this = this;
 
     var that = this;
@@ -61939,12 +60508,12 @@
       _loop(a);
     }
   }
-
   /**
       @function legendLabel
       @desc Default label function for the legend.
       @private
   */
+
 
   function legendLabel(d, i) {
     return this._drawLabel(d, i, this._legendDepth);
@@ -61956,7 +60525,8 @@
       @private
   */
 
-  function drawLegend () {
+
+  function drawLegend() {
     var _this = this;
 
     var data = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : [];
@@ -62058,13 +60628,13 @@
       if (wide) this._margin[position] += legendBounds.height + this._legendClass.padding() * 2;else this._margin[position] += legendBounds.width + this._legendClass.padding() * 2;
     }
   }
-
   /**
       @function setTimeFilter
       @desc Determines whether or not to update the timeFilter method of the Viz.
       @param {Array|Date} The timeline selection given from the d3 brush.
       @private
   */
+
 
   function setTimeFilter(s) {
     var _this = this;
@@ -62088,7 +60658,7 @@
   */
 
 
-  function drawTimeline () {
+  function drawTimeline() {
     var _this2 = this;
 
     var data = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : [];
@@ -62134,7 +60704,6 @@
       this._margin.bottom += timeline.outerBounds().height + timeline.padding() * 2;
     }
   }
-
   /**
       @function _drawTitle
       @desc Draws a title if this._title is defined.
@@ -62142,7 +60711,8 @@
       @private
   */
 
-  function drawTitle () {
+
+  function drawTitle() {
     var data = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : [];
     var text = this._title ? this._title(data) : false;
     var padding = this._titlePadding() ? this._padding : {
@@ -62167,7 +60737,6 @@
 
     this._margin.top += text ? group.getBBox().height : 0;
   }
-
   /**
       @function _drawTotal
       @desc Draws a total title if this._total is defined.
@@ -62175,7 +60744,8 @@
       @private
   */
 
-  function drawTotal () {
+
+  function drawTotal() {
     var data = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : [];
     var total = typeof this._total === "function" ? sum(data.map(this._total)) : this._total === true && this._size ? sum(data.map(this._size)) : false;
     var padding = this._totalPadding() ? this._padding : {
@@ -62193,25 +60763,25 @@
       transition: this._transition,
       update: transform
     }).node();
-    var visible = typeof total === "number";
 
-    this._totalClass.data(visible ? [{
+    this._totalClass.data(total ? [{
       text: this._totalFormat(total)
     }] : []).locale(this._locale).select(group).width(this._width - (this._margin.left + this._margin.right + padding.left + padding.right)).config(this._totalConfig).render();
 
-    this._margin.top += visible ? group.getBBox().height + this._totalConfig.padding * 2 : 0;
+    this._margin.top += total ? group.getBBox().height + this._totalConfig.padding * 2 : 0;
   }
-
   /**
     @desc Given an HTMLElement and a "width" or "height" string, this function returns the current calculated size for the DOM element.
     @private
   */
+
 
   function _elementSize(element, s) {
     if (!element) return undefined;
 
     if (element.tagName === undefined || ["BODY", "HTML"].indexOf(element.tagName) >= 0) {
       var val = window["inner".concat(s.charAt(0).toUpperCase() + s.slice(1))];
+
       var elem = _select(element);
 
       if (s === "width") {
@@ -62241,17 +60811,18 @@
   */
 
 
-  function getSize$1 (elem) {
+  function getSize$1(elem) {
     return [_elementSize(elem, "width"), _elementSize(elem, "height")];
   }
-
   /**
     @desc Returns a *Boolean* denoting whether or not a given DOM element is visible in the current window.
     @param {DOMElement} elem The DOM element to analyze.
     @param {Number} [buffer = 0] A pixel offset from the edge of the top and bottom of the screen. If a positive value, the element will be deemed visible when it is that many pixels away from entering the viewport. If negative, the element will have to enter the viewport by that many pixels before being deemed visible.
     @private
   */
-  function inViewport (elem) {
+
+
+  function inViewport(elem) {
     var buffer = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 0;
     var pageX = window.pageXOffset !== undefined ? window.pageXOffset : (document.documentElement || document.body.parentNode || document.body).scrollLeft;
     var pageY = window.pageYOffset !== undefined ? window.pageYOffset : (document.documentElement || document.body.parentNode || document.body).scrollTop;
@@ -62262,14 +60833,15 @@
         width = bounds.width;
     return pageY + window.innerHeight > top + buffer && pageY + buffer < top + height && pageX + window.innerWidth > left + buffer && pageX + buffer < left + width;
   }
-
   /**
       @desc On click event for all shapes in a Viz.
       @param {Object} *d* The data object being interacted with.
       @param {Number} *i* The index of the data object being interacted with.
       @private
   */
-  function clickShape (d, i) {
+
+
+  function clickShape(d, i) {
     this._select.style("cursor", "auto");
 
     if (this._drawDepth < this._groupBy.length - 1) {
@@ -62292,7 +60864,6 @@
       }).render();
     }
   }
-
   /**
       @desc On click event for all legend shapes in a Viz.
       @param {Object} *d* The data object being interacted with.
@@ -62300,7 +60871,8 @@
       @private
   */
 
-  function clickLegend (d, i) {
+
+  function clickLegend(d, i) {
     var _this = this;
 
     this._select.style("cursor", "auto");
@@ -62379,7 +60951,7 @@
   */
 
 
-  function mouseenter (d, i) {
+  function mouseenter(d, i) {
     var _this = this;
 
     if (this._shapeConfig.hoverOpacity !== 1) {
@@ -62392,14 +60964,15 @@
       });
     }
   }
-
   /**
       @desc On mouseleave event for all shapes in a Viz.
       @param {Object} *d* The data object being interacted with.
       @param {Number} *i* The index of the data object being interacted with.
       @private
   */
-  function mouseleave (d, i) {
+
+
+  function mouseleave(d, i) {
     var _this = this;
 
     setTimeout(function () {
@@ -62422,7 +60995,6 @@
 
     this._select.style("cursor", "auto");
   }
-
   /**
       @desc Tooltip logic for a specified data point.
       @param {Object} *d* The data object being interacted with.
@@ -62431,7 +61003,8 @@
       @private
   */
 
-  function mousemoveLegend (d, i, x) {
+
+  function mousemoveLegend(d, i, x) {
     var _this = this;
 
     var position = event$1.touches ? [event$1.touches[0].clientX, event$1.touches[0].clientY] : [event$1.clientX, event$1.clientY];
@@ -62453,7 +61026,6 @@
       this._tooltipClass.data([x || d]).footer(this._solo.length && !this._solo.includes(id) ? t("Click to Highlight") : this._solo.length === 1 && this._solo.includes(id) || this._hidden.length === dataLength - 1 ? t("Click to Reset") : this._solo.includes(id) ? t("Click to Hide") : this._hidden.includes(id) ? t("Click to Highlight") : "".concat(t("Click to Highlight"), "<br />").concat(t("Shift+Click to Hide"))).title(this._legendConfig.label ? this._legendClass.label() : legendLabel.bind(this)).position(position).config(configPrep.bind(this)(this._tooltipConfig)).config(configPrep.bind(this)(this._legendTooltip)).render();
     }
   }
-
   /**
       @desc Tooltip logic for a specified data point.
       @param {Object} *d* The data object being interacted with.
@@ -62462,7 +61034,8 @@
       @private
   */
 
-  function mousemoveShape (d, i, x) {
+
+  function mousemoveShape(d, i, x) {
     if (d && this._tooltip(d, i)) {
       this._select.style("cursor", "pointer");
 
@@ -62471,36 +61044,36 @@
       this._tooltipClass.data([x || d]).footer(this._drawDepth < this._groupBy.length - 1 ? this._translate("Click to Expand") : false).title(this._drawLabel).position(position).config(configPrep.bind(this)(this._tooltipConfig)).render();
     }
   }
-
   /**
    @desc On touchstart event for the Body element.
    @private
    */
 
-  function touchstartBody (d) {
+
+  function touchstartBody(d) {
     event$1.preventDefault();
     event$1.stopPropagation();
     if (!d) this._tooltipClass.data([]).render();
   }
 
-  function _slicedToArray$5(arr, i) {
-    return _arrayWithHoles$5(arr) || _iterableToArrayLimit$5(arr, i) || _unsupportedIterableToArray$6(arr, i) || _nonIterableRest$5();
+  function _slicedToArray$4(arr, i) {
+    return _arrayWithHoles$4(arr) || _iterableToArrayLimit$4(arr, i) || _unsupportedIterableToArray$5(arr, i) || _nonIterableRest$4();
   }
 
-  function _nonIterableRest$5() {
+  function _nonIterableRest$4() {
     throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.");
   }
 
-  function _unsupportedIterableToArray$6(o, minLen) {
+  function _unsupportedIterableToArray$5(o, minLen) {
     if (!o) return;
-    if (typeof o === "string") return _arrayLikeToArray$6(o, minLen);
+    if (typeof o === "string") return _arrayLikeToArray$5(o, minLen);
     var n = Object.prototype.toString.call(o).slice(8, -1);
     if (n === "Object" && o.constructor) n = o.constructor.name;
     if (n === "Map" || n === "Set") return Array.from(o);
-    if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray$6(o, minLen);
+    if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray$5(o, minLen);
   }
 
-  function _arrayLikeToArray$6(arr, len) {
+  function _arrayLikeToArray$5(arr, len) {
     if (len == null || len > arr.length) len = arr.length;
 
     for (var i = 0, arr2 = new Array(len); i < len; i++) {
@@ -62510,7 +61083,7 @@
     return arr2;
   }
 
-  function _iterableToArrayLimit$5(arr, i) {
+  function _iterableToArrayLimit$4(arr, i) {
     if (typeof Symbol === "undefined" || !(Symbol.iterator in Object(arr))) return;
     var _arr = [];
     var _n = true;
@@ -62537,9 +61110,10 @@
     return _arr;
   }
 
-  function _arrayWithHoles$5(arr) {
+  function _arrayWithHoles$4(arr) {
     if (Array.isArray(arr)) return arr;
   }
+
   var brushing = false;
   /**
       @name zoomControls
@@ -62547,7 +61121,7 @@
       @private
   */
 
-  function zoomControls () {
+  function zoomControls() {
     if (!this._container || !this._zoomGroup) return;
     var height = this._zoomHeight || this._height - this._margin.top - this._margin.bottom,
         that = this,
@@ -62556,7 +61130,9 @@
     this._zoomBehavior.extent([[0, 0], [width, height]]).scaleExtent([1, this._zoomMax]).translateExtent([[0, 0], [width, height]]).on("zoom", zoomed.bind(this));
 
     this._zoomToBounds = zoomToBounds.bind(this);
+
     var control = _select(this._select.node().parentNode).selectAll("div.d3plus-zoom-control").data(this._zoom ? [0] : []);
+
     var controlEnter = control.enter().append("div").attr("class", "d3plus-zoom-control");
     control.exit().remove();
     control = control.merge(controlEnter).style("position", "absolute").style("top", "".concat(this._margin.top, "px")).style("left", "".concat(this._margin.left, "px"));
@@ -62569,6 +61145,7 @@
     controlEnter.append("div").attr("class", "zoom-control zoom-brush");
     control.select(".zoom-brush").on("click", function () {
       _select(this).classed("active", !brushing).call(stylize, brushing ? that._zoomControlStyle || {} : that._zoomControlStyleActive || {});
+
       zoomEvents.bind(that)(!brushing);
     }).html("&#164");
     control.selectAll(".zoom-control").call(stylize, that._zoomControlStyle).on("mouseenter", function () {
@@ -62592,6 +61169,7 @@
       @desc Handles adding/removing zoom event listeners.
       @private
   */
+
 
   function zoomEvents() {
     var brush = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
@@ -62685,7 +61263,7 @@
         t = transform(this._container.node());
 
     if (bounds) {
-      var _this$_zoomBehavior$t = _slicedToArray$5(this._zoomBehavior.translateExtent()[1], 2),
+      var _this$_zoomBehavior$t = _slicedToArray$4(this._zoomBehavior.translateExtent()[1], 2),
           width = _this$_zoomBehavior$t[0],
           height = _this$_zoomBehavior$t[1],
           dx = bounds[1][0] - bounds[0][0],
@@ -62759,22 +61337,23 @@
 
     this._brushGroup.selectAll(".handle").call(attrize, this._zoomBrushHandleStyle || {});
   }
-
   /**
       @name _drawAttribution
       @desc Draws absolute positioned attribution text.
       @private
   */
 
-  function drawAttribution () {
+
+  function drawAttribution() {
     var attr = _select(this._select.node().parentNode).selectAll("div.d3plus-attribution").data(this._attribution ? [0] : []);
+
     var attrEnter = attr.enter().append("div").attr("class", "d3plus-attribution");
     attr.exit().remove();
     attr = attr.merge(attrEnter).style("position", "absolute").html(this._attribution).style("right", "".concat(this._margin.right, "px")).style("bottom", "".concat(this._margin.bottom, "px")).call(stylize, this._attributionStyle);
   }
 
   function _toConsumableArray$1(arr) {
-    return _arrayWithoutHoles$1(arr) || _iterableToArray$1(arr) || _unsupportedIterableToArray$7(arr) || _nonIterableSpread$1();
+    return _arrayWithoutHoles$1(arr) || _iterableToArray$1(arr) || _unsupportedIterableToArray$6(arr) || _nonIterableSpread$1();
   }
 
   function _nonIterableSpread$1() {
@@ -62786,27 +61365,27 @@
   }
 
   function _arrayWithoutHoles$1(arr) {
-    if (Array.isArray(arr)) return _arrayLikeToArray$7(arr);
+    if (Array.isArray(arr)) return _arrayLikeToArray$6(arr);
   }
 
-  function _slicedToArray$6(arr, i) {
-    return _arrayWithHoles$6(arr) || _iterableToArrayLimit$6(arr, i) || _unsupportedIterableToArray$7(arr, i) || _nonIterableRest$6();
+  function _slicedToArray$5(arr, i) {
+    return _arrayWithHoles$5(arr) || _iterableToArrayLimit$5(arr, i) || _unsupportedIterableToArray$6(arr, i) || _nonIterableRest$5();
   }
 
-  function _nonIterableRest$6() {
+  function _nonIterableRest$5() {
     throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.");
   }
 
-  function _unsupportedIterableToArray$7(o, minLen) {
+  function _unsupportedIterableToArray$6(o, minLen) {
     if (!o) return;
-    if (typeof o === "string") return _arrayLikeToArray$7(o, minLen);
+    if (typeof o === "string") return _arrayLikeToArray$6(o, minLen);
     var n = Object.prototype.toString.call(o).slice(8, -1);
     if (n === "Object" && o.constructor) n = o.constructor.name;
     if (n === "Map" || n === "Set") return Array.from(o);
-    if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray$7(o, minLen);
+    if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray$6(o, minLen);
   }
 
-  function _arrayLikeToArray$7(arr, len) {
+  function _arrayLikeToArray$6(arr, len) {
     if (len == null || len > arr.length) len = arr.length;
 
     for (var i = 0, arr2 = new Array(len); i < len; i++) {
@@ -62816,7 +61395,7 @@
     return arr2;
   }
 
-  function _iterableToArrayLimit$6(arr, i) {
+  function _iterableToArrayLimit$5(arr, i) {
     if (typeof Symbol === "undefined" || !(Symbol.iterator in Object(arr))) return;
     var _arr = [];
     var _n = true;
@@ -62843,33 +61422,33 @@
     return _arr;
   }
 
-  function _arrayWithHoles$6(arr) {
+  function _arrayWithHoles$5(arr) {
     if (Array.isArray(arr)) return arr;
   }
 
-  function _typeof$n(obj) {
+  function _typeof$m(obj) {
     "@babel/helpers - typeof";
 
     if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") {
-      _typeof$n = function _typeof(obj) {
+      _typeof$m = function _typeof(obj) {
         return typeof obj;
       };
     } else {
-      _typeof$n = function _typeof(obj) {
+      _typeof$m = function _typeof(obj) {
         return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
       };
     }
 
-    return _typeof$n(obj);
+    return _typeof$m(obj);
   }
 
-  function _classCallCheck$m(instance, Constructor) {
+  function _classCallCheck$l(instance, Constructor) {
     if (!(instance instanceof Constructor)) {
       throw new TypeError("Cannot call a class as a function");
     }
   }
 
-  function _defineProperties$m(target, props) {
+  function _defineProperties$l(target, props) {
     for (var i = 0; i < props.length; i++) {
       var descriptor = props[i];
       descriptor.enumerable = descriptor.enumerable || false;
@@ -62879,13 +61458,13 @@
     }
   }
 
-  function _createClass$m(Constructor, protoProps, staticProps) {
-    if (protoProps) _defineProperties$m(Constructor.prototype, protoProps);
-    if (staticProps) _defineProperties$m(Constructor, staticProps);
+  function _createClass$l(Constructor, protoProps, staticProps) {
+    if (protoProps) _defineProperties$l(Constructor.prototype, protoProps);
+    if (staticProps) _defineProperties$l(Constructor, staticProps);
     return Constructor;
   }
 
-  function _inherits$j(subClass, superClass) {
+  function _inherits$i(subClass, superClass) {
     if (typeof superClass !== "function" && superClass !== null) {
       throw new TypeError("Super expression must either be null or a function");
     }
@@ -62897,46 +61476,46 @@
         configurable: true
       }
     });
-    if (superClass) _setPrototypeOf$j(subClass, superClass);
+    if (superClass) _setPrototypeOf$i(subClass, superClass);
   }
 
-  function _setPrototypeOf$j(o, p) {
-    _setPrototypeOf$j = Object.setPrototypeOf || function _setPrototypeOf(o, p) {
+  function _setPrototypeOf$i(o, p) {
+    _setPrototypeOf$i = Object.setPrototypeOf || function _setPrototypeOf(o, p) {
       o.__proto__ = p;
       return o;
     };
 
-    return _setPrototypeOf$j(o, p);
+    return _setPrototypeOf$i(o, p);
   }
 
-  function _createSuper$j(Derived) {
-    var hasNativeReflectConstruct = _isNativeReflectConstruct$j();
+  function _createSuper$i(Derived) {
+    var hasNativeReflectConstruct = _isNativeReflectConstruct$i();
 
     return function _createSuperInternal() {
-      var Super = _getPrototypeOf$j(Derived),
+      var Super = _getPrototypeOf$i(Derived),
           result;
 
       if (hasNativeReflectConstruct) {
-        var NewTarget = _getPrototypeOf$j(this).constructor;
+        var NewTarget = _getPrototypeOf$i(this).constructor;
 
         result = Reflect.construct(Super, arguments, NewTarget);
       } else {
         result = Super.apply(this, arguments);
       }
 
-      return _possibleConstructorReturn$j(this, result);
+      return _possibleConstructorReturn$i(this, result);
     };
   }
 
-  function _possibleConstructorReturn$j(self, call) {
-    if (call && (_typeof$n(call) === "object" || typeof call === "function")) {
+  function _possibleConstructorReturn$i(self, call) {
+    if (call && (_typeof$m(call) === "object" || typeof call === "function")) {
       return call;
     }
 
-    return _assertThisInitialized$j(self);
+    return _assertThisInitialized$i(self);
   }
 
-  function _assertThisInitialized$j(self) {
+  function _assertThisInitialized$i(self) {
     if (self === void 0) {
       throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
     }
@@ -62944,7 +61523,7 @@
     return self;
   }
 
-  function _isNativeReflectConstruct$j() {
+  function _isNativeReflectConstruct$i() {
     if (typeof Reflect === "undefined" || !Reflect.construct) return false;
     if (Reflect.construct.sham) return false;
     if (typeof Proxy === "function") return true;
@@ -62957,15 +61536,16 @@
     }
   }
 
-  function _getPrototypeOf$j(o) {
-    _getPrototypeOf$j = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) {
+  function _getPrototypeOf$i(o) {
+    _getPrototypeOf$i = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) {
       return o.__proto__ || Object.getPrototypeOf(o);
     };
-    return _getPrototypeOf$j(o);
+    return _getPrototypeOf$i(o);
   }
   /**
    * Default padding logic that will return false if the screen is less than 600 pixels wide.
    */
+
 
   function defaultPadding() {
     return typeof window !== "undefined" ? window.innerWidth > 600 : true;
@@ -62989,9 +61569,9 @@
 
 
   var Viz = /*#__PURE__*/function (_BaseClass) {
-    _inherits$j(Viz, _BaseClass);
+    _inherits$i(Viz, _BaseClass);
 
-    var _super = _createSuper$j(Viz);
+    var _super = _createSuper$i(Viz);
     /**
         @memberof Viz
         @desc Invoked when creating a new class instance, and sets any default parameters.
@@ -63002,7 +61582,7 @@
     function Viz() {
       var _this;
 
-      _classCallCheck$m(this, Viz);
+      _classCallCheck$l(this, Viz);
 
       _this = _super.call(this);
       _this._aggs = {};
@@ -63067,9 +61647,9 @@
       _this._legend = true;
       _this._legendClass = new Legend();
       _this._legendConfig = {
-        label: legendLabel.bind(_assertThisInitialized$j(_this)),
+        label: legendLabel.bind(_assertThisInitialized$i(_this)),
         shapeConfig: {
-          ariaLabel: legendLabel.bind(_assertThisInitialized$j(_this)),
+          ariaLabel: legendLabel.bind(_assertThisInitialized$i(_this)),
           labelConfig: {
             fontColor: undefined,
             fontResize: false,
@@ -63110,15 +61690,15 @@
 
       _this._noDataMessage = true;
       _this._on = {
-        "click.shape": clickShape.bind(_assertThisInitialized$j(_this)),
-        "click.legend": clickLegend.bind(_assertThisInitialized$j(_this)),
-        "mouseenter": mouseenter.bind(_assertThisInitialized$j(_this)),
-        "mouseleave": mouseleave.bind(_assertThisInitialized$j(_this)),
-        "mousemove.shape": mousemoveShape.bind(_assertThisInitialized$j(_this)),
-        "mousemove.legend": mousemoveLegend.bind(_assertThisInitialized$j(_this))
+        "click.shape": clickShape.bind(_assertThisInitialized$i(_this)),
+        "click.legend": clickLegend.bind(_assertThisInitialized$i(_this)),
+        "mouseenter": mouseenter.bind(_assertThisInitialized$i(_this)),
+        "mouseleave": mouseleave.bind(_assertThisInitialized$i(_this)),
+        "mousemove.shape": mousemoveShape.bind(_assertThisInitialized$i(_this)),
+        "mousemove.legend": mousemoveLegend.bind(_assertThisInitialized$i(_this))
       };
       _this._queue = [];
-      _this._scrollContainer = (typeof window === "undefined" ? "undefined" : _typeof$n(window)) === undefined ? "" : window;
+      _this._scrollContainer = (typeof window === "undefined" ? "undefined" : _typeof$m(window)) === undefined ? "" : window;
       _this._shape = constant$6("Rect");
       _this._shapes = [];
       _this._shapeConfig = {
@@ -63257,7 +61837,7 @@
      */
 
 
-    _createClass$m(Viz, [{
+    _createClass$l(Viz, [{
       key: "_preDraw",
       value: function _preDraw() {
         var _this2 = this;
@@ -63486,7 +62066,7 @@
           this._select.style("display", "none");
 
           var _getSize = getSize$1(this._select.node().parentNode),
-              _getSize2 = _slicedToArray$6(_getSize, 2),
+              _getSize2 = _slicedToArray$5(_getSize, 2),
               w = _getSize2[0],
               h = _getSize2[1];
 
@@ -63851,6 +62431,7 @@
           @desc Sets the primary data array to be used when drawing the visualization. The value passed should be an *Array* of objects or a *String* representing a filepath or URL to be loaded. The following filetypes are supported: `csv`, `tsv`, `txt`, and `json`.
       If your data URL needs specific headers to be set, an Object with "url" and "headers" keys may also be passed.
       Additionally, a custom formatting function can be passed as a second argument to this method. This custom function will be passed the data that has been loaded, as long as there are no errors. This function should return the final array of obejcts to be used as the primary data array. For example, some JSON APIs return the headers split from the data values to save bandwidth. These would need be joined using a custom formatter.
+      If you would like to specify certain configuration options based on the yet-to-be-loaded data, you can also return a full `config` object from the data formatter (including the new `data` array as a key in the object).
       If *data* is not specified, this method returns the current primary data array, which defaults to an empty array (`[]`);
           @param {Array|String} *data* = []
           @param {Function} [*formatter*]
@@ -64785,6 +63366,10 @@
     matches: ["stamen-tiles", "stamen.com"],
     text: "Map tiles by <a href='http://stamen.com' target='_blank'>Stamen Design</a>, under <a href='http://creativecommons.org/licenses/by/3.0' target='_blank'>CC BY 3.0</a>. Data by <a href='http://openstreetmap.org' target='_blank'>OpenStreetMap</a>, under <a href='http://creativecommons.org/licenses/by-sa/3.0' target='_blank'>CC BY SA</a>."
   }];
+  /**
+      @external Viz
+      @see https://github.com/d3plus/d3plus-viz#Viz
+  */
 
   var d3Geo = Object.assign({}, d3GeoCore, d3GeoProjection, d3CompositeProjections);
   /**
@@ -64822,9 +63407,11 @@
 
 
   var Geomap = /*#__PURE__*/function (_Viz) {
-    _inherits(Geomap, _Viz);
+    "use strict";
 
-    var _super = _createSuper(Geomap);
+    _inherits2(Geomap, _Viz);
+
+    var _super2 = _createSuper2(Geomap);
 
     /**
         @memberof Geomap
@@ -64832,41 +63419,41 @@
         @private
     */
     function Geomap() {
-      var _this;
+      var _this7;
 
-      _classCallCheck(this, Geomap);
+      _classCallCheck2(this, Geomap);
 
-      _this = _super.call(this);
-      _this._fitObject = false;
-      _this._noDataMessage = false;
-      _this._ocean = "#d4dadc";
-      _this._point = accessor("point");
-      _this._pointSize = constant$6(1);
-      _this._pointSizeMax = 10;
-      _this._pointSizeMin = 5;
-      _this._pointSizeScale = "linear";
-      _this._projection = d3Geo.geoMercator();
-      _this._projectionPadding = parseSides(20);
-      _this._shape = constant$6("Circle");
-      _this._shapeConfig = assign(_this._shapeConfig, {
+      _this7 = _super2.call(this);
+      _this7._fitObject = false;
+      _this7._noDataMessage = false;
+      _this7._ocean = "#d4dadc";
+      _this7._point = accessor("point");
+      _this7._pointSize = constant$6(1);
+      _this7._pointSizeMax = 10;
+      _this7._pointSizeMin = 5;
+      _this7._pointSizeScale = "linear";
+      _this7._projection = d3Geo.geoMercator();
+      _this7._projectionPadding = parseSides(20);
+      _this7._shape = constant$6("Circle");
+      _this7._shapeConfig = assign(_this7._shapeConfig, {
         ariaLabel: function ariaLabel(d, i) {
-          return "".concat(_this._drawLabel(d, i), ", ").concat(_this._pointSize(d, i));
+          return "".concat(_this7._drawLabel(d, i), ", ").concat(_this7._pointSize(d, i));
         },
         hoverOpacity: 1,
         Path: {
           ariaLabel: function ariaLabel(d, i) {
-            var validColorScale = _this._colorScale ? ", ".concat(_this._colorScale(d, i)) : "";
-            return "".concat(_this._drawLabel(d, i)).concat(validColorScale, ".");
+            var validColorScale = _this7._colorScale ? ", ".concat(_this7._colorScale(d, i)) : "";
+            return "".concat(_this7._drawLabel(d, i)).concat(validColorScale, ".");
           },
           fill: function fill(d, i) {
-            if (_this._colorScale && !_this._coordData.features.includes(d)) {
-              var c = _this._colorScale(d);
+            if (_this7._colorScale && !_this7._coordData.features.includes(d)) {
+              var _c2 = _this7._colorScale(d);
 
-              if (c !== undefined && c !== null) {
-                if (_this._colorScaleClass._colorScale) {
-                  return _this._colorScaleClass._colorScale(c);
+              if (_c2 !== undefined && _c2 !== null) {
+                if (_this7._colorScaleClass._colorScale) {
+                  return _this7._colorScaleClass._colorScale(_c2);
                 } else {
-                  var _color = _this._colorScaleClass.color();
+                  var _color = _this7._colorScaleClass.color();
 
                   if (_color instanceof Array) _color = _color[_color.length - 1];
                   return _color;
@@ -64874,42 +63461,42 @@
               }
             }
 
-            return _this._topojsonFill(d, i);
+            return _this7._topojsonFill(d, i);
           },
           on: {
             "mouseenter": function mouseenter(d) {
-              return !_this._coordData.features.includes(d) ? _this._on.mouseenter.bind(_assertThisInitialized(_this))(d) : null;
+              return !_this7._coordData.features.includes(d) ? _this7._on.mouseenter.bind(_assertThisInitialized2(_this7))(d) : null;
             },
             "mousemove.shape": function mousemoveShape(d) {
-              return !_this._coordData.features.includes(d) ? _this._on["mousemove.shape"].bind(_assertThisInitialized(_this))(d) : null;
+              return !_this7._coordData.features.includes(d) ? _this7._on["mousemove.shape"].bind(_assertThisInitialized2(_this7))(d) : null;
             },
             "mouseleave": function mouseleave(d) {
-              return !_this._coordData.features.includes(d) ? _this._on.mouseleave.bind(_assertThisInitialized(_this))(d) : null;
+              return !_this7._coordData.features.includes(d) ? _this7._on.mouseleave.bind(_assertThisInitialized2(_this7))(d) : null;
             }
           },
           stroke: function stroke(d, i) {
-            var c = typeof _this._shapeConfig.Path.fill === "function" ? _this._shapeConfig.Path.fill(d, i) : _this._shapeConfig.Path.fill;
+            var c = typeof _this7._shapeConfig.Path.fill === "function" ? _this7._shapeConfig.Path.fill(d, i) : _this7._shapeConfig.Path.fill;
             return color(c).darker();
           },
           strokeWidth: 1
         }
       });
-      _this._tiles = true;
-      _this._tileGen = tile();
+      _this7._tiles = true;
+      _this7._tileGen = tile();
 
-      _this.tileUrl("https://cartodb-basemaps-{s}.global.ssl.fastly.net/light_all/{z}/{x}/{y}@2x.png");
+      _this7.tileUrl("https://cartodb-basemaps-{s}.global.ssl.fastly.net/light_all/{z}/{x}/{y}@2x.png");
 
-      _this._topojson = false;
-      _this._topojsonFill = constant$6("#f5f5f3");
+      _this7._topojson = false;
+      _this7._topojsonFill = constant$6("#f5f5f3");
 
-      _this._topojsonFilter = function (d) {
+      _this7._topojsonFilter = function (d) {
         return !["010"].includes(d.id);
       };
 
-      _this._topojsonId = accessor("id");
-      _this._zoom = true;
-      _this._zoomSet = false;
-      return _this;
+      _this7._topojsonId = accessor("id");
+      _this7._zoom = true;
+      _this7._zoomSet = false;
+      return _this7;
     }
     /**
         Renders map tiles based on the current zoom level.
@@ -64917,10 +63504,10 @@
     */
 
 
-    _createClass(Geomap, [{
+    _createClass2(Geomap, [{
       key: "_renderTiles",
       value: function _renderTiles() {
-        var _this2 = this;
+        var _this8 = this;
 
         var transform$1 = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : transform(this._container.node());
         var duration = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 0;
@@ -64932,11 +63519,11 @@
           this._tileGroup.transition().duration(duration).attr("transform", transform$1);
         }
 
-        var images = this._tileGroup.selectAll("image.d3plus-geomap-tile").data(tileData, function (_ref) {
-          var _ref2 = _slicedToArray(_ref, 3),
-              x = _ref2[0],
-              y = _ref2[1],
-              z = _ref2[2];
+        var images = this._tileGroup.selectAll("image.d3plus-geomap-tile").data(tileData, function (_ref3) {
+          var _ref4 = _slicedToArray2(_ref3, 3),
+              x = _ref4[0],
+              y = _ref4[1],
+              z = _ref4[2];
 
           return "".concat(x, "-").concat(y, "-").concat(z);
         });
@@ -64945,21 +63532,21 @@
         var scale = tileData.scale / transform$1.k;
         var tileEnter = images.enter().append("image").attr("class", "d3plus-geomap-tile");
         tileEnter.attr("opacity", 0).transition().duration(duration).attr("opacity", 1);
-        images.merge(tileEnter).attr("width", scale).attr("height", scale).attr("xlink:href", function (_ref3) {
-          var _ref4 = _slicedToArray(_ref3, 3),
-              x = _ref4[0],
-              y = _ref4[1],
-              z = _ref4[2];
+        images.merge(tileEnter).attr("width", scale).attr("height", scale).attr("xlink:href", function (_ref5) {
+          var _ref6 = _slicedToArray2(_ref5, 3),
+              x = _ref6[0],
+              y = _ref6[1],
+              z = _ref6[2];
 
-          return _this2._tileUrl.replace("{s}", ["a", "b", "c"][Math.random() * 3 | 0]).replace("{z}", z).replace("{x}", x).replace("{y}", y);
-        }).attr("x", function (_ref5) {
-          var _ref6 = _slicedToArray(_ref5, 1),
-              x = _ref6[0];
+          return _this8._tileUrl.replace("{s}", ["a", "b", "c"][Math.random() * 3 | 0]).replace("{z}", z).replace("{x}", x).replace("{y}", y);
+        }).attr("x", function (_ref7) {
+          var _ref8 = _slicedToArray2(_ref7, 1),
+              x = _ref8[0];
 
           return x * scale + tileData.translate[0] * scale - transform$1.x / transform$1.k;
-        }).attr("y", function (_ref7) {
-          var _ref8 = _slicedToArray(_ref7, 2),
-              y = _ref8[1];
+        }).attr("y", function (_ref9) {
+          var _ref10 = _slicedToArray2(_ref9, 2),
+              y = _ref10[1];
 
           return y * scale + tileData.translate[1] * scale - transform$1.y / transform$1.k;
         });
@@ -64972,9 +63559,9 @@
     }, {
       key: "_draw",
       value: function _draw(callback) {
-        var _this3 = this;
+        var _this9 = this;
 
-        _get(_getPrototypeOf(Geomap.prototype), "_draw", this).call(this, callback);
+        _get2(_getPrototypeOf2(Geomap.prototype), "_draw", this).call(this, callback);
 
         var height = this._height - this._margin.top - this._margin.bottom,
             width = this._width - this._margin.left - this._margin.right;
@@ -65002,18 +63589,18 @@
         var path = this._path = d3Geo.geoPath().projection(this._projection);
 
         var pointData = this._filteredData.filter(function (d, i) {
-          return _this3._point(d, i) instanceof Array;
+          return _this9._point(d, i) instanceof Array;
         });
 
         var pathData = this._filteredData.filter(function (d, i) {
-          return !(_this3._point(d, i) instanceof Array);
+          return !(_this9._point(d, i) instanceof Array);
         }).reduce(function (obj, d) {
-          obj[_this3._id(d)] = d;
+          obj[_this9._id(d)] = d;
           return obj;
         }, {});
 
         var topoData = coordData.features.reduce(function (arr, feature) {
-          var id = _this3._topojsonId(feature);
+          var id = _this9._topojsonId(feature);
 
           arr.push({
             __d3plus__: true,
@@ -65024,7 +63611,7 @@
           return arr;
         }, []);
         var r = scales["scale".concat(this._pointSizeScale.charAt(0).toUpperCase()).concat(this._pointSizeScale.slice(1))]().domain(extent(pointData, function (d, i) {
-          return _this3._pointSize(d, i);
+          return _this9._pointSize(d, i);
         })).range([this._pointSizeMin, this._pointSizeMax]);
 
         if (!this._zoomSet) {
@@ -65074,14 +63661,14 @@
           }, []);
 
           if (!this._extentBounds.features.length && pointData.length) {
-            var bounds = [[undefined, undefined], [undefined, undefined]];
+            var _bounds = [[undefined, undefined], [undefined, undefined]];
             pointData.forEach(function (d, i) {
-              var point = _this3._projection(_this3._point(d, i));
+              var point = _this9._projection(_this9._point(d, i));
 
-              if (bounds[0][0] === void 0 || point[0] < bounds[0][0]) bounds[0][0] = point[0];
-              if (bounds[1][0] === void 0 || point[0] > bounds[1][0]) bounds[1][0] = point[0];
-              if (bounds[0][1] === void 0 || point[1] < bounds[0][1]) bounds[0][1] = point[1];
-              if (bounds[1][1] === void 0 || point[1] > bounds[1][1]) bounds[1][1] = point[1];
+              if (_bounds[0][0] === void 0 || point[0] < _bounds[0][0]) _bounds[0][0] = point[0];
+              if (_bounds[1][0] === void 0 || point[0] > _bounds[1][0]) _bounds[1][0] = point[0];
+              if (_bounds[0][1] === void 0 || point[1] < _bounds[0][1]) _bounds[0][1] = point[1];
+              if (_bounds[1][1] === void 0 || point[1] > _bounds[1][1]) _bounds[1][1] = point[1];
             });
             this._extentBounds = {
               type: "FeatureCollection",
@@ -65089,14 +63676,14 @@
                 type: "Feature",
                 geometry: {
                   type: "MultiPoint",
-                  coordinates: bounds.map(function (b) {
-                    return _this3._projection.invert(b);
+                  coordinates: _bounds.map(function (b) {
+                    return _this9._projection.invert(b);
                   })
                 }
               }]
             };
             var maxSize = max(pointData, function (d, i) {
-              return r(_this3._pointSize(d, i));
+              return r(_this9._pointSize(d, i));
             });
             this._projectionPadding.top += maxSize;
             this._projectionPadding.right += maxSize;
@@ -65121,13 +63708,13 @@
 
         pointGroup = pointGroup.enter().append("g").attr("class", "d3plus-geomap-pins").merge(pointGroup);
         var circles = new Circle().config(configPrep.bind(this)(this._shapeConfig, "shape", "Circle")).data(pointData).r(function (d, i) {
-          return r(_this3._pointSize(d, i));
+          return r(_this9._pointSize(d, i));
         }).select(pointGroup.node()).sort(function (a, b) {
-          return _this3._pointSize(b) - _this3._pointSize(a);
+          return _this9._pointSize(b) - _this9._pointSize(a);
         }).x(function (d, i) {
-          return _this3._projection(_this3._point(d, i))[0];
+          return _this9._projection(_this9._point(d, i))[0];
         }).y(function (d, i) {
-          return _this3._projection(_this3._point(d, i))[1];
+          return _this9._projection(_this9._point(d, i))[1];
         });
         var events = Object.keys(this._on);
         var classEvents = events.filter(function (e) {
@@ -65144,12 +63731,12 @@
           circles.on(globalEvents[e], this._on[globalEvents[e]]);
         }
 
-        for (var _e = 0; _e < shapeEvents.length; _e++) {
-          circles.on(shapeEvents[_e], this._on[shapeEvents[_e]]);
+        for (var _e2 = 0; _e2 < shapeEvents.length; _e2++) {
+          circles.on(shapeEvents[_e2], this._on[shapeEvents[_e2]]);
         }
 
-        for (var _e2 = 0; _e2 < classEvents.length; _e2++) {
-          circles.on(classEvents[_e2], this._on[classEvents[_e2]]);
+        for (var _e3 = 0; _e3 < classEvents.length; _e3++) {
+          circles.on(classEvents[_e3], this._on[classEvents[_e3]]);
         }
 
         this._shapes.push(circles.render());
@@ -65470,8 +64057,8 @@
   }(Viz);
 
   exports.Geomap = Geomap;
-
-  Object.defineProperty(exports, '__esModule', { value: true });
-
-})));
+  Object.defineProperty(exports, '__esModule', {
+    value: true
+  });
+});
 //# sourceMappingURL=d3plus-geomap.full.js.map
