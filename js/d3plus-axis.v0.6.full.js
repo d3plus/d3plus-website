@@ -1,5 +1,5 @@
 /*
-  d3plus-axis v0.6.2
+  d3plus-axis v0.6.3
   Beautiful javascript scales and axes.
   Copyright (c) 2020 D3plus - https://d3plus.org
   @license MIT
@@ -30135,6 +30135,12 @@
                 return t % 5 === 0 || tickFormat(t).substr(-1) === "1";
               });
             }
+
+            if (labels.includes(-1) && labels.includes(1) && labels.some(function (d) {
+              return d > 10 || d < 10;
+            })) {
+              labels.splice(labels.indexOf(-1), 1);
+            }
           }
 
           if (this._scale === "time") {
@@ -30294,6 +30300,27 @@
           if (res.height % 2) res.height++;
           return res;
         }
+        /** Calculates label offsets */
+
+
+        function calculateOffset() {
+          var arr = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : [];
+          var offset = 0;
+          arr.forEach(function (datum) {
+            var prev = arr[datum.i - 1];
+            var h = datum.rotate && horizontal || !datum.rotate && !horizontal ? "width" : "height",
+                w = datum.rotate && horizontal || !datum.rotate && !horizontal ? "height" : "width";
+
+            if (!prev) {
+              offset = 1;
+            } else if (prev.position + prev[w] / 2 > datum.position - datum[w] / 2) {
+              if (offset) {
+                datum.offset = prev[h];
+                offset = 0;
+              } else offset = 1;
+            }
+          });
+        }
 
         textData = textData.map(function (datum) {
           datum.rotate = _this2._labelRotation;
@@ -30304,6 +30331,9 @@
         this._rotateLabels = horizontal && this._labelRotation === undefined ? textData.some(function (d) {
           return d.truncated;
         }) : this._labelRotation;
+        var offsetEnabled = this._labelOffset && textData.some(function (d) {
+          return d.truncated;
+        });
 
         if (this._rotateLabels) {
           textData = textData.map(function (datum) {
@@ -30311,6 +30341,13 @@
             var res = calculateLabelSize.bind(_this2)(datum);
             return Object.assign(datum, res);
           });
+        } else if (offsetEnabled) {
+          textData = textData.map(function (datum) {
+            datum.space = calculateSpace.bind(_this2)(datum, 2);
+            var res = calculateLabelSize.bind(_this2)(datum);
+            return Object.assign(datum, res);
+          });
+          calculateOffset.bind(this)(textData);
         }
         /**
          * "spillover" will contain the pixel spillover of the first and last label,
@@ -30361,10 +30398,11 @@
           });
           textData = textData.map(function (datum) {
             datum.rotate = _this2._rotateLabels;
-            datum.space = calculateSpace.bind(_this2)(datum);
+            datum.space = calculateSpace.bind(_this2)(datum, offsetEnabled ? 2 : 1);
             var res = calculateLabelSize.bind(_this2)(datum);
             return Object.assign(res, datum);
           });
+          calculateOffset.bind(this)(textData);
         }
 
         var labelHeight = max(textData, function (t) {
@@ -30378,28 +30416,6 @@
           var prev = textData[i - 1];
           return truncated || i && prev.position + prev.height / 2 > position - height / 2;
         }) : this._labelRotation;
-
-        if (this._rotateLabels) {
-          var offset = 0;
-          textData = textData.map(function (datum) {
-            datum.space = calculateSpace.bind(_this2)(datum, 2);
-            var res = calculateLabelSize.bind(_this2)(datum);
-            datum = Object.assign(datum, res);
-            var prev = textData[datum.i - 1];
-
-            if (!prev) {
-              offset = 1;
-            } else if (prev.position + prev.height / 2 > datum.position) {
-              if (offset) {
-                datum.offset = prev.width;
-                offset = 0;
-              } else offset = 1;
-            }
-
-            return datum;
-          });
-        }
-
         var globalOffset = this._labelOffset ? max(textData, function (d) {
           return d.offset || 0;
         }) : 0;
