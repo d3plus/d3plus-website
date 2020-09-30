@@ -2,8 +2,8 @@
 title: Custom Axis Tick Formatting
 width: 600
 height: 300
-time: 1597945169429
-date: August 20, 2020
+time: 1601496637588
+date: September 30, 2020
 ---
 
 [width]: 600
