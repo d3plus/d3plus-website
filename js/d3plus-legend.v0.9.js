@@ -23,7 +23,7 @@ function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.g
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
 /*
-  d3plus-legend v0.9.2
+  d3plus-legend v0.9.3
   An easy to use javascript chart legend.
   Copyright (c) 2020 D3plus - https://d3plus.org
   @license MIT
@@ -2179,7 +2179,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
           return a - b;
         });
 
-        var domain = d3Array.extent(allValues);
+        var domain = this._domain || d3Array.extent(allValues);
         var negative = domain[0] < this._midpoint;
         var positive = domain[1] > this._midpoint;
         var diverging = negative && positive;
@@ -2378,6 +2378,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
           this._colorScale = (this._scale === "buckets" || this._scale === "quantile" ? d3Scale.scaleThreshold : d3Scale.scaleLinear)().domain(_buckets).range(colors);
         }
 
+        if (this._colorScale.clamp) this._colorScale.clamp(true);
         var gradient = this._bucketAxis || !["buckets", "jenks", "quantile"].includes(this._scale);
         var t = d3Transition.transition().duration(this._duration);
         var groupParams = {
@@ -2727,6 +2728,18 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       key: "data",
       value: function data(_) {
         return arguments.length ? (this._data = _, this) : this._data;
+      }
+      /**
+          @memberof ColorScale
+          @desc In a linear scale, this Array of 2 values defines the min and max values used in the color scale. Any values outside of this range will be mapped to the nearest color value.
+          @param {Array} [*value*]
+          @chainable
+      */
+
+    }, {
+      key: "domain",
+      value: function domain(_) {
+        return arguments.length ? (this._domain = _, this) : this._domain;
       }
       /**
           @memberof ColorScale
