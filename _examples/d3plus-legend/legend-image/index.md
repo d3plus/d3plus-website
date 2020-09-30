@@ -2,8 +2,8 @@
 title: Images in Legends
 width: 400
 height: 200
-time: 1599086891428
-date: September 02, 2020
+time: 1601500731566
+date: September 30, 2020
 ---
 
 [width]: 400
