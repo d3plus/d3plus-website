@@ -45,7 +45,7 @@ function _defineProperty2(obj, key, value) { if (key in obj) { Object.defineProp
 function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof2 = function _typeof2(obj) { return typeof obj; }; } else { _typeof2 = function _typeof2(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof2(obj); }
 
 /*
-  d3plus-geomap v0.7.1
+  d3plus-geomap v0.7.2
   A reusable geo map built on D3 and Topojson
   Copyright (c) 2020 D3plus - https://d3plus.org
   @license MIT
