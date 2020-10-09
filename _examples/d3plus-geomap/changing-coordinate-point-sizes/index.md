@@ -2,8 +2,8 @@
 title: Changing Coordinate Point Sizes
 width: 800
 height: 550
-time: 1599146100980
-date: September 03, 2020
+time: 1602264090013
+date: October 09, 2020
 ---
 
 [height]: 550
