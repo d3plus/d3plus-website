@@ -1,11 +1,3 @@
-function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _unsupportedIterableToArray(arr, i) || _nonIterableRest(); }
-
-function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
-
-function _iterableToArrayLimit(arr, i) { if (typeof Symbol === "undefined" || !(Symbol.iterator in Object(arr))) return; var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"] != null) _i["return"](); } finally { if (_d) throw _e; } } return _arr; }
-
-function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
-
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
@@ -30,6 +22,14 @@ function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Re
 
 function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
 
+function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _unsupportedIterableToArray(arr, i) || _nonIterableRest(); }
+
+function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+
+function _iterableToArrayLimit(arr, i) { if (typeof Symbol === "undefined" || !(Symbol.iterator in Object(arr))) return; var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"] != null) _i["return"](); } finally { if (_d) throw _e; } } return _arr; }
+
+function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
+
 function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _unsupportedIterableToArray(arr) || _nonIterableSpread(); }
 
 function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
@@ -45,7 +45,7 @@ function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len 
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
 /*
-  d3plus-matrix v0.1.0
+  d3plus-matrix v0.1.1
   Row/column layouts
   Copyright (c) 2020 D3plus - https://d3plus.org
   @license MIT
@@ -1166,9 +1166,20 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
 });
 
 (function (global, factory) {
-  (typeof exports === "undefined" ? "undefined" : _typeof(exports)) === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3plus-axis'), require('d3plus-common'), require('d3plus-shape'), require('d3plus-viz')) : typeof define === 'function' && define.amd ? define('d3plus-matrix', ['exports', 'd3plus-axis', 'd3plus-common', 'd3plus-shape', 'd3plus-viz'], factory) : (global = typeof globalThis !== 'undefined' ? globalThis : global || self, factory(global.d3plus = {}, global.d3plusAxis, global.d3plusCommon, global.d3plusShape, global.d3plusViz));
-})(this, function (exports, d3plusAxis, d3plusCommon, d3plusShape, d3plusViz) {
+  (typeof exports === "undefined" ? "undefined" : _typeof(exports)) === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3plus-axis'), require('d3plus-common'), require('d3plus-shape'), require('d3plus-viz'), require('d3-array'), require('d3-shape'), require('d3plus-text')) : typeof define === 'function' && define.amd ? define('d3plus-matrix', ['exports', 'd3plus-axis', 'd3plus-common', 'd3plus-shape', 'd3plus-viz', 'd3-array', 'd3-shape', 'd3plus-text'], factory) : (global = typeof globalThis !== 'undefined' ? globalThis : global || self, factory(global.d3plus = {}, global.d3plusAxis, global.d3plusCommon, global.d3plusShape, global.d3plusViz, global.d3Array, global.d3Shape, global.d3plusText));
+})(this, function (exports, d3plusAxis, d3plusCommon, d3plusShape, d3plusViz, d3Array, d3Shape, d3plusText) {
   'use strict';
+  /**
+   *
+   * @param {String} type
+   * @param {Object} d
+   * @param {Number} i
+   * @private
+   */
+
+  function getProp(type, d, i) {
+    return d[type] || this["_".concat(type)](d, i);
+  }
 
   var cartesian = function cartesian(a, b) {
     var _ref;
@@ -1179,6 +1190,51 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       });
     })));
   };
+  /**
+   * @private
+   */
+
+
+  function prepData() {
+    var _this = this;
+
+    var data = this._filteredData;
+    var rowValues = d3plusCommon.unique(data.map(this._row)).sort(this._rowSort);
+    var columnValues = d3plusCommon.unique(data.map(this._column)).sort(this._columnSort);
+    if (!rowValues.length || !columnValues.length) return this;
+    var shapeData = cartesian(rowValues, columnValues).map(function (_ref2) {
+      var _ref3 = _slicedToArray(_ref2, 2),
+          rowValue = _ref3[0],
+          columnValue = _ref3[1];
+
+      var dataObj = {
+        __d3plusTooltip__: true,
+        __d3plus__: true,
+        column: columnValue,
+        row: rowValue
+      };
+      var dataIndex = data.findIndex(function (d, i) {
+        return _this._row(d, i) === rowValue && _this._column(d, i) === columnValue;
+      });
+
+      if (dataIndex >= 0) {
+        dataObj.i = dataIndex;
+        dataObj.data = data[dataIndex];
+      } else {
+        dataObj.data = {
+          row: rowValue,
+          column: columnValue
+        };
+      }
+
+      return dataObj;
+    });
+    return {
+      rowValues: rowValues,
+      columnValues: columnValues,
+      shapeData: shapeData
+    };
+  }
 
   var defaultAxisConfig = {
     align: "start",
@@ -1194,7 +1250,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
   /**
       @class Matrix
       @extends Viz
-      @desc Uses the [d3 Matrix layout](https://github.com/mbostock/d3/wiki/Matrix-Layout) to creates SVG rectangles based on an array of data. See [this example](https://d3plus.org/examples/d3plus-hierarchy/getting-started/) for help getting started using the Matrix generator.
+      @desc Creates a simple rows/columns Matrix view of any dataset. See [this example](https://d3plus.org/examples/d3plus-matrix/getting-started/) for help getting started using the Matrix class.
   */
 
   var Matrix = /*#__PURE__*/function (_d3plusViz$Viz) {
@@ -1208,70 +1264,65 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       @private
     */
     function Matrix() {
-      var _this;
+      var _this2;
 
       _classCallCheck(this, Matrix);
 
-      _this = _super.call(this);
-      _this._column = d3plusCommon.accessor("column");
-      _this._columnAxis = new d3plusAxis.Axis();
-      _this._columnConfig = d3plusCommon.assign({
+      _this2 = _super.call(this);
+      _this2._cellPadding = 2;
+      _this2._column = d3plusCommon.accessor("column");
+      _this2._columnAxis = new d3plusAxis.Axis();
+      _this2._columnConfig = d3plusCommon.assign({
         orient: "top"
       }, defaultAxisConfig);
 
-      _this._columnSort = function (a, b) {
+      _this2._columnSort = function (a, b) {
         return "".concat(a).localeCompare("".concat(b));
       };
 
-      _this._label = function (d, i) {
-        return "".concat(_this._getProp("row", d, i), " / ").concat(_this._getProp("column", d, i));
+      _this2._label = function (d, i) {
+        return "".concat(getProp.bind(_assertThisInitialized(_this2))("row", d, i), " / ").concat(getProp.bind(_assertThisInitialized(_this2))("column", d, i));
       };
 
-      var defaultMouseMoveShape = _this._on["mousemove.shape"];
+      var defaultMouseMoveShape = _this2._on["mousemove.shape"];
 
-      _this._on["mousemove.shape"] = function (d, i) {
+      _this2._on["mousemove.shape"] = function (d, i) {
         defaultMouseMoveShape(d, i);
+        var row = getProp.bind(_assertThisInitialized(_this2))("row", d, i);
+        var column = getProp.bind(_assertThisInitialized(_this2))("column", d, i);
 
-        var row = _this._getProp("row", d, i);
-
-        var column = _this._getProp("column", d, i);
-
-        _this.hover(function (h, ii) {
-          return _this._getProp("row", h, ii) === row || _this._getProp("column", h, ii) === column;
+        _this2.hover(function (h, ii) {
+          return getProp.bind(_assertThisInitialized(_this2))("row", h, ii) === row || getProp.bind(_assertThisInitialized(_this2))("column", h, ii) === column;
         });
       };
 
-      _this._row = d3plusCommon.accessor("row");
-      _this._rowAxis = new d3plusAxis.Axis();
-      _this._rowConfig = d3plusCommon.assign({
+      _this2._row = d3plusCommon.accessor("row");
+      _this2._rowAxis = new d3plusAxis.Axis();
+      _this2._rowConfig = d3plusCommon.assign({
         orient: "left"
       }, defaultAxisConfig);
 
-      _this._rowSort = function (a, b) {
+      _this2._rowSort = function (a, b) {
         return "".concat(a).localeCompare("".concat(b));
       };
 
-      return _this;
+      return _this2;
     }
+    /**
+        @memberof Matrix
+        @desc Extends the draw behavior of the abstract Viz class.
+        @private
+    */
+
 
     _createClass(Matrix, [{
-      key: "_getProp",
-      value: function _getProp(type, d, i) {
-        return d[type] || this["_".concat(type)](d, i);
-      }
-      /**
-          @memberof Matrix
-          @desc Extends the draw behavior of the abstract Viz class.
-          @private
-      */
-
-    }, {
       key: "_draw",
       value: function _draw(callback) {
-        var _this2 = this;
+        var _prepData$bind = prepData.bind(this)(this._filteredData),
+            rowValues = _prepData$bind.rowValues,
+            columnValues = _prepData$bind.columnValues,
+            shapeData = _prepData$bind.shapeData;
 
-        var rowValues = d3plusCommon.unique(this._filteredData.map(this._row)).sort(this._rowSort);
-        var columnValues = d3plusCommon.unique(this._filteredData.map(this._column)).sort(this._columnSort);
         if (!rowValues.length || !columnValues.length) return this;
         var height = this._height - this._margin.top - this._margin.bottom,
             parent = this._select,
@@ -1329,35 +1380,6 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
           update: visibleTransform
         })).height(columnPadding + this._columnAxis.padding() * 2).width(width - this._margin.left - this._margin.right - rowPadding).render();
 
-        var shapeData = cartesian(rowValues, columnValues).map(function (_ref2) {
-          var _ref3 = _slicedToArray(_ref2, 2),
-              rowValue = _ref3[0],
-              columnValue = _ref3[1];
-
-          var dataObj = {
-            __d3plusTooltip__: true,
-            __d3plus__: true,
-            column: columnValue,
-            row: rowValue
-          };
-
-          var dataIndex = _this2._filteredData.findIndex(function (d, i) {
-            return _this2._row(d, i) === rowValue && _this2._column(d, i) === columnValue;
-          });
-
-          if (dataIndex >= 0) {
-            dataObj.i = dataIndex;
-            dataObj.data = _this2._filteredData[dataIndex];
-          } else {
-            dataObj.data = {
-              row: rowValue,
-              column: columnValue
-            };
-          }
-
-          return dataObj;
-        });
-
         var rowScale = this._rowAxis._getPosition.bind(this._rowAxis);
 
         var columnScale = this._columnAxis._getPosition.bind(this._columnAxis);
@@ -1376,8 +1398,8 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
             transform: transform
           }
         }).node()).config({
-          height: cellHeight,
-          width: cellWidth,
+          height: cellHeight - this._cellPadding,
+          width: cellWidth - this._cellPadding,
           x: function x(d) {
             return columnScale(d.column) + cellWidth / 2;
           },
@@ -1387,6 +1409,17 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
         }).config(rectConfig).render());
 
         return this;
+      }
+      /**
+          @memberof Matrix
+          @desc The pixel padding in between each cell.
+          @param {Number} [*value* = 2]
+      */
+
+    }, {
+      key: "cellPadding",
+      value: function cellPadding(_) {
+        return arguments.length ? (this._cellPadding = _, this) : this._cellPadding;
       }
       /**
           @memberof Matrix
@@ -1477,7 +1510,283 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
     return Matrix;
   }(d3plusViz.Viz);
 
+  var tau = Math.PI * 2;
+  /**
+      @class RadialMatrix
+      @extends Viz
+      @desc Creates a radial layout of a rows/columns Matrix of any dataset. See [this example](https://d3plus.org/examples/d3plus-matrix/radial-matrix/) for help getting started using the Matrix class.
+  */
+
+  var RadialMatrix = /*#__PURE__*/function (_d3plusViz$Viz2) {
+    _inherits(RadialMatrix, _d3plusViz$Viz2);
+
+    var _super2 = _createSuper(RadialMatrix);
+
+    /**
+      @memberof RadialMatrix
+      @desc Invoked when creating a new class instance, and sets any default parameters.
+      @private
+    */
+    function RadialMatrix() {
+      var _this3;
+
+      _classCallCheck(this, RadialMatrix);
+
+      _this3 = _super2.call(this);
+      _this3._cellPadding = 2;
+      _this3._column = d3plusCommon.accessor("column");
+      _this3._columnConfig = {
+        shapeConfig: {
+          labelConfig: {
+            fontColor: "#000",
+            padding: 5,
+            textAnchor: function textAnchor(d) {
+              return [0, 180].includes(d.angle) ? "middle" : [2, 3].includes(d.quadrant) ? "end" : "start";
+            },
+            verticalAlign: function verticalAlign(d) {
+              return [90, 270].includes(d.angle) ? "middle" : [2, 1].includes(d.quadrant) ? "bottom" : "top";
+            }
+          }
+        }
+      };
+
+      _this3._columnSort = function (a, b) {
+        return "".concat(a).localeCompare("".concat(b));
+      };
+
+      _this3._innerRadius = function (radius) {
+        return radius / 5;
+      };
+
+      _this3._label = function (d, i) {
+        return "".concat(getProp.bind(_assertThisInitialized(_this3))("row", d, i), " / ").concat(getProp.bind(_assertThisInitialized(_this3))("column", d, i));
+      };
+
+      var defaultMouseMoveShape = _this3._on["mousemove.shape"];
+
+      _this3._on["mousemove.shape"] = function (d, i) {
+        defaultMouseMoveShape(d, i);
+        var row = getProp.bind(_assertThisInitialized(_this3))("row", d, i);
+        var column = getProp.bind(_assertThisInitialized(_this3))("column", d, i);
+
+        _this3.hover(function (h, ii) {
+          return getProp.bind(_assertThisInitialized(_this3))("row", h, ii) === row || getProp.bind(_assertThisInitialized(_this3))("column", h, ii) === column;
+        });
+      };
+
+      _this3._row = d3plusCommon.accessor("row");
+
+      _this3._rowSort = function (a, b) {
+        return "".concat(a).localeCompare("".concat(b));
+      };
+
+      _this3._columnLabels = new d3plusText.TextBox();
+      return _this3;
+    }
+    /**
+        @memberof RadialMatrix
+        @desc Extends the draw behavior of the abstract Viz class.
+        @private
+    */
+
+
+    _createClass(RadialMatrix, [{
+      key: "_draw",
+      value: function _draw(callback) {
+        var _this4 = this;
+
+        var _prepData$bind2 = prepData.bind(this)(this._filteredData),
+            rowValues = _prepData$bind2.rowValues,
+            columnValues = _prepData$bind2.columnValues,
+            shapeData = _prepData$bind2.shapeData;
+
+        if (!rowValues.length || !columnValues.length) return this;
+
+        _get(_getPrototypeOf(RadialMatrix.prototype), "_draw", this).call(this, callback);
+
+        var height = this._height - this._margin.top - this._margin.bottom,
+            parent = this._select,
+            transition = this._transition,
+            width = this._width - this._margin.left - this._margin.right;
+        var labelHeight = 50,
+            labelWidth = 100;
+        var radius = d3Array.min([height - labelHeight * 2, width - labelWidth * 2]) / 2,
+            transform = "translate(".concat(width / 2 + this._margin.left, ", ").concat(height / 2 + this._margin.top, ")");
+        var flippedColumns = columnValues.slice().reverse();
+        flippedColumns.unshift(flippedColumns.pop());
+        var total = flippedColumns.length;
+        var labelData = flippedColumns.map(function (key, i) {
+          var radians = i / total * tau;
+          var angle = Math.round(radians * 180 / Math.PI);
+          var quadrant = Math.floor((angle + 90) / 90 % 4 + 1);
+          var xMod = [0, 180].includes(angle) ? -labelWidth / 2 : [2, 3].includes(quadrant) ? -labelWidth : 0;
+          var yMod = [90, 270].includes(angle) ? -labelHeight / 2 : [2, 1].includes(quadrant) ? -labelHeight : 0;
+          return {
+            key: key,
+            angle: angle,
+            quadrant: quadrant,
+            radians: radians,
+            x: radius * Math.sin(radians + Math.PI) + xMod,
+            y: radius * Math.cos(radians + Math.PI) + yMod
+          };
+        });
+
+        this._columnLabels.data(labelData).x(function (d) {
+          return d.x;
+        }).y(function (d) {
+          return d.y;
+        }).text(function (d) {
+          return d.key;
+        }).width(labelWidth).height(labelHeight).config(this._columnConfig.shapeConfig.labelConfig).select(d3plusCommon.elem("g.d3plus-RadialMatrix-columns", {
+          parent: parent,
+          transition: transition,
+          enter: {
+            transform: transform
+          },
+          update: {
+            transform: transform
+          }
+        }).node()).render();
+
+        var innerRadius = this._innerRadius(radius);
+
+        var rowHeight = (radius - innerRadius) / rowValues.length;
+        var columnWidth = labelData.length > 1 ? labelData[1].radians - labelData[0].radians : tau;
+        var flippedRows = rowValues.slice().reverse();
+        var arcData = d3Shape.arc().padAngle(this._cellPadding / radius).innerRadius(function (d) {
+          return innerRadius + flippedRows.indexOf(d.row) * rowHeight + _this4._cellPadding / 2;
+        }).outerRadius(function (d) {
+          return innerRadius + (flippedRows.indexOf(d.row) + 1) * rowHeight - _this4._cellPadding / 2;
+        }).startAngle(function (d) {
+          return labelData[columnValues.indexOf(d.column)].radians - columnWidth / 2;
+        }).endAngle(function (d) {
+          return labelData[columnValues.indexOf(d.column)].radians + columnWidth / 2;
+        });
+
+        this._shapes.push(new d3plusShape.Path().data(shapeData).d(arcData).select(d3plusCommon.elem("g.d3plus-RadialMatrix-arcs", {
+          parent: parent,
+          transition: transition,
+          enter: {
+            transform: transform
+          },
+          update: {
+            transform: transform
+          }
+        }).node()).config({
+          id: function id(d) {
+            return _this4._ids(d).join("-");
+          },
+          x: 0,
+          y: 0
+        }).config(d3plusCommon.configPrep.bind(this)(this._shapeConfig, "shape", "Path")).render());
+
+        return this;
+      }
+      /**
+          @memberof RadialMatrix
+          @desc The pixel padding in between each cell.
+          @param {Number} [*value* = 2]
+      */
+
+    }, {
+      key: "cellPadding",
+      value: function cellPadding(_) {
+        return arguments.length ? (this._cellPadding = _, this) : this._cellPadding;
+      }
+      /**
+          @memberof RadialMatrix
+          @desc Determines which key in your data should be used for each column in the matrix. Can be either a String that matches a key used in every data point, or an accessor function that receives a data point and it's index in the data array, and is expected to return it's column value.
+          @param {String|Function} [*value*]
+          @example
+      function column(d) {
+      return d.name;
+      }
+      */
+
+    }, {
+      key: "column",
+      value: function column(_) {
+        return arguments.length ? (this._column = typeof _ === "function" ? _ : d3plusCommon.accessor(_), this) : this._column;
+      }
+      /**
+          @memberof RadialMatrix
+          @desc A pass-through to the underlying [Axis](http://d3plus.org/docs/#Axis) config used for the column labels.
+          @param {Object} *value*
+          @chainable
+      */
+
+    }, {
+      key: "columnConfig",
+      value: function columnConfig(_) {
+        return arguments.length ? (this._columnConfig = d3plusCommon.assign(this._columnConfig, _), this) : this._columnConfig;
+      }
+      /**
+          @memberof RadialMatrix
+          @desc A sort comparator function that is run on the unique set of column values.
+          @param {Function} [*value*]
+          @example
+      function column(a, b) {
+      return a.localeCompare(b);
+      }
+      */
+
+    }, {
+      key: "columnSort",
+      value: function columnSort(_) {
+        return arguments.length ? (this._columnSort = _, this) : this._columnSort;
+      }
+      /**
+          @memberof RadialMatrix
+          @desc The radius (in pixels) for the inner donut hole of the diagram. Can either be a static Number, or an accessor function that receives the outer radius as it's only argument.
+          @param {Function|Number} [*value*]
+          @example
+      function(outerRadius) {
+      return outerRadius / 5;
+      }
+      */
+
+    }, {
+      key: "innerRadius",
+      value: function innerRadius(_) {
+        return arguments.length ? (this._innerRadius = typeof _ === "function" ? _ : d3plusCommon.constant(_), this) : this._innerRadius;
+      }
+      /**
+          @memberof RadialMatrix
+          @desc Determines which key in your data should be used for each row in the matrix. Can be either a String that matches a key used in every data point, or an accessor function that receives a data point and it's index in the data array, and is expected to return it's row value.
+          @param {String|Function} [*value*]
+          @example
+      function row(d) {
+      return d.name;
+      }
+      */
+
+    }, {
+      key: "row",
+      value: function row(_) {
+        return arguments.length ? (this._row = typeof _ === "function" ? _ : d3plusCommon.accessor(_), this) : this._row;
+      }
+      /**
+          @memberof RadialMatrix
+          @desc A sort comparator function that is run on the unique set of row values.
+          @param {Function} [*value*]
+          @example
+      function row(a, b) {
+      return a.localeCompare(b);
+      }
+      */
+
+    }, {
+      key: "rowSort",
+      value: function rowSort(_) {
+        return arguments.length ? (this._rowSort = _, this) : this._rowSort;
+      }
+    }]);
+
+    return RadialMatrix;
+  }(d3plusViz.Viz);
+
   exports.Matrix = Matrix;
+  exports.RadialMatrix = RadialMatrix;
   Object.defineProperty(exports, '__esModule', {
     value: true
   });
