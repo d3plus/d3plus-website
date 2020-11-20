@@ -2,7 +2,7 @@
 title: Radial Matrix
 width: 800
 height: 400
-time: 1605886689057
+time: 1605886792081
 date: November 20, 2020
 ---
 
@@ -13,7 +13,7 @@ The [Radial Matrix](http://d3plus.org/docs/#RadialMatrix) class creates a radial
 Everything else uses the same color and label methods as in other visualizations, such as the use of [colorScale](http://d3plus.org/docs/#Viz.colorScale) here to create a heatmap.
 
 ```js
-new d3plus.Matrix()
+new d3plus.RadialMatrix()
   .config({
       colorScale: "Trade Value",
       colorScaleConfig: {
