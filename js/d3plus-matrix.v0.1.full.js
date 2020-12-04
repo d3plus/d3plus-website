@@ -53,7 +53,7 @@ function _defineProperty2(obj, key, value) { if (key in obj) { Object.defineProp
 function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof2 = function _typeof2(obj) { return typeof obj; }; } else { _typeof2 = function _typeof2(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof2(obj); }
 
 /*
-  d3plus-matrix v0.1.2
+  d3plus-matrix v0.1.3
   Row/column layouts
   Copyright (c) 2020 D3plus - https://d3plus.org
   @license MIT
@@ -276,7 +276,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
     (module.exports = function (key, value) {
       return sharedStore[key] || (sharedStore[key] = value !== undefined ? value : {});
     })('versions', []).push({
-      version: '3.7.0',
+      version: '3.8.0',
       mode: 'global',
       copyright: '© 2020 Denis Pushkarev (zloirock.ru)'
     });
@@ -676,7 +676,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
     return new (C === undefined ? Array : C)(length === 0 ? 0 : length);
   };
 
-  var push = [].push; // `Array.prototype.{ forEach, map, filter, some, every, find, findIndex }` methods implementation
+  var push = [].push; // `Array.prototype.{ forEach, map, filter, some, every, find, findIndex, filterOut }` methods implementation
 
   var createMethod$1 = function createMethod$1(TYPE) {
     var IS_MAP = TYPE == 1;
@@ -684,6 +684,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
     var IS_SOME = TYPE == 3;
     var IS_EVERY = TYPE == 4;
     var IS_FIND_INDEX = TYPE == 6;
+    var IS_FILTER_OUT = TYPE == 7;
     var NO_HOLES = TYPE == 5 || IS_FIND_INDEX;
     return function ($this, callbackfn, that, specificCreate) {
       var O = toObject($this);
@@ -692,7 +693,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
       var length = toLength(self.length);
       var index = 0;
       var create = specificCreate || arraySpeciesCreate;
-      var target = IS_MAP ? create($this, length) : IS_FILTER ? create($this, 0) : undefined;
+      var target = IS_MAP ? create($this, length) : IS_FILTER || IS_FILTER_OUT ? create($this, 0) : undefined;
       var value, result;
 
       for (; length > index; index++) {
@@ -718,7 +719,15 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
                 case 2:
                   push.call(target, value);
                 // filter
-              } else if (IS_EVERY) return false; // every
+              } else switch (TYPE) {
+                case 4:
+                  return false;
+                // every
+
+                case 7:
+                  push.call(target, value);
+                // filterOut
+              }
           }
         }
       }
@@ -748,7 +757,10 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
     find: createMethod$1(5),
     // `Array.prototype.findIndex` method
     // https://tc39.github.io/ecma262/#sec-array.prototype.findIndex
-    findIndex: createMethod$1(6)
+    findIndex: createMethod$1(6),
+    // `Array.prototype.filterOut` method
+    // https://github.com/tc39/proposal-array-filtering
+    filterOut: createMethod$1(7)
   }; // `Object.keys` method
   // https://tc39.github.io/ecma262/#sec-object.keys
 
@@ -1215,6 +1227,46 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
   }
 
   var ascendingBisect = bisector(ascending);
+  var bisectRight = ascendingBisect.right;
+
+  function number(x) {
+    return x === null ? NaN : +x;
+  }
+
+  function variance(values, valueof) {
+    var n = values.length,
+        m = 0,
+        i = -1,
+        mean = 0,
+        value,
+        delta,
+        sum = 0;
+
+    if (valueof == null) {
+      while (++i < n) {
+        if (!isNaN(value = number(values[i]))) {
+          delta = value - mean;
+          mean += delta / ++m;
+          sum += delta * (value - mean);
+        }
+      }
+    } else {
+      while (++i < n) {
+        if (!isNaN(value = number(valueof(values[i], i, values)))) {
+          delta = value - mean;
+          mean += delta / ++m;
+          sum += delta * (value - mean);
+        }
+      }
+    }
+
+    if (m > 1) return sum / (m - 1);
+  }
+
+  function deviation(array, f) {
+    var v = variance(array, f);
+    return v ? Math.sqrt(v) : v;
+  }
 
   function extent(values, valueof) {
     var n = values.length,
@@ -1258,7 +1310,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
     return [min, max];
   }
 
-  function d3Range(start, stop, step) {
+  function range(start, stop, step) {
     start = +start, stop = +stop, step = (n = arguments.length) < 2 ? (stop = start, start = 0, 1) : n < 3 ? 1 : +step;
     var i = -1,
         n = Math.max(0, Math.ceil((stop - start) / step)) | 0,
@@ -1315,6 +1367,27 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
     return power >= 0 ? (error >= e10 ? 10 : error >= e5 ? 5 : error >= e2 ? 2 : 1) * Math.pow(10, power) : -Math.pow(10, -power) / (error >= e10 ? 10 : error >= e5 ? 5 : error >= e2 ? 2 : 1);
   }
 
+  function tickStep(start, stop, count) {
+    var step0 = Math.abs(stop - start) / Math.max(0, count),
+        step1 = Math.pow(10, Math.floor(Math.log(step0) / Math.LN10)),
+        error = step0 / step1;
+    if (error >= e10) step1 *= 10;else if (error >= e5) step1 *= 5;else if (error >= e2) step1 *= 2;
+    return stop < start ? -step1 : step1;
+  }
+
+  function quantile(values, p, valueof) {
+    if (valueof == null) valueof = number;
+    if (!(n = values.length)) return;
+    if ((p = +p) <= 0 || n < 2) return +valueof(values[0], 0, values);
+    if (p >= 1) return +valueof(values[n - 1], n - 1, values);
+    var n,
+        i = (n - 1) * p,
+        i0 = Math.floor(i),
+        value0 = +valueof(values[i0], i0, values),
+        value1 = +valueof(values[i0 + 1], i0 + 1, values);
+    return value0 + (value1 - value0) * (i - i0);
+  }
+
   function max(values, valueof) {
     var n = values.length,
         i = -1,
@@ -1354,6 +1427,32 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
     return max;
   }
 
+  function arrayMerge(arrays) {
+    var n = arrays.length,
+        m,
+        i = -1,
+        j = 0,
+        merged,
+        array;
+
+    while (++i < n) {
+      j += arrays[i].length;
+    }
+
+    merged = new Array(j);
+
+    while (--n >= 0) {
+      array = arrays[n];
+      m = array.length;
+
+      while (--m >= 0) {
+        merged[--j] = array[m];
+      }
+    }
+
+    return merged;
+  }
+
   function min(values, valueof) {
     var n = values.length,
         i = -1,
@@ -1391,6 +1490,25 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
     }
 
     return min;
+  }
+
+  function sum(values, valueof) {
+    var n = values.length,
+        i = -1,
+        value,
+        sum = 0;
+
+    if (valueof == null) {
+      while (++i < n) {
+        if (value = +values[i]) sum += value; // Note: zero and null are equivalent.
+      }
+    } else {
+      while (++i < n) {
+        if (value = +valueof(values[i], i, values)) sum += value;
+      }
+    }
+
+    return sum;
   }
 
   var t0 = new Date(),
@@ -2397,129 +2515,6 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
     return locale;
   }
 
-  function ascending$1(a, b) {
-    return a < b ? -1 : a > b ? 1 : a >= b ? 0 : NaN;
-  }
-
-  function bisector$1(compare) {
-    if (compare.length === 1) compare = ascendingComparator$1(compare);
-    return {
-      left: function left(a, x, lo, hi) {
-        if (lo == null) lo = 0;
-        if (hi == null) hi = a.length;
-
-        while (lo < hi) {
-          var mid = lo + hi >>> 1;
-          if (compare(a[mid], x) < 0) lo = mid + 1;else hi = mid;
-        }
-
-        return lo;
-      },
-      right: function right(a, x, lo, hi) {
-        if (lo == null) lo = 0;
-        if (hi == null) hi = a.length;
-
-        while (lo < hi) {
-          var mid = lo + hi >>> 1;
-          if (compare(a[mid], x) > 0) hi = mid;else lo = mid + 1;
-        }
-
-        return lo;
-      }
-    };
-  }
-
-  function ascendingComparator$1(f) {
-    return function (d, x) {
-      return ascending$1(f(d), x);
-    };
-  }
-
-  var ascendingBisect$1 = bisector$1(ascending$1);
-  var bisectRight = ascendingBisect$1.right;
-
-  function number(x) {
-    return x === null ? NaN : +x;
-  }
-
-  function sequence(start, stop, step) {
-    start = +start, stop = +stop, step = (n = arguments.length) < 2 ? (stop = start, start = 0, 1) : n < 3 ? 1 : +step;
-    var i = -1,
-        n = Math.max(0, Math.ceil((stop - start) / step)) | 0,
-        range = new Array(n);
-
-    while (++i < n) {
-      range[i] = start + i * step;
-    }
-
-    return range;
-  }
-
-  var e10$1 = Math.sqrt(50),
-      e5$1 = Math.sqrt(10),
-      e2$1 = Math.sqrt(2);
-
-  function ticks(start, stop, count) {
-    var reverse,
-        i = -1,
-        n,
-        ticks,
-        step;
-    stop = +stop, start = +start, count = +count;
-    if (start === stop && count > 0) return [start];
-    if (reverse = stop < start) n = start, start = stop, stop = n;
-    if ((step = tickIncrement$1(start, stop, count)) === 0 || !isFinite(step)) return [];
-
-    if (step > 0) {
-      start = Math.ceil(start / step);
-      stop = Math.floor(stop / step);
-      ticks = new Array(n = Math.ceil(stop - start + 1));
-
-      while (++i < n) {
-        ticks[i] = (start + i) * step;
-      }
-    } else {
-      start = Math.floor(start * step);
-      stop = Math.ceil(stop * step);
-      ticks = new Array(n = Math.ceil(start - stop + 1));
-
-      while (++i < n) {
-        ticks[i] = (start - i) / step;
-      }
-    }
-
-    if (reverse) ticks.reverse();
-    return ticks;
-  }
-
-  function tickIncrement$1(start, stop, count) {
-    var step = (stop - start) / Math.max(0, count),
-        power = Math.floor(Math.log(step) / Math.LN10),
-        error = step / Math.pow(10, power);
-    return power >= 0 ? (error >= e10$1 ? 10 : error >= e5$1 ? 5 : error >= e2$1 ? 2 : 1) * Math.pow(10, power) : -Math.pow(10, -power) / (error >= e10$1 ? 10 : error >= e5$1 ? 5 : error >= e2$1 ? 2 : 1);
-  }
-
-  function tickStep(start, stop, count) {
-    var step0 = Math.abs(stop - start) / Math.max(0, count),
-        step1 = Math.pow(10, Math.floor(Math.log(step0) / Math.LN10)),
-        error = step0 / step1;
-    if (error >= e10$1) step1 *= 10;else if (error >= e5$1) step1 *= 5;else if (error >= e2$1) step1 *= 2;
-    return stop < start ? -step1 : step1;
-  }
-
-  function threshold(values, p, valueof) {
-    if (valueof == null) valueof = number;
-    if (!(n = values.length)) return;
-    if ((p = +p) <= 0 || n < 2) return +valueof(values[0], 0, values);
-    if (p >= 1) return +valueof(values[n - 1], n - 1, values);
-    var n,
-        i = (n - 1) * p,
-        i0 = Math.floor(i),
-        value0 = +valueof(values[i0], i0, values),
-        value1 = +valueof(values[i0 + 1], i0 + 1, values);
-    return value0 + (value1 - value0) * (i - i0);
-  }
-
   function initRange(domain, range) {
     switch (arguments.length) {
       case 0:
@@ -2857,7 +2852,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
     var scale = ordinal().unknown(undefined),
         domain = scale.domain,
         ordinalRange = scale.range,
-        range = [0, 1],
+        range$1 = [0, 1],
         step,
         bandwidth,
         round = false,
@@ -2868,15 +2863,15 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
 
     function rescale() {
       var n = domain().length,
-          reverse = range[1] < range[0],
-          start = range[reverse - 0],
-          stop = range[1 - reverse];
+          reverse = range$1[1] < range$1[0],
+          start = range$1[reverse - 0],
+          stop = range$1[1 - reverse];
       step = (stop - start) / Math.max(1, n - paddingInner + paddingOuter * 2);
       if (round) step = Math.floor(step);
       start += (stop - start - step * (n - paddingInner)) * align;
       bandwidth = step * (1 - paddingInner);
       if (round) start = Math.round(start), bandwidth = Math.round(bandwidth);
-      var values = sequence(n).map(function (i) {
+      var values = range(n).map(function (i) {
         return start + step * i;
       });
       return ordinalRange(reverse ? values.reverse() : values);
@@ -2887,11 +2882,11 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
     };
 
     scale.range = function (_) {
-      return arguments.length ? (range = [+_[0], +_[1]], rescale()) : range.slice();
+      return arguments.length ? (range$1 = [+_[0], +_[1]], rescale()) : range$1.slice();
     };
 
     scale.rangeRound = function (_) {
-      return range = [+_[0], +_[1]], round = true, rescale();
+      return range$1 = [+_[0], +_[1]], round = true, rescale();
     };
 
     scale.bandwidth = function () {
@@ -2923,7 +2918,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
     };
 
     scale.copy = function () {
-      return band(domain(), range).round(round).paddingInner(paddingInner).paddingOuter(paddingOuter).align(align);
+      return band(domain(), range$1).round(round).paddingInner(paddingInner).paddingOuter(paddingOuter).align(align);
     };
 
     return initRange.apply(rescale(), arguments);
@@ -4226,7 +4221,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
 
     scale.ticks = function (count) {
       var d = domain();
-      return ticks(d[0], d[d.length - 1], count == null ? 10 : count);
+      return d3Ticks(d[0], d[d.length - 1], count == null ? 10 : count);
     };
 
     scale.tickFormat = function (count, specifier) {
@@ -4248,16 +4243,16 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
         step = i0, i0 = i1, i1 = step;
       }
 
-      step = tickIncrement$1(start, stop, count);
+      step = tickIncrement(start, stop, count);
 
       if (step > 0) {
         start = Math.floor(start / step) * step;
         stop = Math.ceil(stop / step) * step;
-        step = tickIncrement$1(start, stop, count);
+        step = tickIncrement(start, stop, count);
       } else if (step < 0) {
         start = Math.ceil(start * step) / step;
         stop = Math.floor(stop * step) / step;
-        step = tickIncrement$1(start, stop, count);
+        step = tickIncrement(start, stop, count);
       }
 
       if (step > 0) {
@@ -4428,7 +4423,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
           }
         }
       } else {
-        z = ticks(i, j, Math.min(j - i, n)).map(pows);
+        z = d3Ticks(i, j, Math.min(j - i, n)).map(pows);
       }
 
       return r ? z.reverse() : z;
@@ -4550,7 +4545,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
     return pow.apply(null, arguments).exponent(0.5);
   }
 
-  function quantile() {
+  function quantile$1() {
     var domain = [],
         range = [],
         thresholds = [],
@@ -4562,7 +4557,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
       thresholds = new Array(n - 1);
 
       while (++i < n) {
-        thresholds[i - 1] = threshold(domain, i / n);
+        thresholds[i - 1] = quantile(domain, i / n);
       }
 
       return scale;
@@ -4585,7 +4580,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
         if (d = _[i], d != null && !isNaN(d = +d)) domain.push(d);
       }
 
-      domain.sort(ascending$1);
+      domain.sort(ascending);
       return rescale();
     };
 
@@ -4602,7 +4597,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
     };
 
     scale.copy = function () {
-      return quantile().domain(domain).range(range).unknown(unknown);
+      return quantile$1().domain(domain).range(range).unknown(unknown);
     };
 
     return initRange.apply(scale, arguments);
@@ -4659,7 +4654,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
     return initRange.apply(linearish(scale), arguments);
   }
 
-  function threshold$1() {
+  function threshold() {
     var domain = [0.5],
         range = [0, 1],
         unknown,
@@ -4687,7 +4682,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
     };
 
     scale.copy = function () {
-      return threshold$1().domain(domain).range(range).unknown(unknown);
+      return threshold().domain(domain).range(range).unknown(unknown);
     };
 
     return initRange.apply(scale, arguments);
@@ -4734,7 +4729,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
 
       if (typeof interval === "number") {
         var target = Math.abs(stop - start) / interval,
-            i = bisector$1(function (i) {
+            i = bisector(function (i) {
           return i[2];
         }).right(tickIntervals, target);
 
@@ -4900,7 +4895,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
         if (d = _[i], d != null && !isNaN(d = +d)) domain.push(d);
       }
 
-      domain.sort(ascending$1);
+      domain.sort(ascending);
       return scale;
     };
 
@@ -5011,9 +5006,9 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
     scaleImplicit: implicit,
     scalePow: pow,
     scaleSqrt: sqrt,
-    scaleQuantile: quantile,
+    scaleQuantile: quantile$1,
     scaleQuantize: quantize,
-    scaleThreshold: threshold$1,
+    scaleThreshold: threshold,
     scaleTime: scaleTime,
     scaleUtc: utcTime,
     scaleSequential: sequential,
@@ -5335,7 +5330,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
   }
 
   function selection_sort(compare) {
-    if (!compare) compare = ascending$2;
+    if (!compare) compare = ascending$1;
 
     function compareNode(a, b) {
       return a && b ? compare(a.__data__, b.__data__) : !a - !b;
@@ -5354,7 +5349,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
     return new Selection(sortgroups, this._parents).order();
   }
 
-  function ascending$2(a, b) {
+  function ascending$1(a, b) {
     return a < b ? -1 : a > b ? 1 : a >= b ? 0 : NaN;
   }
 
@@ -17478,91 +17473,6 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
     update.transition(p.transition).call(attrize, p.update);
     return update;
   }
-
-  function ascending$3(a, b) {
-    return a < b ? -1 : a > b ? 1 : a >= b ? 0 : NaN;
-  }
-
-  function bisector$2(compare) {
-    if (compare.length === 1) compare = ascendingComparator$2(compare);
-    return {
-      left: function left(a, x, lo, hi) {
-        if (lo == null) lo = 0;
-        if (hi == null) hi = a.length;
-
-        while (lo < hi) {
-          var mid = lo + hi >>> 1;
-          if (compare(a[mid], x) < 0) lo = mid + 1;else hi = mid;
-        }
-
-        return lo;
-      },
-      right: function right(a, x, lo, hi) {
-        if (lo == null) lo = 0;
-        if (hi == null) hi = a.length;
-
-        while (lo < hi) {
-          var mid = lo + hi >>> 1;
-          if (compare(a[mid], x) > 0) hi = mid;else lo = mid + 1;
-        }
-
-        return lo;
-      }
-    };
-  }
-
-  function ascendingComparator$2(f) {
-    return function (d, x) {
-      return ascending$3(f(d), x);
-    };
-  }
-
-  var ascendingBisect$2 = bisector$2(ascending$3);
-
-  function merge(arrays) {
-    var n = arrays.length,
-        m,
-        i = -1,
-        j = 0,
-        merged,
-        array;
-
-    while (++i < n) {
-      j += arrays[i].length;
-    }
-
-    merged = new Array(j);
-
-    while (--n >= 0) {
-      array = arrays[n];
-      m = array.length;
-
-      while (--m >= 0) {
-        merged[--j] = array[m];
-      }
-    }
-
-    return merged;
-  }
-
-  function sum(values, valueof) {
-    var n = values.length,
-        i = -1,
-        value,
-        sum = 0;
-
-    if (valueof == null) {
-      while (++i < n) {
-        if (value = +values[i]) sum += value; // Note: zero and null are equivalent.
-      }
-    } else {
-      while (++i < n) {
-        if (value = +valueof(values[i], i, values)) sum += value;
-      }
-    }
-
-    return sum;
-  }
   /**
       @function unique
       @desc ES5 implementation to reduce an Array of values to unique instances.
@@ -17596,7 +17506,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
 
   function objectMerge(objects) {
     var aggs = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
-    var availableKeys = unique(merge(objects.map(function (o) {
+    var availableKeys = unique(arrayMerge(objects.map(function (o) {
       return keys(o);
     }))),
         newObject = {};
@@ -17614,7 +17524,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
           return v !== void 0;
         });
         if (!types.length) value = undefined;else if (types.indexOf(Array) >= 0) {
-          value = merge(values.map(function (v) {
+          value = arrayMerge(values.map(function (v) {
             return v instanceof Array ? v : [v];
           }));
           value = unique(value);
@@ -18140,241 +18050,6 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
 
     return Image;
   }();
-
-  function ascending$4(a, b) {
-    return a < b ? -1 : a > b ? 1 : a >= b ? 0 : NaN;
-  }
-
-  function bisector$3(compare) {
-    if (compare.length === 1) compare = ascendingComparator$3(compare);
-    return {
-      left: function left(a, x, lo, hi) {
-        if (lo == null) lo = 0;
-        if (hi == null) hi = a.length;
-
-        while (lo < hi) {
-          var mid = lo + hi >>> 1;
-          if (compare(a[mid], x) < 0) lo = mid + 1;else hi = mid;
-        }
-
-        return lo;
-      },
-      right: function right(a, x, lo, hi) {
-        if (lo == null) lo = 0;
-        if (hi == null) hi = a.length;
-
-        while (lo < hi) {
-          var mid = lo + hi >>> 1;
-          if (compare(a[mid], x) > 0) hi = mid;else lo = mid + 1;
-        }
-
-        return lo;
-      }
-    };
-  }
-
-  function ascendingComparator$3(f) {
-    return function (d, x) {
-      return ascending$4(f(d), x);
-    };
-  }
-
-  var ascendingBisect$3 = bisector$3(ascending$4);
-
-  function number$3(x) {
-    return x === null ? NaN : +x;
-  }
-
-  function extent$1(values, valueof) {
-    var n = values.length,
-        i = -1,
-        value,
-        min,
-        max;
-
-    if (valueof == null) {
-      while (++i < n) {
-        // Find the first comparable value.
-        if ((value = values[i]) != null && value >= value) {
-          min = max = value;
-
-          while (++i < n) {
-            // Compare the remaining values.
-            if ((value = values[i]) != null) {
-              if (min > value) min = value;
-              if (max < value) max = value;
-            }
-          }
-        }
-      }
-    } else {
-      while (++i < n) {
-        // Find the first comparable value.
-        if ((value = valueof(values[i], i, values)) != null && value >= value) {
-          min = max = value;
-
-          while (++i < n) {
-            // Compare the remaining values.
-            if ((value = valueof(values[i], i, values)) != null) {
-              if (min > value) min = value;
-              if (max < value) max = value;
-            }
-          }
-        }
-      }
-    }
-
-    return [min, max];
-  }
-
-  function range(start, stop, step) {
-    start = +start, stop = +stop, step = (n = arguments.length) < 2 ? (stop = start, start = 0, 1) : n < 3 ? 1 : +step;
-    var i = -1,
-        n = Math.max(0, Math.ceil((stop - start) / step)) | 0,
-        range = new Array(n);
-
-    while (++i < n) {
-      range[i] = start + i * step;
-    }
-
-    return range;
-  }
-
-  function quantile$1(values, p, valueof) {
-    if (valueof == null) valueof = number$3;
-    if (!(n = values.length)) return;
-    if ((p = +p) <= 0 || n < 2) return +valueof(values[0], 0, values);
-    if (p >= 1) return +valueof(values[n - 1], n - 1, values);
-    var n,
-        i = (n - 1) * p,
-        i0 = Math.floor(i),
-        value0 = +valueof(values[i0], i0, values),
-        value1 = +valueof(values[i0 + 1], i0 + 1, values);
-    return value0 + (value1 - value0) * (i - i0);
-  }
-
-  function max$1(values, valueof) {
-    var n = values.length,
-        i = -1,
-        value,
-        max;
-
-    if (valueof == null) {
-      while (++i < n) {
-        // Find the first comparable value.
-        if ((value = values[i]) != null && value >= value) {
-          max = value;
-
-          while (++i < n) {
-            // Compare the remaining values.
-            if ((value = values[i]) != null && value > max) {
-              max = value;
-            }
-          }
-        }
-      }
-    } else {
-      while (++i < n) {
-        // Find the first comparable value.
-        if ((value = valueof(values[i], i, values)) != null && value >= value) {
-          max = value;
-
-          while (++i < n) {
-            // Compare the remaining values.
-            if ((value = valueof(values[i], i, values)) != null && value > max) {
-              max = value;
-            }
-          }
-        }
-      }
-    }
-
-    return max;
-  }
-
-  function merge$1(arrays) {
-    var n = arrays.length,
-        m,
-        i = -1,
-        j = 0,
-        merged,
-        array;
-
-    while (++i < n) {
-      j += arrays[i].length;
-    }
-
-    merged = new Array(j);
-
-    while (--n >= 0) {
-      array = arrays[n];
-      m = array.length;
-
-      while (--m >= 0) {
-        merged[--j] = array[m];
-      }
-    }
-
-    return merged;
-  }
-
-  function min$1(values, valueof) {
-    var n = values.length,
-        i = -1,
-        value,
-        min;
-
-    if (valueof == null) {
-      while (++i < n) {
-        // Find the first comparable value.
-        if ((value = values[i]) != null && value >= value) {
-          min = value;
-
-          while (++i < n) {
-            // Compare the remaining values.
-            if ((value = values[i]) != null && min > value) {
-              min = value;
-            }
-          }
-        }
-      }
-    } else {
-      while (++i < n) {
-        // Find the first comparable value.
-        if ((value = valueof(values[i], i, values)) != null && value >= value) {
-          min = value;
-
-          while (++i < n) {
-            // Compare the remaining values.
-            if ((value = valueof(values[i], i, values)) != null && min > value) {
-              min = value;
-            }
-          }
-        }
-      }
-    }
-
-    return min;
-  }
-
-  function sum$1(values, valueof) {
-    var n = values.length,
-        i = -1,
-        value,
-        sum = 0;
-
-    if (valueof == null) {
-      while (++i < n) {
-        if (value = +values[i]) sum += value; // Note: zero and null are equivalent.
-      }
-    } else {
-      while (++i < n) {
-        if (value = +valueof(values[i], i, values)) sum += value;
-      }
-    }
-
-    return sum;
-  }
   /**
       @namespace {Object} colorDefaults
       @desc A set of default color values used when assigning colors based on data.
@@ -18583,8 +18258,8 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
   var abs = Math.abs;
   var atan2 = Math.atan2;
   var cos = Math.cos;
-  var max$2 = Math.max;
-  var min$2 = Math.min;
+  var max$1 = Math.max;
+  var min$1 = Math.min;
   var sin = Math.sin;
   var sqrt$1 = Math.sqrt;
   var epsilon$1 = 1e-12;
@@ -18650,7 +18325,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
         d2 = dx * dx + dy * dy,
         r = r1 - rc,
         D = x11 * y10 - x10 * y11,
-        d = (dy < 0 ? -1 : 1) * sqrt$1(max$2(0, r * r * d2 - D * D)),
+        d = (dy < 0 ? -1 : 1) * sqrt$1(max$1(0, r * r * d2 - D * D)),
         cx0 = (D * dy - dx * d) / d2,
         cy0 = (-D * dx - dy * d) / d2,
         cx1 = (D * dy + dx * d) / d2,
@@ -18714,7 +18389,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
                 da1 = da,
                 ap = padAngle.apply(this, arguments) / 2,
                 rp = ap > epsilon$1 && (padRadius ? +padRadius.apply(this, arguments) : sqrt$1(r0 * r0 + r1 * r1)),
-                rc = min$2(abs(r1 - r0) / 2, +cornerRadius.apply(this, arguments)),
+                rc = min$1(abs(r1 - r0) / 2, +cornerRadius.apply(this, arguments)),
                 rc0 = rc,
                 rc1 = rc,
                 t0,
@@ -18746,8 +18421,8 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
                     by = y11 - oc[1],
                     kc = 1 / sin(acos((ax * bx + ay * by) / (sqrt$1(ax * ax + ay * ay) * sqrt$1(bx * bx + by * by))) / 2),
                     lc = sqrt$1(oc[0] * oc[0] + oc[1] * oc[1]);
-                rc0 = min$2(rc, (r0 - lc) / (kc - 1));
-                rc1 = min$2(rc, (r1 - lc) / (kc + 1));
+                rc0 = min$1(rc, (r0 - lc) / (kc - 1));
+                rc1 = min$1(rc, (r1 - lc) / (kc + 1));
               }
             } // Is the sector collapsed to a line?
 
@@ -20645,14 +20320,14 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
     return j;
   }
 
-  function ascending$5(series) {
-    var sums = series.map(sum$2);
+  function ascending$2(series) {
+    var sums = series.map(sum$1);
     return none$2(series).sort(function (a, b) {
       return sums[a] - sums[b];
     });
   }
 
-  function sum$2(series) {
+  function sum$1(series) {
     var s = 0,
         i = -1,
         n = series.length,
@@ -20666,14 +20341,14 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
   }
 
   function descending$1(series) {
-    return ascending$5(series).reverse();
+    return ascending$2(series).reverse();
   }
 
   function insideOut(series) {
     var n = series.length,
         i,
         j,
-        sums = series.map(sum$2),
+        sums = series.map(sum$1),
         order = appearance(series),
         top = 0,
         bottom = 0,
@@ -20747,7 +20422,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
     stackOffsetSilhouette: silhouette,
     stackOffsetWiggle: wiggle,
     stackOrderAppearance: appearance,
-    stackOrderAscending: ascending$5,
+    stackOrderAscending: ascending$2,
     stackOrderDescending: descending$1,
     stackOrderInsideOut: insideOut,
     stackOrderNone: none$2,
@@ -20907,169 +20582,6 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
 
       return ret || "";
     });
-  }
-
-  function ascending$6(a, b) {
-    return a < b ? -1 : a > b ? 1 : a >= b ? 0 : NaN;
-  }
-
-  function bisector$4(compare) {
-    if (compare.length === 1) compare = ascendingComparator$4(compare);
-    return {
-      left: function left(a, x, lo, hi) {
-        if (lo == null) lo = 0;
-        if (hi == null) hi = a.length;
-
-        while (lo < hi) {
-          var mid = lo + hi >>> 1;
-          if (compare(a[mid], x) < 0) lo = mid + 1;else hi = mid;
-        }
-
-        return lo;
-      },
-      right: function right(a, x, lo, hi) {
-        if (lo == null) lo = 0;
-        if (hi == null) hi = a.length;
-
-        while (lo < hi) {
-          var mid = lo + hi >>> 1;
-          if (compare(a[mid], x) > 0) hi = mid;else lo = mid + 1;
-        }
-
-        return lo;
-      }
-    };
-  }
-
-  function ascendingComparator$4(f) {
-    return function (d, x) {
-      return ascending$6(f(d), x);
-    };
-  }
-
-  var ascendingBisect$4 = bisector$4(ascending$6);
-
-  function max$3(values, valueof) {
-    var n = values.length,
-        i = -1,
-        value,
-        max;
-
-    if (valueof == null) {
-      while (++i < n) {
-        // Find the first comparable value.
-        if ((value = values[i]) != null && value >= value) {
-          max = value;
-
-          while (++i < n) {
-            // Compare the remaining values.
-            if ((value = values[i]) != null && value > max) {
-              max = value;
-            }
-          }
-        }
-      }
-    } else {
-      while (++i < n) {
-        // Find the first comparable value.
-        if ((value = valueof(values[i], i, values)) != null && value >= value) {
-          max = value;
-
-          while (++i < n) {
-            // Compare the remaining values.
-            if ((value = valueof(values[i], i, values)) != null && value > max) {
-              max = value;
-            }
-          }
-        }
-      }
-    }
-
-    return max;
-  }
-
-  function merge$2(arrays) {
-    var n = arrays.length,
-        m,
-        i = -1,
-        j = 0,
-        merged,
-        array;
-
-    while (++i < n) {
-      j += arrays[i].length;
-    }
-
-    merged = new Array(j);
-
-    while (--n >= 0) {
-      array = arrays[n];
-      m = array.length;
-
-      while (--m >= 0) {
-        merged[--j] = array[m];
-      }
-    }
-
-    return merged;
-  }
-
-  function min$3(values, valueof) {
-    var n = values.length,
-        i = -1,
-        value,
-        min;
-
-    if (valueof == null) {
-      while (++i < n) {
-        // Find the first comparable value.
-        if ((value = values[i]) != null && value >= value) {
-          min = value;
-
-          while (++i < n) {
-            // Compare the remaining values.
-            if ((value = values[i]) != null && min > value) {
-              min = value;
-            }
-          }
-        }
-      }
-    } else {
-      while (++i < n) {
-        // Find the first comparable value.
-        if ((value = valueof(values[i], i, values)) != null && value >= value) {
-          min = value;
-
-          while (++i < n) {
-            // Compare the remaining values.
-            if ((value = valueof(values[i], i, values)) != null && min > value) {
-              min = value;
-            }
-          }
-        }
-      }
-    }
-
-    return min;
-  }
-
-  function sum$3(values, valueof) {
-    var n = values.length,
-        i = -1,
-        value,
-        sum = 0;
-
-    if (valueof == null) {
-      while (++i < n) {
-        if (value = +values[i]) sum += value; // Note: zero and null are equivalent.
-      }
-    } else {
-      while (++i < n) {
-        if (value = +valueof(values[i], i, values)) sum += value;
-      }
-    }
-
-    return sum;
   } // scraped from http://www.fileformat.info/info/unicode/category/Mc/list.htm
   // and http://www.fileformat.info/info/unicode/category/Mn/list.htm
   // JSON.stringify([].slice.call(document.getElementsByClassName("table-list")[0].getElementsByTagName("tr")).filter(function(d){ return d.getElementsByTagName("a").length && d.getElementsByTagName("a")[0].innerHTML.length === 6; }).map(function(d){ return d.getElementsByTagName("a")[0].innerHTML.replace("U", "u").replace("+", ""); }).sort());
@@ -21124,7 +20636,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
     if (!noSpaceLanguage.test(sentence)) return stringify(sentence).match(splitWords).filter(function (w) {
       return w.length;
     });
-    return merge$2(stringify(sentence).match(splitWords).map(function (d) {
+    return arrayMerge(stringify(sentence).match(splitWords).map(function (d) {
       if (noSpaceLanguage.test(d)) return d.match(splitAllChars);
       return [d];
     }));
@@ -21551,8 +21063,8 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
             }; // Constraint the font size
 
 
-            fS = max$3([fS, fMin]);
-            fS = min$3([fS, fMax]);
+            fS = max([fS, fMin]);
+            fS = min([fS, fMax]);
 
             if (resize) {
               lH = fS * lHRatio;
@@ -21585,15 +21097,15 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
               sizes = textWidth(words, style);
               var areaMod = 1.165 + w / h * 0.1,
                   boxArea = w * h,
-                  maxWidth = max$3(sizes),
-                  textArea = sum$3(sizes, function (d) {
+                  maxWidth = max(sizes),
+                  textArea = sum(sizes, function (d) {
                 return d * lH;
               }) * areaMod;
 
               if (maxWidth > w || textArea > boxArea) {
                 var areaRatio = Math.sqrt(boxArea / textArea),
                     widthRatio = w / maxWidth;
-                var sizeRatio = min$3([areaRatio, widthRatio]);
+                var sizeRatio = min([areaRatio, widthRatio]);
                 fS = Math.floor(fS * sizeRatio);
               }
 
@@ -22452,7 +21964,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
                   values = d.values.map(function (d) {
                 return pointDistance(cursor, calcPoint(d, i));
               });
-              i = values.indexOf(min$1(values));
+              i = values.indexOf(min(values));
               d = d.values[i];
             }
 
@@ -24557,7 +24069,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
     var cacheString;
 
     if (options.cache) {
-      cacheString = merge$1(poly).join(",");
+      cacheString = arrayMerge(poly).join(",");
       cacheString += "-".concat(options.minAspectRatio);
       cacheString += "-".concat(options.maxAspectRatio);
       cacheString += "-".concat(options.minHeight);
@@ -24575,14 +24087,14 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
     } // get the width of the bounding box of the original polygon to determine tolerance
 
 
-    var _extent = extent$1(poly, function (d) {
+    var _extent = extent(poly, function (d) {
       return d[0];
     }),
         _extent2 = _slicedToArray$2(_extent, 2),
         minx = _extent2[0],
         maxx = _extent2[1];
 
-    var _extent3 = extent$1(poly, function (d) {
+    var _extent3 = extent(poly, function (d) {
       return d[1];
     }),
         _extent4 = _slicedToArray$2(_extent3, 2),
@@ -24597,7 +24109,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
       poly: poly
     }); // get the width of the bounding box of the simplified polygon
 
-    var _extent5 = extent$1(poly, function (d) {
+    var _extent5 = extent(poly, function (d) {
       return d[0];
     });
 
@@ -24606,7 +24118,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
     minx = _extent6[0];
     maxx = _extent6[1];
 
-    var _extent7 = extent$1(poly, function (d) {
+    var _extent7 = extent(poly, function (d) {
       return d[1];
     });
 
@@ -25033,11 +24545,11 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
         var areas = nest().key(this._id).entries(data).map(function (d) {
           d.data = objectMerge(d.values);
           d.i = data.indexOf(d.values[0]);
-          var x = extent$1(d.values.map(_this3._x).concat(d.values.map(_this3._x0)).concat(_this3._x1 ? d.values.map(_this3._x1) : []));
+          var x = extent(d.values.map(_this3._x).concat(d.values.map(_this3._x0)).concat(_this3._x1 ? d.values.map(_this3._x1) : []));
           d.xR = x;
           d.width = x[1] - x[0];
           d.x = x[0] + d.width / 2;
-          var y = extent$1(d.values.map(_this3._y).concat(d.values.map(_this3._y0)).concat(_this3._y1 ? d.values.map(_this3._y1) : []));
+          var y = extent(d.values.map(_this3._y).concat(d.values.map(_this3._y0)).concat(_this3._y1 ? d.values.map(_this3._y1) : []));
           d.yR = y;
           d.height = y[1] - y[0];
           d.y = y[0] + d.height / 2;
@@ -26402,11 +25914,11 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
         var lines = nest().key(this._id).entries(data).map(function (d) {
           d.data = objectMerge(d.values);
           d.i = data.indexOf(d.values[0]);
-          var x = extent$1(d.values, _this2._x);
+          var x = extent(d.values, _this2._x);
           d.xR = x;
           d.width = x[1] - x[0];
           d.x = x[0] + d.width / 2;
-          var y = extent$1(d.values, _this2._y);
+          var y = extent(d.values, _this2._y);
           d.yR = y;
           d.height = y[1] - y[0];
           d.y = y[0] + d.height / 2;
@@ -26462,7 +25974,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
           }
 
           if (newStrokeArray.length > 1 && newStrokeArray.length % 2) newStrokeArray.pop();
-          newStrokeArray[newStrokeArray.length - 1] += d.initialLength - sum$1(newStrokeArray);
+          newStrokeArray[newStrokeArray.length - 1] += d.initialLength - sum(newStrokeArray);
           if (newStrokeArray.length % 2 === 0) newStrokeArray.push(0);
           d.initialStrokeArray = newStrokeArray.join(" ");
         }
@@ -27157,20 +26669,20 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
           values.sort(function (a, b) {
             return a - b;
           });
-          d.first = quantile$1(values, 0.25);
-          d.median = quantile$1(values, 0.50);
-          d.third = quantile$1(values, 0.75);
+          d.first = quantile(values, 0.25);
+          d.median = quantile(values, 0.50);
+          d.third = quantile(values, 0.75);
           var mode = _this2._whiskerMode;
 
           if (mode[0] === "tukey") {
             d.lowerLimit = d.first - (d.third - d.first) * 1.5;
-            if (d.lowerLimit < min$1(values)) d.lowerLimit = min$1(values);
-          } else if (mode[0] === "extent") d.lowerLimit = min$1(values);else if (typeof mode[0] === "number") d.lowerLimit = quantile$1(values, mode[0]);
+            if (d.lowerLimit < min(values)) d.lowerLimit = min(values);
+          } else if (mode[0] === "extent") d.lowerLimit = min(values);else if (typeof mode[0] === "number") d.lowerLimit = quantile(values, mode[0]);
 
           if (mode[1] === "tukey") {
             d.upperLimit = d.third + (d.third - d.first) * 1.5;
-            if (d.upperLimit > max$1(values)) d.upperLimit = max$1(values);
-          } else if (mode[1] === "extent") d.upperLimit = max$1(values);else if (typeof mode[1] === "number") d.upperLimit = quantile$1(values, mode[1]);
+            if (d.upperLimit > max(values)) d.upperLimit = max(values);
+          } else if (mode[1] === "extent") d.upperLimit = max(values);else if (typeof mode[1] === "number") d.upperLimit = quantile(values, mode[1]);
 
           var rectLength = d.third - d.first; // Compute values for vertical orientation.
 
@@ -28440,7 +27952,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
           bottom: 0,
           left: 0
         };
-        var labels, range, ticks;
+        var labels, range$1, ticks;
         /**
          * Constructs the tick formatter function.
          */
@@ -28481,7 +27993,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
            * fallbacks if not specified with the "range" method.
            */
 
-          range = newRange ? newRange.slice() : [undefined, undefined];
+          range$1 = newRange ? newRange.slice() : [undefined, undefined];
           var minRange = rangeOuter[0],
               maxRange = rangeOuter[1];
 
@@ -28490,24 +28002,24 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
             if (this._range[this._range.length - 1] !== undefined) maxRange = this._range[this._range.length - 1];
           }
 
-          if (range[0] === undefined || range[0] < minRange) range[0] = minRange;
-          if (range[1] === undefined || range[1] > maxRange) range[1] = maxRange;
+          if (range$1[0] === undefined || range$1[0] < minRange) range$1[0] = minRange;
+          if (range$1[1] === undefined || range$1[1] > maxRange) range$1[1] = maxRange;
           var sizeInner = maxRange - minRange;
 
-          if (this._scale === "ordinal" && this._domain.length > range.length) {
+          if (this._scale === "ordinal" && this._domain.length > range$1.length) {
             if (newRange === this._range) {
               var buckets = this._domain.length + 1;
-              range = d3Range(buckets).map(function (d) {
-                return range[0] + sizeInner * (d / (buckets - 1));
+              range$1 = range(buckets).map(function (d) {
+                return range$1[0] + sizeInner * (d / (buckets - 1));
               }).slice(1, buckets);
-              range = range.map(function (d) {
-                return d - range[0] / 2;
+              range$1 = range$1.map(function (d) {
+                return d - range$1[0] / 2;
               });
             } else {
               var _buckets = this._domain.length;
-              var size = range[1] - range[0];
-              range = d3Range(_buckets).map(function (d) {
-                return range[0] + size * (d / (_buckets - 1));
+              var size = range$1[1] - range$1[0];
+              range$1 = range(_buckets).map(function (d) {
+                return range$1[0] + size * (d / (_buckets - 1));
               });
             }
           } else if (newRange === this._range) {
@@ -28520,7 +28032,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
 
             if (_buckets2) {
               var pad = Math.ceil(sizeInner / _buckets2 / 2);
-              range = [range[0] + pad, range[1] - pad];
+              range$1 = [range$1[0] + pad, range$1[1] - pad];
             }
           }
           /**
@@ -28530,7 +28042,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
 
 
           var scale = "scale".concat(this._scale.charAt(0).toUpperCase()).concat(this._scale.slice(1));
-          this._d3Scale = scales[scale]().domain(this._scale === "time" ? this._domain.map(date$2) : this._domain).range(range);
+          this._d3Scale = scales[scale]().domain(this._scale === "time" ? this._domain.map(date$2) : this._domain).range(range$1);
           if (this._d3Scale.padding) this._d3Scale.padding(this._scalePadding);
           if (this._d3Scale.paddingInner) this._d3Scale.paddingInner(this._paddingInner);
           if (this._d3Scale.paddingOuter) this._d3Scale.paddingOuter(this._paddingOuter);
@@ -28691,7 +28203,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
               fontFamily = _this$_titleConfig.fontFamily,
               fontSize = _this$_titleConfig.fontSize,
               lineHeight = _this$_titleConfig.lineHeight;
-          var titleWrap = textWrap().fontFamily(typeof fontFamily === "function" ? fontFamily() : fontFamily).fontSize(typeof fontSize === "function" ? fontSize() : fontSize).lineHeight(typeof lineHeight === "function" ? lineHeight() : lineHeight).width(range[range.length - 1] - range[0] - p * 2).height(this["_".concat(height)] - this._tickSize - p * 2);
+          var titleWrap = textWrap().fontFamily(typeof fontFamily === "function" ? fontFamily() : fontFamily).fontSize(typeof fontSize === "function" ? fontSize() : fontSize).lineHeight(typeof lineHeight === "function" ? lineHeight() : lineHeight).width(range$1[range$1.length - 1] - range$1[0] - p * 2).height(this["_".concat(height)] - this._tickSize - p * 2);
           var lines = titleWrap(this._title).lines.length;
           margin[this._orient] = lines * titleWrap.lineHeight() + p;
         }
@@ -28825,8 +28337,8 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
           spillover[index] = spill;
         }
 
-        var first = range[0];
-        var last = range[range.length - 1];
+        var first = range$1[0];
+        var last = range$1[range$1.length - 1];
         var newRange = [first - spillover[0], last - spillover[1]];
 
         if (this._range) {
@@ -28972,7 +28484,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
           parent: group
         }).node()).text(function (d) {
           return d.text;
-        }).verticalAlign("middle").width(range[range.length - 1] - range[0]).x(horizontal ? range[0] : this._orient === "left" ? bounds.x + margin.left / 2 - (range[range.length - 1] - range[0]) / 2 : bounds.x + bounds.width - margin.right / 2 - (range[range.length - 1] - range[0]) / 2).y(horizontal ? this._orient === "bottom" ? bounds.y + bounds.height - margin.bottom : bounds.y : range[0] + (range[range.length - 1] - range[0]) / 2 - margin[this._orient] / 2).config(this._titleConfig).render();
+        }).verticalAlign("middle").width(range$1[range$1.length - 1] - range$1[0]).x(horizontal ? range$1[0] : this._orient === "left" ? bounds.x + margin.left / 2 - (range$1[range$1.length - 1] - range$1[0]) / 2 : bounds.x + bounds.width - margin.right / 2 - (range$1[range$1.length - 1] - range$1[0]) / 2).y(horizontal ? this._orient === "bottom" ? bounds.y + bounds.height - margin.bottom : bounds.y : range$1[0] + (range$1[range$1.length - 1] - range$1[0]) / 2 - margin[this._orient] / 2).config(this._titleConfig).render();
 
         this._lastScale = this._getPosition.bind(this);
         if (callback) setTimeout(callback, this._duration + 100);
@@ -29975,224 +29487,6 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
       if (key && "_".concat(key) in this) this["_".concat(key)] = data;
       if (callback) callback(null, data);
     }
-  }
-
-  function ascending$7(a, b) {
-    return a < b ? -1 : a > b ? 1 : a >= b ? 0 : NaN;
-  }
-
-  function bisector$5(compare) {
-    if (compare.length === 1) compare = ascendingComparator$5(compare);
-    return {
-      left: function left(a, x, lo, hi) {
-        if (lo == null) lo = 0;
-        if (hi == null) hi = a.length;
-
-        while (lo < hi) {
-          var mid = lo + hi >>> 1;
-          if (compare(a[mid], x) < 0) lo = mid + 1;else hi = mid;
-        }
-
-        return lo;
-      },
-      right: function right(a, x, lo, hi) {
-        if (lo == null) lo = 0;
-        if (hi == null) hi = a.length;
-
-        while (lo < hi) {
-          var mid = lo + hi >>> 1;
-          if (compare(a[mid], x) > 0) hi = mid;else lo = mid + 1;
-        }
-
-        return lo;
-      }
-    };
-  }
-
-  function ascendingComparator$5(f) {
-    return function (d, x) {
-      return ascending$7(f(d), x);
-    };
-  }
-
-  var ascendingBisect$5 = bisector$5(ascending$7);
-
-  function extent$2(values, valueof) {
-    var n = values.length,
-        i = -1,
-        value,
-        min,
-        max;
-
-    if (valueof == null) {
-      while (++i < n) {
-        // Find the first comparable value.
-        if ((value = values[i]) != null && value >= value) {
-          min = max = value;
-
-          while (++i < n) {
-            // Compare the remaining values.
-            if ((value = values[i]) != null) {
-              if (min > value) min = value;
-              if (max < value) max = value;
-            }
-          }
-        }
-      }
-    } else {
-      while (++i < n) {
-        // Find the first comparable value.
-        if ((value = valueof(values[i], i, values)) != null && value >= value) {
-          min = max = value;
-
-          while (++i < n) {
-            // Compare the remaining values.
-            if ((value = valueof(values[i], i, values)) != null) {
-              if (min > value) min = value;
-              if (max < value) max = value;
-            }
-          }
-        }
-      }
-    }
-
-    return [min, max];
-  }
-
-  function range$1(start, stop, step) {
-    start = +start, stop = +stop, step = (n = arguments.length) < 2 ? (stop = start, start = 0, 1) : n < 3 ? 1 : +step;
-    var i = -1,
-        n = Math.max(0, Math.ceil((stop - start) / step)) | 0,
-        range = new Array(n);
-
-    while (++i < n) {
-      range[i] = start + i * step;
-    }
-
-    return range;
-  }
-
-  function max$4(values, valueof) {
-    var n = values.length,
-        i = -1,
-        value,
-        max;
-
-    if (valueof == null) {
-      while (++i < n) {
-        // Find the first comparable value.
-        if ((value = values[i]) != null && value >= value) {
-          max = value;
-
-          while (++i < n) {
-            // Compare the remaining values.
-            if ((value = values[i]) != null && value > max) {
-              max = value;
-            }
-          }
-        }
-      }
-    } else {
-      while (++i < n) {
-        // Find the first comparable value.
-        if ((value = valueof(values[i], i, values)) != null && value >= value) {
-          max = value;
-
-          while (++i < n) {
-            // Compare the remaining values.
-            if ((value = valueof(values[i], i, values)) != null && value > max) {
-              max = value;
-            }
-          }
-        }
-      }
-    }
-
-    return max;
-  }
-
-  function arrayMerge(arrays) {
-    var n = arrays.length,
-        m,
-        i = -1,
-        j = 0,
-        merged,
-        array;
-
-    while (++i < n) {
-      j += arrays[i].length;
-    }
-
-    merged = new Array(j);
-
-    while (--n >= 0) {
-      array = arrays[n];
-      m = array.length;
-
-      while (--m >= 0) {
-        merged[--j] = array[m];
-      }
-    }
-
-    return merged;
-  }
-
-  function min$4(values, valueof) {
-    var n = values.length,
-        i = -1,
-        value,
-        min;
-
-    if (valueof == null) {
-      while (++i < n) {
-        // Find the first comparable value.
-        if ((value = values[i]) != null && value >= value) {
-          min = value;
-
-          while (++i < n) {
-            // Compare the remaining values.
-            if ((value = values[i]) != null && min > value) {
-              min = value;
-            }
-          }
-        }
-      }
-    } else {
-      while (++i < n) {
-        // Find the first comparable value.
-        if ((value = valueof(values[i], i, values)) != null && value >= value) {
-          min = value;
-
-          while (++i < n) {
-            // Compare the remaining values.
-            if ((value = valueof(values[i], i, values)) != null && min > value) {
-              min = value;
-            }
-          }
-        }
-      }
-    }
-
-    return min;
-  }
-
-  function sum$4(values, valueof) {
-    var n = values.length,
-        i = -1,
-        value,
-        sum = 0;
-
-    if (valueof == null) {
-      while (++i < n) {
-        if (value = +values[i]) sum += value; // Note: zero and null are equivalent.
-      }
-    } else {
-      while (++i < n) {
-        if (value = +valueof(values[i], i, values)) sum += value;
-      }
-    }
-
-    return sum;
   }
 
   function noevent() {
@@ -32752,250 +32046,6 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
     return clusters;
   }
 
-  function ascending$8(a, b) {
-    return a < b ? -1 : a > b ? 1 : a >= b ? 0 : NaN;
-  }
-
-  function bisector$6(compare) {
-    if (compare.length === 1) compare = ascendingComparator$6(compare);
-    return {
-      left: function left(a, x, lo, hi) {
-        if (lo == null) lo = 0;
-        if (hi == null) hi = a.length;
-
-        while (lo < hi) {
-          var mid = lo + hi >>> 1;
-          if (compare(a[mid], x) < 0) lo = mid + 1;else hi = mid;
-        }
-
-        return lo;
-      },
-      right: function right(a, x, lo, hi) {
-        if (lo == null) lo = 0;
-        if (hi == null) hi = a.length;
-
-        while (lo < hi) {
-          var mid = lo + hi >>> 1;
-          if (compare(a[mid], x) > 0) hi = mid;else lo = mid + 1;
-        }
-
-        return lo;
-      }
-    };
-  }
-
-  function ascendingComparator$6(f) {
-    return function (d, x) {
-      return ascending$8(f(d), x);
-    };
-  }
-
-  var ascendingBisect$6 = bisector$6(ascending$8);
-
-  function number$4(x) {
-    return x === null ? NaN : +x;
-  }
-
-  function variance(values, valueof) {
-    var n = values.length,
-        m = 0,
-        i = -1,
-        mean = 0,
-        value,
-        delta,
-        sum = 0;
-
-    if (valueof == null) {
-      while (++i < n) {
-        if (!isNaN(value = number$4(values[i]))) {
-          delta = value - mean;
-          mean += delta / ++m;
-          sum += delta * (value - mean);
-        }
-      }
-    } else {
-      while (++i < n) {
-        if (!isNaN(value = number$4(valueof(values[i], i, values)))) {
-          delta = value - mean;
-          mean += delta / ++m;
-          sum += delta * (value - mean);
-        }
-      }
-    }
-
-    if (m > 1) return sum / (m - 1);
-  }
-
-  function deviation(array, f) {
-    var v = variance(array, f);
-    return v ? Math.sqrt(v) : v;
-  }
-
-  function extent$3(values, valueof) {
-    var n = values.length,
-        i = -1,
-        value,
-        min,
-        max;
-
-    if (valueof == null) {
-      while (++i < n) {
-        // Find the first comparable value.
-        if ((value = values[i]) != null && value >= value) {
-          min = max = value;
-
-          while (++i < n) {
-            // Compare the remaining values.
-            if ((value = values[i]) != null) {
-              if (min > value) min = value;
-              if (max < value) max = value;
-            }
-          }
-        }
-      }
-    } else {
-      while (++i < n) {
-        // Find the first comparable value.
-        if ((value = valueof(values[i], i, values)) != null && value >= value) {
-          min = max = value;
-
-          while (++i < n) {
-            // Compare the remaining values.
-            if ((value = valueof(values[i], i, values)) != null) {
-              if (min > value) min = value;
-              if (max < value) max = value;
-            }
-          }
-        }
-      }
-    }
-
-    return [min, max];
-  }
-
-  function range$2(start, stop, step) {
-    start = +start, stop = +stop, step = (n = arguments.length) < 2 ? (stop = start, start = 0, 1) : n < 3 ? 1 : +step;
-    var i = -1,
-        n = Math.max(0, Math.ceil((stop - start) / step)) | 0,
-        range = new Array(n);
-
-    while (++i < n) {
-      range[i] = start + i * step;
-    }
-
-    return range;
-  }
-
-  function quantile$2(values, p, valueof) {
-    if (valueof == null) valueof = number$4;
-    if (!(n = values.length)) return;
-    if ((p = +p) <= 0 || n < 2) return +valueof(values[0], 0, values);
-    if (p >= 1) return +valueof(values[n - 1], n - 1, values);
-    var n,
-        i = (n - 1) * p,
-        i0 = Math.floor(i),
-        value0 = +valueof(values[i0], i0, values),
-        value1 = +valueof(values[i0 + 1], i0 + 1, values);
-    return value0 + (value1 - value0) * (i - i0);
-  }
-
-  function max$5(values, valueof) {
-    var n = values.length,
-        i = -1,
-        value,
-        max;
-
-    if (valueof == null) {
-      while (++i < n) {
-        // Find the first comparable value.
-        if ((value = values[i]) != null && value >= value) {
-          max = value;
-
-          while (++i < n) {
-            // Compare the remaining values.
-            if ((value = values[i]) != null && value > max) {
-              max = value;
-            }
-          }
-        }
-      }
-    } else {
-      while (++i < n) {
-        // Find the first comparable value.
-        if ((value = valueof(values[i], i, values)) != null && value >= value) {
-          max = value;
-
-          while (++i < n) {
-            // Compare the remaining values.
-            if ((value = valueof(values[i], i, values)) != null && value > max) {
-              max = value;
-            }
-          }
-        }
-      }
-    }
-
-    return max;
-  }
-
-  function min$5(values, valueof) {
-    var n = values.length,
-        i = -1,
-        value,
-        min;
-
-    if (valueof == null) {
-      while (++i < n) {
-        // Find the first comparable value.
-        if ((value = values[i]) != null && value >= value) {
-          min = value;
-
-          while (++i < n) {
-            // Compare the remaining values.
-            if ((value = values[i]) != null && min > value) {
-              min = value;
-            }
-          }
-        }
-      }
-    } else {
-      while (++i < n) {
-        // Find the first comparable value.
-        if ((value = valueof(values[i], i, values)) != null && value >= value) {
-          min = value;
-
-          while (++i < n) {
-            // Compare the remaining values.
-            if ((value = valueof(values[i], i, values)) != null && min > value) {
-              min = value;
-            }
-          }
-        }
-      }
-    }
-
-    return min;
-  }
-
-  function sum$5(values, valueof) {
-    var n = values.length,
-        i = -1,
-        value,
-        sum = 0;
-
-    if (valueof == null) {
-      while (++i < n) {
-        if (value = +values[i]) sum += value; // Note: zero and null are equivalent.
-      }
-    } else {
-      while (++i < n) {
-        if (value = +valueof(values[i], i, values)) sum += value;
-      }
-    }
-
-    return sum;
-  }
-
   function _typeof$i(obj) {
     "@babel/helpers - typeof";
 
@@ -33158,7 +32208,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
         height: constant$3(10),
         hitArea: function hitArea(dd, i) {
           var d = _this._lineData[i],
-              h = max$5([d.height, d.shapeHeight]);
+              h = max([d.height, d.shapeHeight]);
           return {
             width: d.width + d.shapeWidth,
             height: h,
@@ -33170,7 +32220,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
           var d = _this._lineData[i];
           var x = d.shapeWidth;
           if (d.shape === "Circle") x -= d.shapeR;
-          var height = max$5([d.shapeHeight, d.height]);
+          var height = max([d.shapeHeight, d.height]);
           return {
             width: d.width,
             height: height,
@@ -33205,7 +32255,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
         },
         y: function y(d, i) {
           var ld = _this._lineData[i];
-          return ld.y + _this._titleHeight + _this._outerBounds.y + max$5(_this._lineData.filter(function (l) {
+          return ld.y + _this._titleHeight + _this._outerBounds.y + max(_this._lineData.filter(function (l) {
             return ld.y === l.y;
           }).map(function (l) {
             return l.height;
@@ -33231,7 +32281,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
     }, {
       key: "_rowHeight",
       value: function _rowHeight(row) {
-        return max$5(row.map(function (d) {
+        return max(row.map(function (d) {
           return d.height;
         }).concat(row.map(function (d) {
           return d.shapeHeight;
@@ -33242,7 +32292,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
       value: function _rowWidth(row) {
         var _this2 = this;
 
-        return sum$5(row.map(function (d, i) {
+        return sum(row.map(function (d, i) {
           var p = _this2._padding * (i === row.length - 1 ? 0 : d.width ? 2 : 1);
           return d.shapeWidth + d.width + p;
         }));
@@ -33283,7 +32333,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
           lH = lH ? lH() : s * 1.4;
           var res = textWrap().fontFamily(f).fontSize(s).lineHeight(lH).width(this._width).height(this._height)(this._title);
           this._titleHeight = lH + res.lines.length + this._padding;
-          this._titleWidth = max$5(res.widths);
+          this._titleWidth = max(res.widths);
           availableHeight -= this._titleHeight;
         } // Calculate Text Sizes
 
@@ -33321,7 +32371,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
           var h = availableHeight - (_this3._data.length + 1) * _this3._padding,
               w = _this3._width;
           res = Object.assign(res, textWrap().fontFamily(f).fontSize(s).lineHeight(lh).width(w).height(h)(label));
-          res.width = Math.ceil(max$5(res.lines.map(function (t) {
+          res.width = Math.ceil(max(res.lines.map(function (t) {
             return textWidth(t, {
               "font-family": f,
               "font-size": s
@@ -33344,7 +32394,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
         if (this._direction === "column" || spaceNeeded > availableWidth) {
           var lines = 1,
               newRows = [];
-          var maxLines = max$5(this._lineData.map(function (d) {
+          var maxLines = max(this._lineData.map(function (d) {
             return d.words.length;
           }));
 
@@ -33369,7 +32419,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
                 var res = textWrap().fontFamily(label.f).fontSize(label.s).lineHeight(label.lh).width(w).height(h)(label.sentence);
 
                 if (!res.truncated) {
-                  label.width = Math.ceil(max$5(res.lines.map(function (t) {
+                  label.width = Math.ceil(max(res.lines.map(function (t) {
                     return textWidth(t, {
                       "font-family": label.f,
                       "font-size": label.s
@@ -33404,9 +32454,9 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
               var d = this._lineData[i],
                   w = d.width + this._padding * (d.width ? 2 : 1) + d.shapeWidth;
 
-              if (sum$5(newRows.map(function (row) {
-                return max$5(row, function (d) {
-                  return max$5([d.height, d.shapeHeight]);
+              if (sum(newRows.map(function (row) {
+                return max(row, function (d) {
+                  return max([d.height, d.shapeHeight]);
                 });
               })) > availableHeight) {
                 newRows = [];
@@ -33438,8 +32488,8 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
 
           this._wrapRows();
 
-          if (!newRows.length || sum$5(newRows, this._rowHeight.bind(this)) + this._padding > availableHeight) {
-            spaceNeeded = sum$5(this._lineData.map(function (d) {
+          if (!newRows.length || sum(newRows, this._rowHeight.bind(this)) + this._padding > availableHeight) {
+            spaceNeeded = sum(this._lineData.map(function (d) {
               return d.shapeWidth + _this3._padding;
             })) - this._padding;
 
@@ -33451,22 +32501,22 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
             this._wrapRows();
           }
 
-          if (newRows.length && sum$5(newRows, this._rowHeight.bind(this)) + this._padding < availableHeight) {
+          if (newRows.length && sum(newRows, this._rowHeight.bind(this)) + this._padding < availableHeight) {
             newRows.forEach(function (row, i) {
               row.forEach(function (d) {
                 if (i) {
-                  d.y = sum$5(newRows.slice(0, i), _this3._rowHeight.bind(_this3));
+                  d.y = sum(newRows.slice(0, i), _this3._rowHeight.bind(_this3));
                 }
               });
             });
-            spaceNeeded = max$5(newRows, this._rowWidth.bind(this));
+            spaceNeeded = max(newRows, this._rowWidth.bind(this));
           }
         }
 
-        var innerHeight = max$5(this._lineData, function (d, i) {
-          return max$5([d.height, _this3._fetchConfig("height", d.data, i)]) + d.y;
+        var innerHeight = max(this._lineData, function (d, i) {
+          return max([d.height, _this3._fetchConfig("height", d.data, i)]) + d.y;
         }) + this._titleHeight,
-            innerWidth = max$5([spaceNeeded, this._titleWidth]);
+            innerWidth = max([spaceNeeded, this._titleWidth]);
 
         this._outerBounds.width = innerWidth;
         this._outerBounds.height = innerHeight;
@@ -33936,15 +32986,15 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
         var last = i === ticks.length - 1;
 
         if (tick === next || last) {
-          var suffix = last && tick < max$5(allValues) ? "+" : "";
+          var suffix = last && tick < max(allValues) ? "+" : "";
           return "".concat(format(tick)).concat(suffix);
         } else {
           var mod = next ? next / 100 : tick / 100;
           var pow = mod >= 1 || mod <= -1 ? Math.round(mod).toString().length - 1 : mod.toString().split(".")[1].replace(/([1-9])[1-9].*$/, "$1").length * -1;
           var ten = Math.pow(10, pow);
-          return prev === tick && i === 1 ? "".concat(format(min$5([tick + ten, allValues.find(function (d) {
+          return prev === tick && i === 1 ? "".concat(format(min([tick + ten, allValues.find(function (d) {
             return d > tick && d < next;
-          })])), " - ").concat(format(next)) : "".concat(format(tick), " - ").concat(format(max$5([next - ten, allValues.reverse().find(function (d) {
+          })])), " - ").concat(format(next)) : "".concat(format(tick), " - ").concat(format(max([next - ten, allValues.reverse().find(function (d) {
             return d > tick && d < next;
           })])));
         }
@@ -34016,7 +33066,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
           return a - b;
         });
 
-        var domain = this._domain || extent$3(allValues);
+        var domain = this._domain || extent(allValues);
         var negative = domain[0] < this._midpoint;
         var positive = domain[1] > this._midpoint;
         var diverging = negative && positive;
@@ -34026,7 +33076,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
             ticks;
 
         if (colors && !(colors instanceof Array)) {
-          colors = range$2(0, numBuckets, 1).map(function (i) {
+          colors = range(0, numBuckets, 1).map(function (i) {
             return colorLighter(colors, (i + 1) / numBuckets);
           }).reverse();
         }
@@ -34036,7 +33086,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
             return d !== null && typeof d === "number";
           });
 
-          var buckets = min$5([colors ? colors.length : numBuckets, data.length]);
+          var buckets = min([colors ? colors.length : numBuckets, data.length]);
           var jenks = [];
 
           if (this._buckets instanceof Array) {
@@ -34103,7 +33153,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
 
               colors = negativeColors.concat(spanningColors).concat(positiveColors);
             } else {
-              colors = range$2(0, numBuckets, 1).map(function (i) {
+              colors = range(0, numBuckets, 1).map(function (i) {
                 return colorLighter(_this2._colorMax, i / numBuckets);
               }).reverse();
             }
@@ -34114,14 +33164,14 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
           }
 
           colors = [colors[0]].concat(colors);
-          this._colorScale = threshold$1().domain(ticks).range(colors);
+          this._colorScale = threshold().domain(ticks).range(colors);
         } else {
           var _buckets = this._buckets instanceof Array ? this._buckets : undefined;
 
           if (diverging && !colors) {
             var _half = Math.floor(numBuckets / 2);
 
-            var _negativeColors = range$2(0, _half, 1).map(function (i) {
+            var _negativeColors = range(0, _half, 1).map(function (i) {
               return !i ? _this2._colorMin : colorLighter(_this2._colorMin, i / _half);
             });
 
@@ -34129,7 +33179,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
               return _this2._colorMid;
             });
 
-            var _positiveColors = range$2(0, _half, 1).map(function (i) {
+            var _positiveColors = range(0, _half, 1).map(function (i) {
               return !i ? _this2._colorMax : colorLighter(_this2._colorMax, i / _half);
             }).reverse();
 
@@ -34138,12 +33188,12 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
             if (!_buckets) {
               var step = (colors.length - 1) / 2;
               _buckets = [domain[0], this._midpoint, domain[1]];
-              _buckets = range$2(domain[0], this._midpoint, -(domain[0] - this._midpoint) / step).concat(range$2(this._midpoint, domain[1], (domain[1] - this._midpoint) / step)).concat([domain[1]]);
+              _buckets = range(domain[0], this._midpoint, -(domain[0] - this._midpoint) / step).concat(range(this._midpoint, domain[1], (domain[1] - this._midpoint) / step)).concat([domain[1]]);
             }
           } else {
             if (!colors) {
               if (this._scale === "buckets" || this._scale === "quantile") {
-                colors = range$2(0, numBuckets, 1).map(function (i) {
+                colors = range(0, numBuckets, 1).map(function (i) {
                   return colorLighter(negative ? _this2._colorMin : _this2._colorMax, i / numBuckets);
                 });
                 if (positive) colors = colors.reverse();
@@ -34156,19 +33206,19 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
               if (this._scale === "quantile") {
                 var _step = 1 / (colors.length - 1);
 
-                _buckets = range$2(0, 1 + _step / 2, _step).map(function (d) {
-                  return quantile$2(allValues, d);
+                _buckets = range(0, 1 + _step / 2, _step).map(function (d) {
+                  return quantile(allValues, d);
                 });
               } else if (diverging && this._color && this._centered) {
                 var negativeStep = (this._midpoint - domain[0]) / Math.floor(colors.length / 2);
                 var positiveStep = (domain[1] - this._midpoint) / Math.floor(colors.length / 2);
-                var negativeBuckets = range$2(domain[0], this._midpoint, negativeStep);
-                var positiveBuckets = range$2(this._midpoint, domain[1] + positiveStep / 2, positiveStep);
+                var negativeBuckets = range(domain[0], this._midpoint, negativeStep);
+                var positiveBuckets = range(this._midpoint, domain[1] + positiveStep / 2, positiveStep);
                 _buckets = negativeBuckets.concat(positiveBuckets);
               } else {
                 var _step2 = (domain[1] - domain[0]) / (colors.length - 1);
 
-                _buckets = range$2(domain[0], domain[1] + _step2 / 2, _step2);
+                _buckets = range(domain[0], domain[1] + _step2 / 2, _step2);
               }
             }
           }
@@ -34212,7 +33262,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
             if (_buckets.includes(0)) _buckets[_buckets.indexOf(0)] = 1;
           }
 
-          this._colorScale = (this._scale === "buckets" || this._scale === "quantile" ? threshold$1 : linear$1)().domain(_buckets).range(colors);
+          this._colorScale = (this._scale === "buckets" || this._scale === "quantile" ? threshold : linear$1)().domain(_buckets).range(colors);
         }
 
         if (this._colorScale.clamp) this._colorScale.clamp(true);
@@ -34779,94 +33829,6 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
     return ColorScale;
   }(BaseClass);
 
-  function max$6(values, valueof) {
-    var max;
-
-    if (valueof === undefined) {
-      var _iterator3 = _createForOfIteratorHelper(values),
-          _step5;
-
-      try {
-        for (_iterator3.s(); !(_step5 = _iterator3.n()).done;) {
-          var value = _step5.value;
-
-          if (value != null && (max < value || max === undefined && value >= value)) {
-            max = value;
-          }
-        }
-      } catch (err) {
-        _iterator3.e(err);
-      } finally {
-        _iterator3.f();
-      }
-    } else {
-      var index = -1;
-
-      var _iterator4 = _createForOfIteratorHelper(values),
-          _step6;
-
-      try {
-        for (_iterator4.s(); !(_step6 = _iterator4.n()).done;) {
-          var _value = _step6.value;
-
-          if ((_value = valueof(_value, ++index, values)) != null && (max < _value || max === undefined && _value >= _value)) {
-            max = _value;
-          }
-        }
-      } catch (err) {
-        _iterator4.e(err);
-      } finally {
-        _iterator4.f();
-      }
-    }
-
-    return max;
-  }
-
-  function min$6(values, valueof) {
-    var min;
-
-    if (valueof === undefined) {
-      var _iterator5 = _createForOfIteratorHelper(values),
-          _step7;
-
-      try {
-        for (_iterator5.s(); !(_step7 = _iterator5.n()).done;) {
-          var value = _step7.value;
-
-          if (value != null && (min > value || min === undefined && value >= value)) {
-            min = value;
-          }
-        }
-      } catch (err) {
-        _iterator5.e(err);
-      } finally {
-        _iterator5.f();
-      }
-    } else {
-      var index = -1;
-
-      var _iterator6 = _createForOfIteratorHelper(values),
-          _step8;
-
-      try {
-        for (_iterator6.s(); !(_step8 = _iterator6.n()).done;) {
-          var _value2 = _step8.value;
-
-          if ((_value2 = valueof(_value2, ++index, values)) != null && (min > _value2 || min === undefined && _value2 >= _value2)) {
-            min = _value2;
-          }
-        }
-      } catch (err) {
-        _iterator6.e(err);
-      } finally {
-        _iterator6.f();
-      }
-    }
-
-    return min;
-  }
-
   function _typeof$k(obj) {
     "@babel/helpers - typeof";
 
@@ -35278,7 +34240,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
 
             var wrap = textWrap().fontFamily(f).fontSize(s).lineHeight(_this2._shapeConfig.lineHeight ? _this2._shapeConfig.lineHeight(d, i) : undefined);
             var res = wrap(d3Scale.tickFormat(ticks.length - 1, _this2._tickSpecifier)(d));
-            var width = res.lines.length ? Math.ceil(max$6(res.lines.map(function (line) {
+            var width = res.lines.length ? Math.ceil(max(res.lines.map(function (line) {
               return textWidth(line, {
                 "font-family": f,
                 "font-size": s
@@ -39049,9 +38011,9 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
       left: 0
     };
     var availableWidth = this._width - (this._margin.left + this._margin.right + padding.left + padding.right);
-    var width = wide ? min$4([this._colorScaleMaxSize, availableWidth]) : this._width - (this._margin.left + this._margin.right);
+    var width = wide ? min([this._colorScaleMaxSize, availableWidth]) : this._width - (this._margin.left + this._margin.right);
     var availableHeight = this._height - (this._margin.bottom + this._margin.top + padding.bottom + padding.top);
-    var height = !wide ? min$4([this._colorScaleMaxSize, availableHeight]) : this._height - (this._margin.bottom + this._margin.top);
+    var height = !wide ? min([this._colorScaleMaxSize, availableHeight]) : this._height - (this._margin.bottom + this._margin.top);
     var transform = {
       opacity: this._colorScalePosition ? 1 : 0,
       transform: "translate(".concat(wide ? this._margin.left + padding.left + (availableWidth - width) / 2 : this._margin.left, ", ").concat(wide ? this._margin.top : this._margin.top + padding.top + (availableHeight - height) / 2, ")")
@@ -50537,12 +49499,12 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
     }).node();
 
     if (timelinePossible) {
-      var timeline = this._timelineClass.domain(extent$2(ticks)).duration(this._duration).height(this._height - this._margin.bottom).locale(this._locale).select(timelineGroup).ticks(ticks.sort(function (a, b) {
+      var timeline = this._timelineClass.domain(extent(ticks)).duration(this._duration).height(this._height - this._margin.bottom).locale(this._locale).select(timelineGroup).ticks(ticks.sort(function (a, b) {
         return +a - +b;
       })).width(this._width - (this._margin.left + this._margin.right + padding.left + padding.right));
 
       if (timeline.selection() === undefined) {
-        this._timelineSelection = extent$2(data, this._time).map(date$2);
+        this._timelineSelection = extent(data, this._time).map(date$2);
         timeline.selection(this._timelineSelection);
       }
 
@@ -50601,7 +49563,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
 
   function drawTotal() {
     var data = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : [];
-    var total = typeof this._total === "function" ? sum$4(data.map(this._total)) : this._total === true && this._size ? sum$4(data.map(this._size)) : false;
+    var total = typeof this._total === "function" ? sum(data.map(this._total)) : this._total === true && this._size ? sum(data.map(this._size)) : false;
     var padding = this._totalPadding() ? this._padding : {
       top: 0,
       right: 0,
@@ -51744,7 +50706,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
               return true;
             };
           } else {
-            var latestTime = +max$4(dates);
+            var latestTime = +max(dates);
 
             this._timeFilter = function (d, i) {
               return +date$2(_this2._time(d, i)) === latestTime;
@@ -52032,7 +50994,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
 
             var svgTableEnter = svgTable.enter().append("g").attr("class", "data-table").attr("role", "table");
             svgTable.exit().remove();
-            var rows = svgTable.merge(svgTableEnter).selectAll("text").data(_this3._data instanceof Array ? range$1(0, _this3._data.length + 1) : []);
+            var rows = svgTable.merge(svgTableEnter).selectAll("text").data(_this3._data instanceof Array ? range(0, _this3._data.length + 1) : []);
             rows.exit().remove();
             var cells = rows.merge(rows.enter().append("text").attr("role", "row")).selectAll("tspan").data(function (d, i) {
               return columns.map(function (c) {
@@ -53547,374 +52509,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
     return Matrix;
   }(Viz);
 
-  var pi$4 = Math.PI,
-      tau$2 = 2 * pi$4,
-      epsilon$2 = 1e-6,
-      tauEpsilon$1 = tau$2 - epsilon$2;
-
-  function Path$2() {
-    this._x0 = this._y0 = // start of current subpath
-    this._x1 = this._y1 = null; // end of current subpath
-
-    this._ = "";
-  }
-
-  function path$1() {
-    return new Path$2();
-  }
-
-  Path$2.prototype = path$1.prototype = {
-    constructor: Path$2,
-    moveTo: function moveTo(x, y) {
-      this._ += "M" + (this._x0 = this._x1 = +x) + "," + (this._y0 = this._y1 = +y);
-    },
-    closePath: function closePath() {
-      if (this._x1 !== null) {
-        this._x1 = this._x0, this._y1 = this._y0;
-        this._ += "Z";
-      }
-    },
-    lineTo: function lineTo(x, y) {
-      this._ += "L" + (this._x1 = +x) + "," + (this._y1 = +y);
-    },
-    quadraticCurveTo: function quadraticCurveTo(x1, y1, x, y) {
-      this._ += "Q" + +x1 + "," + +y1 + "," + (this._x1 = +x) + "," + (this._y1 = +y);
-    },
-    bezierCurveTo: function bezierCurveTo(x1, y1, x2, y2, x, y) {
-      this._ += "C" + +x1 + "," + +y1 + "," + +x2 + "," + +y2 + "," + (this._x1 = +x) + "," + (this._y1 = +y);
-    },
-    arcTo: function arcTo(x1, y1, x2, y2, r) {
-      x1 = +x1, y1 = +y1, x2 = +x2, y2 = +y2, r = +r;
-      var x0 = this._x1,
-          y0 = this._y1,
-          x21 = x2 - x1,
-          y21 = y2 - y1,
-          x01 = x0 - x1,
-          y01 = y0 - y1,
-          l01_2 = x01 * x01 + y01 * y01; // Is the radius negative? Error.
-
-      if (r < 0) throw new Error("negative radius: " + r); // Is this path empty? Move to (x1,y1).
-
-      if (this._x1 === null) {
-        this._ += "M" + (this._x1 = x1) + "," + (this._y1 = y1);
-      } // Or, is (x1,y1) coincident with (x0,y0)? Do nothing.
-      else if (!(l01_2 > epsilon$2)) ; // Or, are (x0,y0), (x1,y1) and (x2,y2) collinear?
-        // Equivalently, is (x1,y1) coincident with (x2,y2)?
-        // Or, is the radius zero? Line to (x1,y1).
-        else if (!(Math.abs(y01 * x21 - y21 * x01) > epsilon$2) || !r) {
-            this._ += "L" + (this._x1 = x1) + "," + (this._y1 = y1);
-          } // Otherwise, draw an arc!
-          else {
-              var x20 = x2 - x0,
-                  y20 = y2 - y0,
-                  l21_2 = x21 * x21 + y21 * y21,
-                  l20_2 = x20 * x20 + y20 * y20,
-                  l21 = Math.sqrt(l21_2),
-                  l01 = Math.sqrt(l01_2),
-                  l = r * Math.tan((pi$4 - Math.acos((l21_2 + l01_2 - l20_2) / (2 * l21 * l01))) / 2),
-                  t01 = l / l01,
-                  t21 = l / l21; // If the start tangent is not coincident with (x0,y0), line to.
-
-              if (Math.abs(t01 - 1) > epsilon$2) {
-                this._ += "L" + (x1 + t01 * x01) + "," + (y1 + t01 * y01);
-              }
-
-              this._ += "A" + r + "," + r + ",0,0," + +(y01 * x20 > x01 * y20) + "," + (this._x1 = x1 + t21 * x21) + "," + (this._y1 = y1 + t21 * y21);
-            }
-    },
-    arc: function arc(x, y, r, a0, a1, ccw) {
-      x = +x, y = +y, r = +r, ccw = !!ccw;
-      var dx = r * Math.cos(a0),
-          dy = r * Math.sin(a0),
-          x0 = x + dx,
-          y0 = y + dy,
-          cw = 1 ^ ccw,
-          da = ccw ? a0 - a1 : a1 - a0; // Is the radius negative? Error.
-
-      if (r < 0) throw new Error("negative radius: " + r); // Is this path empty? Move to (x0,y0).
-
-      if (this._x1 === null) {
-        this._ += "M" + x0 + "," + y0;
-      } // Or, is (x0,y0) not coincident with the previous point? Line to (x0,y0).
-      else if (Math.abs(this._x1 - x0) > epsilon$2 || Math.abs(this._y1 - y0) > epsilon$2) {
-          this._ += "L" + x0 + "," + y0;
-        } // Is this arc empty? We’re done.
-
-
-      if (!r) return; // Does the angle go the wrong way? Flip the direction.
-
-      if (da < 0) da = da % tau$2 + tau$2; // Is this a complete circle? Draw two arcs to complete the circle.
-
-      if (da > tauEpsilon$1) {
-        this._ += "A" + r + "," + r + ",0,1," + cw + "," + (x - dx) + "," + (y - dy) + "A" + r + "," + r + ",0,1," + cw + "," + (this._x1 = x0) + "," + (this._y1 = y0);
-      } // Is this arc non-empty? Draw an arc!
-      else if (da > epsilon$2) {
-          this._ += "A" + r + "," + r + ",0," + +(da >= pi$4) + "," + cw + "," + (this._x1 = x + r * Math.cos(a1)) + "," + (this._y1 = y + r * Math.sin(a1));
-        }
-    },
-    rect: function rect(x, y, w, h) {
-      this._ += "M" + (this._x0 = this._x1 = +x) + "," + (this._y0 = this._y1 = +y) + "h" + +w + "v" + +h + "h" + -w + "Z";
-    },
-    toString: function toString() {
-      return this._;
-    }
-  };
-
-  function constant$7(x) {
-    return function constant() {
-      return x;
-    };
-  }
-
-  var abs$1 = Math.abs;
-  var atan2$1 = Math.atan2;
-  var cos$1 = Math.cos;
-  var max$7 = Math.max;
-  var min$7 = Math.min;
-  var sin$1 = Math.sin;
-  var sqrt$2 = Math.sqrt;
-  var epsilon$3 = 1e-12;
-  var pi$5 = Math.PI;
-  var halfPi$1 = pi$5 / 2;
-  var tau$3 = 2 * pi$5;
-
-  function acos$1(x) {
-    return x > 1 ? 0 : x < -1 ? pi$5 : Math.acos(x);
-  }
-
-  function asin$1(x) {
-    return x >= 1 ? halfPi$1 : x <= -1 ? -halfPi$1 : Math.asin(x);
-  }
-
-  function arcInnerRadius$1(d) {
-    return d.innerRadius;
-  }
-
-  function arcOuterRadius$1(d) {
-    return d.outerRadius;
-  }
-
-  function arcStartAngle$1(d) {
-    return d.startAngle;
-  }
-
-  function arcEndAngle$1(d) {
-    return d.endAngle;
-  }
-
-  function arcPadAngle$1(d) {
-    return d && d.padAngle; // Note: optional!
-  }
-
-  function intersect$1(x0, y0, x1, y1, x2, y2, x3, y3) {
-    var x10 = x1 - x0,
-        y10 = y1 - y0,
-        x32 = x3 - x2,
-        y32 = y3 - y2,
-        t = y32 * x10 - x32 * y10;
-    if (t * t < epsilon$3) return;
-    t = (x32 * (y0 - y2) - y32 * (x0 - x2)) / t;
-    return [x0 + t * x10, y0 + t * y10];
-  } // Compute perpendicular offset line of length rc.
-  // http://mathworld.wolfram.com/Circle-LineIntersection.html
-
-
-  function cornerTangents$1(x0, y0, x1, y1, r1, rc, cw) {
-    var x01 = x0 - x1,
-        y01 = y0 - y1,
-        lo = (cw ? rc : -rc) / sqrt$2(x01 * x01 + y01 * y01),
-        ox = lo * y01,
-        oy = -lo * x01,
-        x11 = x0 + ox,
-        y11 = y0 + oy,
-        x10 = x1 + ox,
-        y10 = y1 + oy,
-        x00 = (x11 + x10) / 2,
-        y00 = (y11 + y10) / 2,
-        dx = x10 - x11,
-        dy = y10 - y11,
-        d2 = dx * dx + dy * dy,
-        r = r1 - rc,
-        D = x11 * y10 - x10 * y11,
-        d = (dy < 0 ? -1 : 1) * sqrt$2(max$7(0, r * r * d2 - D * D)),
-        cx0 = (D * dy - dx * d) / d2,
-        cy0 = (-D * dx - dy * d) / d2,
-        cx1 = (D * dy + dx * d) / d2,
-        cy1 = (-D * dx + dy * d) / d2,
-        dx0 = cx0 - x00,
-        dy0 = cy0 - y00,
-        dx1 = cx1 - x00,
-        dy1 = cy1 - y00; // Pick the closer of the two intersection points.
-    // TODO Is there a faster way to determine which intersection to use?
-
-    if (dx0 * dx0 + dy0 * dy0 > dx1 * dx1 + dy1 * dy1) cx0 = cx1, cy0 = cy1;
-    return {
-      cx: cx0,
-      cy: cy0,
-      x01: -ox,
-      y01: -oy,
-      x11: cx0 * (r1 / r - 1),
-      y11: cy0 * (r1 / r - 1)
-    };
-  }
-
-  function arc$1() {
-    var innerRadius = arcInnerRadius$1,
-        outerRadius = arcOuterRadius$1,
-        cornerRadius = constant$7(0),
-        padRadius = null,
-        startAngle = arcStartAngle$1,
-        endAngle = arcEndAngle$1,
-        padAngle = arcPadAngle$1,
-        context = null;
-
-    function arc() {
-      var buffer,
-          r,
-          r0 = +innerRadius.apply(this, arguments),
-          r1 = +outerRadius.apply(this, arguments),
-          a0 = startAngle.apply(this, arguments) - halfPi$1,
-          a1 = endAngle.apply(this, arguments) - halfPi$1,
-          da = abs$1(a1 - a0),
-          cw = a1 > a0;
-      if (!context) context = buffer = path$1(); // Ensure that the outer radius is always larger than the inner radius.
-
-      if (r1 < r0) r = r1, r1 = r0, r0 = r; // Is it a point?
-
-      if (!(r1 > epsilon$3)) context.moveTo(0, 0); // Or is it a circle or annulus?
-      else if (da > tau$3 - epsilon$3) {
-          context.moveTo(r1 * cos$1(a0), r1 * sin$1(a0));
-          context.arc(0, 0, r1, a0, a1, !cw);
-
-          if (r0 > epsilon$3) {
-            context.moveTo(r0 * cos$1(a1), r0 * sin$1(a1));
-            context.arc(0, 0, r0, a1, a0, cw);
-          }
-        } // Or is it a circular or annular sector?
-        else {
-            var a01 = a0,
-                a11 = a1,
-                a00 = a0,
-                a10 = a1,
-                da0 = da,
-                da1 = da,
-                ap = padAngle.apply(this, arguments) / 2,
-                rp = ap > epsilon$3 && (padRadius ? +padRadius.apply(this, arguments) : sqrt$2(r0 * r0 + r1 * r1)),
-                rc = min$7(abs$1(r1 - r0) / 2, +cornerRadius.apply(this, arguments)),
-                rc0 = rc,
-                rc1 = rc,
-                t0,
-                t1; // Apply padding? Note that since r1 ≥ r0, da1 ≥ da0.
-
-            if (rp > epsilon$3) {
-              var p0 = asin$1(rp / r0 * sin$1(ap)),
-                  p1 = asin$1(rp / r1 * sin$1(ap));
-              if ((da0 -= p0 * 2) > epsilon$3) p0 *= cw ? 1 : -1, a00 += p0, a10 -= p0;else da0 = 0, a00 = a10 = (a0 + a1) / 2;
-              if ((da1 -= p1 * 2) > epsilon$3) p1 *= cw ? 1 : -1, a01 += p1, a11 -= p1;else da1 = 0, a01 = a11 = (a0 + a1) / 2;
-            }
-
-            var x01 = r1 * cos$1(a01),
-                y01 = r1 * sin$1(a01),
-                x10 = r0 * cos$1(a10),
-                y10 = r0 * sin$1(a10); // Apply rounded corners?
-
-            if (rc > epsilon$3) {
-              var x11 = r1 * cos$1(a11),
-                  y11 = r1 * sin$1(a11),
-                  x00 = r0 * cos$1(a00),
-                  y00 = r0 * sin$1(a00),
-                  oc; // Restrict the corner radius according to the sector angle.
-
-              if (da < pi$5 && (oc = intersect$1(x01, y01, x00, y00, x11, y11, x10, y10))) {
-                var ax = x01 - oc[0],
-                    ay = y01 - oc[1],
-                    bx = x11 - oc[0],
-                    by = y11 - oc[1],
-                    kc = 1 / sin$1(acos$1((ax * bx + ay * by) / (sqrt$2(ax * ax + ay * ay) * sqrt$2(bx * bx + by * by))) / 2),
-                    lc = sqrt$2(oc[0] * oc[0] + oc[1] * oc[1]);
-                rc0 = min$7(rc, (r0 - lc) / (kc - 1));
-                rc1 = min$7(rc, (r1 - lc) / (kc + 1));
-              }
-            } // Is the sector collapsed to a line?
-
-
-            if (!(da1 > epsilon$3)) context.moveTo(x01, y01); // Does the sector’s outer ring have rounded corners?
-            else if (rc1 > epsilon$3) {
-                t0 = cornerTangents$1(x00, y00, x01, y01, r1, rc1, cw);
-                t1 = cornerTangents$1(x11, y11, x10, y10, r1, rc1, cw);
-                context.moveTo(t0.cx + t0.x01, t0.cy + t0.y01); // Have the corners merged?
-
-                if (rc1 < rc) context.arc(t0.cx, t0.cy, rc1, atan2$1(t0.y01, t0.x01), atan2$1(t1.y01, t1.x01), !cw); // Otherwise, draw the two corners and the ring.
-                else {
-                    context.arc(t0.cx, t0.cy, rc1, atan2$1(t0.y01, t0.x01), atan2$1(t0.y11, t0.x11), !cw);
-                    context.arc(0, 0, r1, atan2$1(t0.cy + t0.y11, t0.cx + t0.x11), atan2$1(t1.cy + t1.y11, t1.cx + t1.x11), !cw);
-                    context.arc(t1.cx, t1.cy, rc1, atan2$1(t1.y11, t1.x11), atan2$1(t1.y01, t1.x01), !cw);
-                  }
-              } // Or is the outer ring just a circular arc?
-              else context.moveTo(x01, y01), context.arc(0, 0, r1, a01, a11, !cw); // Is there no inner ring, and it’s a circular sector?
-            // Or perhaps it’s an annular sector collapsed due to padding?
-
-            if (!(r0 > epsilon$3) || !(da0 > epsilon$3)) context.lineTo(x10, y10); // Does the sector’s inner ring (or point) have rounded corners?
-            else if (rc0 > epsilon$3) {
-                t0 = cornerTangents$1(x10, y10, x11, y11, r0, -rc0, cw);
-                t1 = cornerTangents$1(x01, y01, x00, y00, r0, -rc0, cw);
-                context.lineTo(t0.cx + t0.x01, t0.cy + t0.y01); // Have the corners merged?
-
-                if (rc0 < rc) context.arc(t0.cx, t0.cy, rc0, atan2$1(t0.y01, t0.x01), atan2$1(t1.y01, t1.x01), !cw); // Otherwise, draw the two corners and the ring.
-                else {
-                    context.arc(t0.cx, t0.cy, rc0, atan2$1(t0.y01, t0.x01), atan2$1(t0.y11, t0.x11), !cw);
-                    context.arc(0, 0, r0, atan2$1(t0.cy + t0.y11, t0.cx + t0.x11), atan2$1(t1.cy + t1.y11, t1.cx + t1.x11), cw);
-                    context.arc(t1.cx, t1.cy, rc0, atan2$1(t1.y11, t1.x11), atan2$1(t1.y01, t1.x01), !cw);
-                  }
-              } // Or is the inner ring just a circular arc?
-              else context.arc(0, 0, r0, a10, a00, cw);
-          }
-      context.closePath();
-      if (buffer) return context = null, buffer + "" || null;
-    }
-
-    arc.centroid = function () {
-      var r = (+innerRadius.apply(this, arguments) + +outerRadius.apply(this, arguments)) / 2,
-          a = (+startAngle.apply(this, arguments) + +endAngle.apply(this, arguments)) / 2 - pi$5 / 2;
-      return [cos$1(a) * r, sin$1(a) * r];
-    };
-
-    arc.innerRadius = function (_) {
-      return arguments.length ? (innerRadius = typeof _ === "function" ? _ : constant$7(+_), arc) : innerRadius;
-    };
-
-    arc.outerRadius = function (_) {
-      return arguments.length ? (outerRadius = typeof _ === "function" ? _ : constant$7(+_), arc) : outerRadius;
-    };
-
-    arc.cornerRadius = function (_) {
-      return arguments.length ? (cornerRadius = typeof _ === "function" ? _ : constant$7(+_), arc) : cornerRadius;
-    };
-
-    arc.padRadius = function (_) {
-      return arguments.length ? (padRadius = _ == null ? null : typeof _ === "function" ? _ : constant$7(+_), arc) : padRadius;
-    };
-
-    arc.startAngle = function (_) {
-      return arguments.length ? (startAngle = typeof _ === "function" ? _ : constant$7(+_), arc) : startAngle;
-    };
-
-    arc.endAngle = function (_) {
-      return arguments.length ? (endAngle = typeof _ === "function" ? _ : constant$7(+_), arc) : endAngle;
-    };
-
-    arc.padAngle = function (_) {
-      return arguments.length ? (padAngle = typeof _ === "function" ? _ : constant$7(+_), arc) : padAngle;
-    };
-
-    arc.context = function (_) {
-      return arguments.length ? (context = _ == null ? null : _, arc) : context;
-    };
-
-    return arc;
-  }
-
-  var tau$4 = Math.PI * 2;
+  var tau$2 = Math.PI * 2;
   /**
       @class RadialMatrix
       @extends Viz
@@ -54016,13 +52611,13 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
             width = this._width - this._margin.left - this._margin.right;
         var labelHeight = 50,
             labelWidth = 100;
-        var radius = min$6([height - labelHeight * 2, width - labelWidth * 2]) / 2,
+        var radius = min([height - labelHeight * 2, width - labelWidth * 2]) / 2,
             transform = "translate(".concat(width / 2 + this._margin.left, ", ").concat(height / 2 + this._margin.top, ")");
         var flippedColumns = columnValues.slice().reverse();
         flippedColumns.unshift(flippedColumns.pop());
         var total = flippedColumns.length;
         var labelData = flippedColumns.map(function (key, i) {
-          var radians = i / total * tau$4;
+          var radians = i / total * tau$2;
           var angle = Math.round(radians * 180 / Math.PI);
           var quadrant = Math.floor((angle + 90) / 90 % 4 + 1);
           var xMod = [0, 180].includes(angle) ? -labelWidth / 2 : [2, 3].includes(quadrant) ? -labelWidth : 0;
@@ -54057,9 +52652,9 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
         var innerRadius = this._innerRadius(radius);
 
         var rowHeight = (radius - innerRadius) / rowValues.length;
-        var columnWidth = labelData.length > 1 ? labelData[1].radians - labelData[0].radians : tau$4;
+        var columnWidth = labelData.length > 1 ? labelData[1].radians - labelData[0].radians : tau$2;
         var flippedRows = rowValues.slice().reverse();
-        var arcData = arc$1().padAngle(this._cellPadding / radius).innerRadius(function (d) {
+        var arcData = arc().padAngle(this._cellPadding / radius).innerRadius(function (d) {
           return innerRadius + flippedRows.indexOf(d.row) * rowHeight + _this10._cellPadding / 2;
         }).outerRadius(function (d) {
           return innerRadius + (flippedRows.indexOf(d.row) + 1) * rowHeight - _this10._cellPadding / 2;
