@@ -2,8 +2,8 @@
 title: Radial Matrix
 width: 800
 height: 400
-time: 1605886864978
-date: November 20, 2020
+time: 1607097277481
+date: December 04, 2020
 ---
 
 # Radial Matrix
