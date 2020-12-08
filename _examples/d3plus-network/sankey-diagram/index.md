@@ -1,9 +1,9 @@
 ---
 title: Simple Sankey Diagram
-width: 800
+width: 990
 height: 400
-time: 1594763677470
-date: July 14, 2020
+time: 1607444675827
+date: December 08, 2020
 ---
 
 # Simple Sankey Diagram
