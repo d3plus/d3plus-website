@@ -1,5 +1,5 @@
 /*
-  d3plus-network v0.6.0
+  d3plus-network v0.6.1
   Javascript network visualizations built upon d3 modules.
   Copyright (c) 2020 D3plus - https://d3plus.org
   @license MIT
@@ -55853,7 +55853,7 @@
       _this._on["mousemove.shape"] = function (d, i) {
         defaultMouseMove(d, i);
         var id = "".concat(_this._nodeGroupBy && _this._nodeGroupBy[_this._drawDepth](d, i) ? _this._nodeGroupBy[_this._drawDepth](d, i) : _this._id(d, i)),
-            links = _this._linkLookup[id],
+            links = _this._linkLookup[id] || [],
             node = _this._nodeLookup[id];
         var filterIds = [id];
         var xDomain = [node.x - node.r, node.x + node.r],
@@ -55991,14 +55991,24 @@
           simulation.alphaDecay(0);
           simulation.nodes(nodes);
           simulation.tick(iterations).stop();
-          var hull = polygonHull(nodes.map(function (n) {
+          var nodePositions = nodes.map(function (n) {
             return [n.vx, n.vy];
-          }));
+          });
+          var angle = 0,
+              cx = 0,
+              cy = 0;
 
-          var _shapes$largestRect = largestRect(hull),
-              angle = _shapes$largestRect.angle,
-              cx = _shapes$largestRect.cx,
-              cy = _shapes$largestRect.cy;
+          if (nodePositions.length === 2) {
+            angle = 100;
+          } else if (nodePositions.length > 2) {
+            var hull = polygonHull(nodePositions);
+            var rect = largestRect(hull, {
+              verbose: true
+            });
+            angle = rect.angle;
+            cx = rect.cx;
+            cy = rect.cy;
+          }
 
           nodes.forEach(function (n) {
             var p = pointRotate([n.vx, n.vy], -1 * (Math.PI / 180 * angle), [cx, cy]);
@@ -56015,7 +56025,7 @@
         }));
         var x = linear$1().domain(xExtent).range([0, width]),
             y = linear$1().domain(yExtent).range([0, height]);
-        var nodeRatio = (xExtent[1] - xExtent[0]) / (yExtent[1] - yExtent[0]),
+        var nodeRatio = (xExtent[1] - xExtent[0]) / (yExtent[1] - yExtent[0]) || 1,
             screenRatio = width / height;
 
         if (nodeRatio > screenRatio) {
@@ -56056,12 +56066,13 @@
         r.range([rExtent[0] === rExtent[1] ? rMax : min([rMax / 2, this._sizeMin]), rMax]);
         x.domain(xDomain);
         y.domain(yDomain);
+        var fallbackRadius = (nodeRatio > screenRatio ? width : height) / 2;
         nodes.forEach(function (n) {
           n.x = x(n.fx);
           n.fx = n.x;
           n.y = y(n.fy);
           n.fy = n.y;
-          n.r = r(n.r);
+          n.r = r(n.r) || fallbackRadius;
           n.width = n.r * 2;
           n.height = n.r * 2;
         });
