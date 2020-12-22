@@ -1,7 +1,7 @@
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
 /*
-  d3plus-format v0.1.19
+  d3plus-format v0.1.20
   Shorthand formatters for common number types.
   Copyright (c) 2020 D3plus - https://d3plus.org
   @license MIT
@@ -1599,14 +1599,14 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       @function formatAbbreviate
       @desc An extension to d3's [format](https://github.com/d3/d3-format#api-reference) function that adds more string formatting types and localizations.
    The new specifier strings added by d3plus-format are:
-   - `~a` - abbreviated decimal notation with a numeric suffix (ie. "k", "M", "B", etc). This is an alias of the `formatAbbreviate` function.
+   - `.3~a` - abbreviated decimal notation with a numeric suffix (ie. "k", "M", "B", etc). This is an alias of the `formatAbbreviate` function.
       @param {String} specifier The string specifier used by the format function.
       @returns {Function}
   */
 
 
   var format$1 = function format$1(specifier) {
-    if (specifier === "~a") return abbreviate;
+    if (specifier === ".3~a") return abbreviate;
     return format(specifier);
   };
   /**
