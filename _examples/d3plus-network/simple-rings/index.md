@@ -2,7 +2,7 @@
 title: Simple Rings
 width: 800
 height: 400
-time: 1609875495893
+time: 1609880127036
 date: January 05, 2021
 ---
 
