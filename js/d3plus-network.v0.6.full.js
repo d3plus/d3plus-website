@@ -37,7 +37,7 @@ function _defineProperty2(obj, key, value) { if (key in obj) { Object.defineProp
 function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof2 = function _typeof2(obj) { return typeof obj; }; } else { _typeof2 = function _typeof2(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof2(obj); }
 
 /*
-  d3plus-network v0.6.2
+  d3plus-network v0.6.3
   Javascript network visualizations built upon d3 modules.
   Copyright (c) 2021 D3plus - https://d3plus.org
   @license MIT
@@ -4107,12 +4107,16 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
 
   function continuous(transform, untransform) {
     return transformer()(transform, untransform);
+  }
+
+  function formatDecimal(x) {
+    return Math.abs(x = Math.round(x)) >= 1e21 ? x.toLocaleString("en").replace(/,/g, "") : x.toString(10);
   } // Computes the decimal coefficient and exponent of the specified number x with
   // significant digits p, where x is positive and p is in [1, 21] or undefined.
-  // For example, formatDecimal(1.23) returns ["123", 0].
+  // For example, formatDecimalParts(1.23) returns ["123", 0].
 
 
-  function formatDecimal(x, p) {
+  function formatDecimalParts(x, p) {
     if ((i = (x = p ? x.toExponential(p - 1) : x.toExponential()).indexOf("e")) < 0) return null; // NaN, ±Infinity
 
     var i,
@@ -4123,7 +4127,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
   }
 
   function exponent(x) {
-    return x = formatDecimal(Math.abs(x)), x ? x[1] : NaN;
+    return x = formatDecimalParts(Math.abs(x)), x ? x[1] : NaN;
   }
 
   function formatGroup(grouping, thousands) {
@@ -4157,28 +4161,39 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
   var re = /^(?:(.)?([<>=^]))?([+\-( ])?([$#])?(0)?(\d+)?(,)?(\.\d+)?(~)?([a-z%])?$/i;
 
   function formatSpecifier(specifier) {
-    return new FormatSpecifier(specifier);
+    if (!(match = re.exec(specifier))) throw new Error("invalid format: " + specifier);
+    var match;
+    return new FormatSpecifier({
+      fill: match[1],
+      align: match[2],
+      sign: match[3],
+      symbol: match[4],
+      zero: match[5],
+      width: match[6],
+      comma: match[7],
+      precision: match[8] && match[8].slice(1),
+      trim: match[9],
+      type: match[10]
+    });
   }
 
   formatSpecifier.prototype = FormatSpecifier.prototype; // instanceof
 
   function FormatSpecifier(specifier) {
-    if (!(match = re.exec(specifier))) throw new Error("invalid format: " + specifier);
-    var match;
-    this.fill = match[1] || " ";
-    this.align = match[2] || ">";
-    this.sign = match[3] || "-";
-    this.symbol = match[4] || "";
-    this.zero = !!match[5];
-    this.width = match[6] && +match[6];
-    this.comma = !!match[7];
-    this.precision = match[8] && +match[8].slice(1);
-    this.trim = !!match[9];
-    this.type = match[10] || "";
+    this.fill = specifier.fill === undefined ? " " : specifier.fill + "";
+    this.align = specifier.align === undefined ? ">" : specifier.align + "";
+    this.sign = specifier.sign === undefined ? "-" : specifier.sign + "";
+    this.symbol = specifier.symbol === undefined ? "" : specifier.symbol + "";
+    this.zero = !!specifier.zero;
+    this.width = specifier.width === undefined ? undefined : +specifier.width;
+    this.comma = !!specifier.comma;
+    this.precision = specifier.precision === undefined ? undefined : +specifier.precision;
+    this.trim = !!specifier.trim;
+    this.type = specifier.type === undefined ? "" : specifier.type + "";
   }
 
   FormatSpecifier.prototype.toString = function () {
-    return this.fill + this.align + this.sign + this.symbol + (this.zero ? "0" : "") + (this.width == null ? "" : Math.max(1, this.width | 0)) + (this.comma ? "," : "") + (this.precision == null ? "" : "." + Math.max(0, this.precision | 0)) + (this.trim ? "~" : "") + this.type;
+    return this.fill + this.align + this.sign + this.symbol + (this.zero ? "0" : "") + (this.width === undefined ? "" : Math.max(1, this.width | 0)) + (this.comma ? "," : "") + (this.precision === undefined ? "" : "." + Math.max(0, this.precision | 0)) + (this.trim ? "~" : "") + this.type;
   }; // Trims insignificant zeros, e.g., replaces 1.2000k with 1.2k.
 
 
@@ -4195,11 +4210,8 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
           break;
 
         default:
-          if (i0 > 0) {
-            if (!+s[i]) break out;
-            i0 = 0;
-          }
-
+          if (!+s[i]) break out;
+          if (i0 > 0) i0 = 0;
           break;
       }
     }
@@ -4210,17 +4222,17 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
   var prefixExponent;
 
   function formatPrefixAuto(x, p) {
-    var d = formatDecimal(x, p);
+    var d = formatDecimalParts(x, p);
     if (!d) return x + "";
     var coefficient = d[0],
         exponent = d[1],
         i = exponent - (prefixExponent = Math.max(-8, Math.min(8, Math.floor(exponent / 3))) * 3) + 1,
         n = coefficient.length;
-    return i === n ? coefficient : i > n ? coefficient + new Array(i - n + 1).join("0") : i > 0 ? coefficient.slice(0, i) + "." + coefficient.slice(i) : "0." + new Array(1 - i).join("0") + formatDecimal(x, Math.max(0, p + i - 1))[0]; // less than 1y!
+    return i === n ? coefficient : i > n ? coefficient + new Array(i - n + 1).join("0") : i > 0 ? coefficient.slice(0, i) + "." + coefficient.slice(i) : "0." + new Array(1 - i).join("0") + formatDecimalParts(x, Math.max(0, p + i - 1))[0]; // less than 1y!
   }
 
   function formatRounded(x, p) {
-    var d = formatDecimal(x, p);
+    var d = formatDecimalParts(x, p);
     if (!d) return x + "";
     var coefficient = d[0],
         exponent = d[1];
@@ -4237,9 +4249,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
     "c": function c(x) {
       return x + "";
     },
-    "d": function d(x) {
-      return Math.round(x).toString(10);
-    },
+    "d": formatDecimal,
     "e": function e(x, p) {
       return x.toExponential(p);
     },
@@ -4269,14 +4279,18 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
     return x;
   }
 
-  var prefixes = ["y", "z", "a", "f", "p", "n", "µ", "m", "", "k", "M", "G", "T", "P", "E", "Z", "Y"];
+  var map$2 = Array.prototype.map,
+      prefixes = ["y", "z", "a", "f", "p", "n", "µ", "m", "", "k", "M", "G", "T", "P", "E", "Z", "Y"];
 
   function formatLocale(locale) {
-    var group = locale.grouping && locale.thousands ? formatGroup(locale.grouping, locale.thousands) : identity$2,
-        currency = locale.currency,
-        decimal = locale.decimal,
-        numerals = locale.numerals ? formatNumerals(locale.numerals) : identity$2,
-        percent = locale.percent || "%";
+    var group = locale.grouping === undefined || locale.thousands === undefined ? identity$2 : formatGroup(map$2.call(locale.grouping, Number), locale.thousands + ""),
+        currencyPrefix = locale.currency === undefined ? "" : locale.currency[0] + "",
+        currencySuffix = locale.currency === undefined ? "" : locale.currency[1] + "",
+        decimal = locale.decimal === undefined ? "." : locale.decimal + "",
+        numerals = locale.numerals === undefined ? identity$2 : formatNumerals(map$2.call(locale.numerals, String)),
+        percent = locale.percent === undefined ? "%" : locale.percent + "",
+        minus = locale.minus === undefined ? "-" : locale.minus + "",
+        nan = locale.nan === undefined ? "NaN" : locale.nan + "";
 
     function newFormat(specifier) {
       specifier = formatSpecifier(specifier);
@@ -4292,13 +4306,13 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
           type = specifier.type; // The "n" type is an alias for ",g".
 
       if (type === "n") comma = true, type = "g"; // The "" type, and any invalid type, is an alias for ".12~g".
-      else if (!formatTypes[type]) precision == null && (precision = 12), trim = true, type = "g"; // If zero fill is specified, padding goes after sign and before digits.
+      else if (!formatTypes[type]) precision === undefined && (precision = 12), trim = true, type = "g"; // If zero fill is specified, padding goes after sign and before digits.
 
       if (zero || fill === "0" && align === "=") zero = true, fill = "0", align = "="; // Compute the prefix and suffix.
       // For SI-prefix, the suffix is lazily computed.
 
-      var prefix = symbol === "$" ? currency[0] : symbol === "#" && /[boxX]/.test(type) ? "0" + type.toLowerCase() : "",
-          suffix = symbol === "$" ? currency[1] : /[%p]/.test(type) ? percent : ""; // What format function should we use?
+      var prefix = symbol === "$" ? currencyPrefix : symbol === "#" && /[boxX]/.test(type) ? "0" + type.toLowerCase() : "",
+          suffix = symbol === "$" ? currencySuffix : /[%p]/.test(type) ? percent : ""; // What format function should we use?
       // Is this an integer type?
       // Can this type generate exponential notation?
 
@@ -4308,7 +4322,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
       // For significant precision, it must be in [1, 21].
       // For fixed precision, it must be in [0, 20].
 
-      precision = precision == null ? 6 : /[gprs]/.test(type) ? Math.max(1, Math.min(21, precision)) : Math.max(0, Math.min(20, precision));
+      precision = precision === undefined ? 6 : /[gprs]/.test(type) ? Math.max(1, Math.min(21, precision)) : Math.max(0, Math.min(20, precision));
 
       function format(value) {
         var valuePrefix = prefix,
@@ -4321,16 +4335,17 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
           valueSuffix = formatType(value) + valueSuffix;
           value = "";
         } else {
-          value = +value; // Perform the initial formatting.
+          value = +value; // Determine the sign. -0 is not less than 0, but 1 / -0 is!
 
-          var valueNegative = value < 0;
-          value = formatType(Math.abs(value), precision); // Trim insignificant zeros.
+          var valueNegative = value < 0 || 1 / value < 0; // Perform the initial formatting.
 
-          if (trim) value = formatTrim(value); // If a negative value rounds to zero during formatting, treat as positive.
+          value = isNaN(value) ? nan : formatType(Math.abs(value), precision); // Trim insignificant zeros.
 
-          if (valueNegative && +value === 0) valueNegative = false; // Compute the prefix and suffix.
+          if (trim) value = formatTrim(value); // If a negative value rounds to zero after formatting, and no explicit positive sign is requested, hide the sign.
 
-          valuePrefix = (valueNegative ? sign === "(" ? sign : "-" : sign === "-" || sign === "(" ? "" : sign) + valuePrefix;
+          if (valueNegative && +value === 0 && sign !== "+") valueNegative = false; // Compute the prefix and suffix.
+
+          valuePrefix = (valueNegative ? sign === "(" ? sign : minus : sign === "-" || sign === "(" ? "" : sign) + valuePrefix;
           valueSuffix = (type === "s" ? prefixes[8 + prefixExponent / 3] : "") + valueSuffix + (valueNegative && sign === "(" ? ")" : ""); // Break the formatted value into the integer “value” part that can be
           // grouped, and fractional or exponential “suffix” part that is not.
 
@@ -4406,7 +4421,8 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
     decimal: ".",
     thousands: ",",
     grouping: [3],
-    currency: ["$", ""]
+    currency: ["$", ""],
+    minus: "-"
   });
 
   function defaultLocale(definition) {
@@ -23267,7 +23283,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
           return "d3plus-textBox-".concat(strip(d.id));
         }).call(rotate).merge(boxes);
         var rtl = detectRTL();
-        update.style("pointer-events", function (d) {
+        update.order().style("pointer-events", function (d) {
           return _this2._pointerEvents(d.data, d.i);
         }).each(function (d) {
           /**
@@ -29376,23 +29392,31 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
       return acc.concat(dataArray);
     }, []);
   };
+
+  function _typeof$c(obj) {
+    "@babel/helpers - typeof";
+
+    if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") {
+      _typeof$c = function _typeof(obj) {
+        return typeof obj;
+      };
+    } else {
+      _typeof$c = function _typeof(obj) {
+        return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
+      };
+    }
+
+    return _typeof$c(obj);
+  }
   /**
-    @function dataFold
-    @desc Given a JSON object where the data values and headers have been split into separate key lookups, this function will combine the data values with the headers and returns one large array of objects.
-    @param {Object} json A JSON data Object with `data` and `headers` keys.
-    @param {String} [data = "data"] The key used for the flat data array inside of the JSON object.
-    @param {String} [headers = "headers"] The key used for the flat headers array inside of the JSON object.
+    @function isData
+    @desc Returns true/false whether the argument provided to the function should be loaded using an internal XHR request. Valid data can either be a string URL or an Object with "url" and "headers" keys.
+    @param {*} dataItem The value to be tested
   */
 
 
-  var fold = function fold(json) {
-    var data = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : "data";
-    var headers = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : "headers";
-    return json[data].map(function (data) {
-      return json[headers].reduce(function (obj, header, i) {
-        return obj[header] = data[i], obj;
-      }, {});
-    });
+  var isData = function isData(dataItem) {
+    return typeof dataItem === "string" || _typeof$c(dataItem) === "object" && dataItem.url && dataItem.headers;
   };
 
   function request(url, callback) {
@@ -29751,21 +29775,38 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
 
   var csv$1 = dsv$1("text/csv", csvParse);
   var tsv$1 = dsv$1("text/tab-separated-values", tsvParse);
+  /**
+    @function dataFold
+    @desc Given a JSON object where the data values and headers have been split into separate key lookups, this function will combine the data values with the headers and returns one large array of objects.
+    @param {Object} json A JSON data Object with `data` and `headers` keys.
+    @param {String} [data = "data"] The key used for the flat data array inside of the JSON object.
+    @param {String} [headers = "headers"] The key used for the flat headers array inside of the JSON object.
+  */
 
-  function _typeof$c(obj) {
+  var fold = function fold(json) {
+    var data = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : "data";
+    var headers = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : "headers";
+    return json[data].map(function (data) {
+      return json[headers].reduce(function (obj, header, i) {
+        return obj[header] = data[i], obj;
+      }, {});
+    });
+  };
+
+  function _typeof$d(obj) {
     "@babel/helpers - typeof";
 
     if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") {
-      _typeof$c = function _typeof(obj) {
+      _typeof$d = function _typeof(obj) {
         return typeof obj;
       };
     } else {
-      _typeof$c = function _typeof(obj) {
+      _typeof$d = function _typeof(obj) {
         return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
       };
     }
 
-    return _typeof$c(obj);
+    return _typeof$d(obj);
   }
   /**
     @function dataLoad
@@ -29824,11 +29865,6 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
 
 
     if (!(path instanceof Array)) path = [path];
-
-    var isData = function isData(dataItem) {
-      return typeof dataItem === "string" || _typeof$c(dataItem) === "object" && dataItem.url && dataItem.headers;
-    };
-
     var needToLoad = path.find(isData);
     var loaded = new Array(path.length);
     var toLoad = []; // If there is a string I'm assuming is a Array to merge, urls or data
@@ -29848,7 +29884,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
       var headers = {},
           url = dataItem;
 
-      if (_typeof$c(dataItem) === "object") {
+      if (_typeof$d(dataItem) === "object") {
         url = dataItem.url;
         headers = dataItem.headers;
       }
@@ -29915,6 +29951,31 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
 
       if (key && "_".concat(key) in this) this["_".concat(key)] = data;
       if (callback) callback(null, data);
+    }
+  }
+  /**
+    @function isData
+    @desc Adds the provided value to the internal queue to be loaded, if necessary. This is used internally in new d3plus visualizations that fold in additional data sources, like the nodes and links of Network or the topojson of Geomap.
+    @param {Array|String|Object} data The data to be loaded
+    @param {Function} [data] An optional data formatter/callback
+    @param {String} data The internal Viz method to be modified
+  */
+
+
+  function addToQueue(_, f, key) {
+    if (!(_ instanceof Array)) _ = [_];
+
+    var needToLoad = _.find(isData);
+
+    if (needToLoad) {
+      var prev = this._queue.find(function (q) {
+        return q[3] === "data";
+      });
+
+      var d = [load.bind(this), _, f, "data"];
+      if (prev) this._queue[this._queue.indexOf(prev)] = d;else this._queue.push(d);
+    } else {
+      this["_".concat(key)] = _;
     }
   }
 
@@ -31174,309 +31235,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
 
       return LRUCache;
     });
-  }); // Computes the decimal coefficient and exponent of the specified number x with
-  // significant digits p, where x is positive and p is in [1, 21] or undefined.
-  // For example, formatDecimal(1.23) returns ["123", 0].
-
-  function formatDecimal$1(x, p) {
-    if ((i = (x = p ? x.toExponential(p - 1) : x.toExponential()).indexOf("e")) < 0) return null; // NaN, ±Infinity
-
-    var i,
-        coefficient = x.slice(0, i); // The string returned by toExponential either has the form \d\.\d+e[-+]\d+
-    // (e.g., 1.2e+3) or the form \de[-+]\d+ (e.g., 1e+3).
-
-    return [coefficient.length > 1 ? coefficient[0] + coefficient.slice(2) : coefficient, +x.slice(i + 1)];
-  }
-
-  function exponent$1(x) {
-    return x = formatDecimal$1(Math.abs(x)), x ? x[1] : NaN;
-  }
-
-  function formatGroup$1(grouping, thousands) {
-    return function (value, width) {
-      var i = value.length,
-          t = [],
-          j = 0,
-          g = grouping[0],
-          length = 0;
-
-      while (i > 0 && g > 0) {
-        if (length + g + 1 > width) g = Math.max(1, width - length);
-        t.push(value.substring(i -= g, i + g));
-        if ((length += g + 1) > width) break;
-        g = grouping[j = (j + 1) % grouping.length];
-      }
-
-      return t.reverse().join(thousands);
-    };
-  }
-
-  function formatNumerals$1(numerals) {
-    return function (value) {
-      return value.replace(/[0-9]/g, function (i) {
-        return numerals[+i];
-      });
-    };
-  } // [[fill]align][sign][symbol][0][width][,][.precision][~][type]
-
-
-  var re$1 = /^(?:(.)?([<>=^]))?([+\-( ])?([$#])?(0)?(\d+)?(,)?(\.\d+)?(~)?([a-z%])?$/i;
-
-  function formatSpecifier$1(specifier) {
-    if (!(match = re$1.exec(specifier))) throw new Error("invalid format: " + specifier);
-    var match;
-    return new FormatSpecifier$1({
-      fill: match[1],
-      align: match[2],
-      sign: match[3],
-      symbol: match[4],
-      zero: match[5],
-      width: match[6],
-      comma: match[7],
-      precision: match[8] && match[8].slice(1),
-      trim: match[9],
-      type: match[10]
-    });
-  }
-
-  formatSpecifier$1.prototype = FormatSpecifier$1.prototype; // instanceof
-
-  function FormatSpecifier$1(specifier) {
-    this.fill = specifier.fill === undefined ? " " : specifier.fill + "";
-    this.align = specifier.align === undefined ? ">" : specifier.align + "";
-    this.sign = specifier.sign === undefined ? "-" : specifier.sign + "";
-    this.symbol = specifier.symbol === undefined ? "" : specifier.symbol + "";
-    this.zero = !!specifier.zero;
-    this.width = specifier.width === undefined ? undefined : +specifier.width;
-    this.comma = !!specifier.comma;
-    this.precision = specifier.precision === undefined ? undefined : +specifier.precision;
-    this.trim = !!specifier.trim;
-    this.type = specifier.type === undefined ? "" : specifier.type + "";
-  }
-
-  FormatSpecifier$1.prototype.toString = function () {
-    return this.fill + this.align + this.sign + this.symbol + (this.zero ? "0" : "") + (this.width === undefined ? "" : Math.max(1, this.width | 0)) + (this.comma ? "," : "") + (this.precision === undefined ? "" : "." + Math.max(0, this.precision | 0)) + (this.trim ? "~" : "") + this.type;
-  }; // Trims insignificant zeros, e.g., replaces 1.2000k with 1.2k.
-
-
-  function formatTrim$1(s) {
-    out: for (var n = s.length, i = 1, i0 = -1, i1; i < n; ++i) {
-      switch (s[i]) {
-        case ".":
-          i0 = i1 = i;
-          break;
-
-        case "0":
-          if (i0 === 0) i0 = i;
-          i1 = i;
-          break;
-
-        default:
-          if (!+s[i]) break out;
-          if (i0 > 0) i0 = 0;
-          break;
-      }
-    }
-
-    return i0 > 0 ? s.slice(0, i0) + s.slice(i1 + 1) : s;
-  }
-
-  var prefixExponent$1;
-
-  function formatPrefixAuto$1(x, p) {
-    var d = formatDecimal$1(x, p);
-    if (!d) return x + "";
-    var coefficient = d[0],
-        exponent = d[1],
-        i = exponent - (prefixExponent$1 = Math.max(-8, Math.min(8, Math.floor(exponent / 3))) * 3) + 1,
-        n = coefficient.length;
-    return i === n ? coefficient : i > n ? coefficient + new Array(i - n + 1).join("0") : i > 0 ? coefficient.slice(0, i) + "." + coefficient.slice(i) : "0." + new Array(1 - i).join("0") + formatDecimal$1(x, Math.max(0, p + i - 1))[0]; // less than 1y!
-  }
-
-  function formatRounded$1(x, p) {
-    var d = formatDecimal$1(x, p);
-    if (!d) return x + "";
-    var coefficient = d[0],
-        exponent = d[1];
-    return exponent < 0 ? "0." + new Array(-exponent).join("0") + coefficient : coefficient.length > exponent + 1 ? coefficient.slice(0, exponent + 1) + "." + coefficient.slice(exponent + 1) : coefficient + new Array(exponent - coefficient.length + 2).join("0");
-  }
-
-  var formatTypes$1 = {
-    "%": function _(x, p) {
-      return (x * 100).toFixed(p);
-    },
-    "b": function b(x) {
-      return Math.round(x).toString(2);
-    },
-    "c": function c(x) {
-      return x + "";
-    },
-    "d": function d(x) {
-      return Math.round(x).toString(10);
-    },
-    "e": function e(x, p) {
-      return x.toExponential(p);
-    },
-    "f": function f(x, p) {
-      return x.toFixed(p);
-    },
-    "g": function g(x, p) {
-      return x.toPrecision(p);
-    },
-    "o": function o(x) {
-      return Math.round(x).toString(8);
-    },
-    "p": function p(x, _p3) {
-      return formatRounded$1(x * 100, _p3);
-    },
-    "r": formatRounded$1,
-    "s": formatPrefixAuto$1,
-    "X": function X(x) {
-      return Math.round(x).toString(16).toUpperCase();
-    },
-    "x": function x(_x6) {
-      return Math.round(_x6).toString(16);
-    }
-  };
-
-  function identity$6(x) {
-    return x;
-  }
-
-  var map$2 = Array.prototype.map,
-      prefixes$1 = ["y", "z", "a", "f", "p", "n", "µ", "m", "", "k", "M", "G", "T", "P", "E", "Z", "Y"];
-
-  function formatLocale$2(locale) {
-    var group = locale.grouping === undefined || locale.thousands === undefined ? identity$6 : formatGroup$1(map$2.call(locale.grouping, Number), locale.thousands + ""),
-        currencyPrefix = locale.currency === undefined ? "" : locale.currency[0] + "",
-        currencySuffix = locale.currency === undefined ? "" : locale.currency[1] + "",
-        decimal = locale.decimal === undefined ? "." : locale.decimal + "",
-        numerals = locale.numerals === undefined ? identity$6 : formatNumerals$1(map$2.call(locale.numerals, String)),
-        percent = locale.percent === undefined ? "%" : locale.percent + "",
-        minus = locale.minus === undefined ? "-" : locale.minus + "",
-        nan = locale.nan === undefined ? "NaN" : locale.nan + "";
-
-    function newFormat(specifier) {
-      specifier = formatSpecifier$1(specifier);
-      var fill = specifier.fill,
-          align = specifier.align,
-          sign = specifier.sign,
-          symbol = specifier.symbol,
-          zero = specifier.zero,
-          width = specifier.width,
-          comma = specifier.comma,
-          precision = specifier.precision,
-          trim = specifier.trim,
-          type = specifier.type; // The "n" type is an alias for ",g".
-
-      if (type === "n") comma = true, type = "g"; // The "" type, and any invalid type, is an alias for ".12~g".
-      else if (!formatTypes$1[type]) precision === undefined && (precision = 12), trim = true, type = "g"; // If zero fill is specified, padding goes after sign and before digits.
-
-      if (zero || fill === "0" && align === "=") zero = true, fill = "0", align = "="; // Compute the prefix and suffix.
-      // For SI-prefix, the suffix is lazily computed.
-
-      var prefix = symbol === "$" ? currencyPrefix : symbol === "#" && /[boxX]/.test(type) ? "0" + type.toLowerCase() : "",
-          suffix = symbol === "$" ? currencySuffix : /[%p]/.test(type) ? percent : ""; // What format function should we use?
-      // Is this an integer type?
-      // Can this type generate exponential notation?
-
-      var formatType = formatTypes$1[type],
-          maybeSuffix = /[defgprs%]/.test(type); // Set the default precision if not specified,
-      // or clamp the specified precision to the supported range.
-      // For significant precision, it must be in [1, 21].
-      // For fixed precision, it must be in [0, 20].
-
-      precision = precision === undefined ? 6 : /[gprs]/.test(type) ? Math.max(1, Math.min(21, precision)) : Math.max(0, Math.min(20, precision));
-
-      function format(value) {
-        var valuePrefix = prefix,
-            valueSuffix = suffix,
-            i,
-            n,
-            c;
-
-        if (type === "c") {
-          valueSuffix = formatType(value) + valueSuffix;
-          value = "";
-        } else {
-          value = +value; // Determine the sign. -0 is not less than 0, but 1 / -0 is!
-
-          var valueNegative = value < 0 || 1 / value < 0; // Perform the initial formatting.
-
-          value = isNaN(value) ? nan : formatType(Math.abs(value), precision); // Trim insignificant zeros.
-
-          if (trim) value = formatTrim$1(value); // If a negative value rounds to zero after formatting, and no explicit positive sign is requested, hide the sign.
-
-          if (valueNegative && +value === 0 && sign !== "+") valueNegative = false; // Compute the prefix and suffix.
-
-          valuePrefix = (valueNegative ? sign === "(" ? sign : minus : sign === "-" || sign === "(" ? "" : sign) + valuePrefix;
-          valueSuffix = (type === "s" ? prefixes$1[8 + prefixExponent$1 / 3] : "") + valueSuffix + (valueNegative && sign === "(" ? ")" : ""); // Break the formatted value into the integer “value” part that can be
-          // grouped, and fractional or exponential “suffix” part that is not.
-
-          if (maybeSuffix) {
-            i = -1, n = value.length;
-
-            while (++i < n) {
-              if (c = value.charCodeAt(i), 48 > c || c > 57) {
-                valueSuffix = (c === 46 ? decimal + value.slice(i + 1) : value.slice(i)) + valueSuffix;
-                value = value.slice(0, i);
-                break;
-              }
-            }
-          }
-        } // If the fill character is not "0", grouping is applied before padding.
-
-
-        if (comma && !zero) value = group(value, Infinity); // Compute the padding.
-
-        var length = valuePrefix.length + value.length + valueSuffix.length,
-            padding = length < width ? new Array(width - length + 1).join(fill) : ""; // If the fill character is "0", grouping is applied after padding.
-
-        if (comma && zero) value = group(padding + value, padding.length ? width - valueSuffix.length : Infinity), padding = ""; // Reconstruct the final output based on the desired alignment.
-
-        switch (align) {
-          case "<":
-            value = valuePrefix + value + valueSuffix + padding;
-            break;
-
-          case "=":
-            value = valuePrefix + padding + value + valueSuffix;
-            break;
-
-          case "^":
-            value = padding.slice(0, length = padding.length >> 1) + valuePrefix + value + valueSuffix + padding.slice(length);
-            break;
-
-          default:
-            value = padding + valuePrefix + value + valueSuffix;
-            break;
-        }
-
-        return numerals(value);
-      }
-
-      format.toString = function () {
-        return specifier + "";
-      };
-
-      return format;
-    }
-
-    function formatPrefix(specifier, value) {
-      var f = newFormat((specifier = formatSpecifier$1(specifier), specifier.type = "f", specifier)),
-          e = Math.max(-8, Math.min(8, Math.floor(exponent$1(value) / 3))) * 3,
-          k = Math.pow(10, -e),
-          prefix = prefixes$1[8 + e / 3];
-      return function (value) {
-        return f(k * value) + prefix;
-      };
-    }
-
-    return {
-      format: newFormat,
-      formatPrefix: formatPrefix
-    };
-  }
+  });
   /**
       @namespace {Object} formatLocale
       @desc A set of default locale formatters used when assigning suffixes and currency in numbers.
@@ -31490,8 +31249,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
         * | currency | ["$", ""] | The currency prefix and suffix. |
   */
 
-
-  var formatLocale$3 = {
+  var formatLocale$2 = {
     "en-GB": {
       separator: "",
       suffixes: ["y", "z", "a", "f", "p", "n", "µ", "m", "", "k", "M", "B", "T", "q", "Q", "Z", "Y"],
@@ -31563,20 +31321,20 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
     }
   };
 
-  function _typeof$d(obj) {
+  function _typeof$e(obj) {
     "@babel/helpers - typeof";
 
     if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") {
-      _typeof$d = function _typeof(obj) {
+      _typeof$e = function _typeof(obj) {
         return typeof obj;
       };
     } else {
-      _typeof$d = function _typeof(obj) {
+      _typeof$e = function _typeof(obj) {
         return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
       };
     }
 
-    return _typeof$d(obj);
+    return _typeof$e(obj);
   }
 
   var round = function round(x, n) {
@@ -31633,12 +31391,12 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
     if (isFinite(n)) n *= 1;else return "N/A";
     var negative = n < 0;
     var length = n.toString().split(".")[0].replace("-", "").length,
-        localeConfig = _typeof$d(locale) === "object" ? locale : formatLocale$3[locale] || formatLocale$3["en-US"],
+        localeConfig = _typeof$e(locale) === "object" ? locale : formatLocale$2[locale] || formatLocale$2["en-US"],
         suffixes = localeConfig.suffixes.map(parseSuffixes);
     var decimal = localeConfig.delimiters.decimal || ".",
         separator = localeConfig.separator || "",
         thousands = localeConfig.delimiters.thousands || ",";
-    var d3plusFormatLocale = formatLocale$2({
+    var d3plusFormatLocale = formatLocale({
       currency: localeConfig.currency || ["$", ""],
       decimal: decimal,
       grouping: localeConfig.grouping || [3],
@@ -31830,20 +31588,20 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
     return arr2;
   }
 
-  function _typeof$e(obj) {
+  function _typeof$f(obj) {
     "@babel/helpers - typeof";
 
     if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") {
-      _typeof$e = function _typeof(obj) {
+      _typeof$f = function _typeof(obj) {
         return typeof obj;
       };
     } else {
-      _typeof$e = function _typeof(obj) {
+      _typeof$f = function _typeof(obj) {
         return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
       };
     }
 
-    return _typeof$e(obj);
+    return _typeof$f(obj);
   }
 
   function _classCallCheck$c(instance, Constructor) {
@@ -31912,7 +31670,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
   }
 
   function _possibleConstructorReturn$a(self, call) {
-    if (call && (_typeof$e(call) === "object" || typeof call === "function")) {
+    if (call && (_typeof$f(call) === "object" || typeof call === "function")) {
       return call;
     }
 
@@ -32246,7 +32004,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
           if (isNaN(d)) {
             return d;
           } else if (_this2._scale === "linear" && _this2._tickSuffix === "smallest") {
-            var _locale = _typeof$e(_this2._locale) === "object" ? _this2._locale : formatLocale$3[_this2._locale];
+            var _locale = _typeof$f(_this2._locale) === "object" ? _this2._locale : formatLocale$2[_this2._locale];
 
             var separator = _locale.separator,
                 suffixes = _locale.suffixes;
@@ -33201,20 +32959,20 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
     return Axis;
   }(BaseClass);
 
-  function _typeof$f(obj) {
+  function _typeof$g(obj) {
     "@babel/helpers - typeof";
 
     if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") {
-      _typeof$f = function _typeof(obj) {
+      _typeof$g = function _typeof(obj) {
         return typeof obj;
       };
     } else {
-      _typeof$f = function _typeof(obj) {
+      _typeof$g = function _typeof(obj) {
         return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
       };
     }
 
-    return _typeof$f(obj);
+    return _typeof$g(obj);
   }
 
   function _classCallCheck$d(instance, Constructor) {
@@ -33283,7 +33041,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
   }
 
   function _possibleConstructorReturn$b(self, call) {
-    if (call && (_typeof$f(call) === "object" || typeof call === "function")) {
+    if (call && (_typeof$g(call) === "object" || typeof call === "function")) {
       return call;
     }
 
@@ -33448,20 +33206,20 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
     return Button;
   }(BaseClass);
 
-  function _typeof$g(obj) {
+  function _typeof$h(obj) {
     "@babel/helpers - typeof";
 
     if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") {
-      _typeof$g = function _typeof(obj) {
+      _typeof$h = function _typeof(obj) {
         return typeof obj;
       };
     } else {
-      _typeof$g = function _typeof(obj) {
+      _typeof$h = function _typeof(obj) {
         return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
       };
     }
 
-    return _typeof$g(obj);
+    return _typeof$h(obj);
   }
 
   function _classCallCheck$e(instance, Constructor) {
@@ -33530,7 +33288,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
   }
 
   function _possibleConstructorReturn$c(self, call) {
-    if (call && (_typeof$g(call) === "object" || typeof call === "function")) {
+    if (call && (_typeof$h(call) === "object" || typeof call === "function")) {
       return call;
     }
 
@@ -33780,20 +33538,20 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
     return Radio;
   }(BaseClass);
 
-  function _typeof$h(obj) {
+  function _typeof$i(obj) {
     "@babel/helpers - typeof";
 
     if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") {
-      _typeof$h = function _typeof(obj) {
+      _typeof$i = function _typeof(obj) {
         return typeof obj;
       };
     } else {
-      _typeof$h = function _typeof(obj) {
+      _typeof$i = function _typeof(obj) {
         return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
       };
     }
 
-    return _typeof$h(obj);
+    return _typeof$i(obj);
   }
 
   function _classCallCheck$f(instance, Constructor) {
@@ -33862,7 +33620,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
   }
 
   function _possibleConstructorReturn$d(self, call) {
-    if (call && (_typeof$h(call) === "object" || typeof call === "function")) {
+    if (call && (_typeof$i(call) === "object" || typeof call === "function")) {
       return call;
     }
 
@@ -34337,20 +34095,20 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
     return clusters;
   }
 
-  function _typeof$i(obj) {
+  function _typeof$j(obj) {
     "@babel/helpers - typeof";
 
     if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") {
-      _typeof$i = function _typeof(obj) {
+      _typeof$j = function _typeof(obj) {
         return typeof obj;
       };
     } else {
-      _typeof$i = function _typeof(obj) {
+      _typeof$j = function _typeof(obj) {
         return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
       };
     }
 
-    return _typeof$i(obj);
+    return _typeof$j(obj);
   }
 
   function _classCallCheck$g(instance, Constructor) {
@@ -34419,7 +34177,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
   }
 
   function _possibleConstructorReturn$e(self, call) {
-    if (call && (_typeof$i(call) === "object" || typeof call === "function")) {
+    if (call && (_typeof$j(call) === "object" || typeof call === "function")) {
       return call;
     }
 
@@ -35098,20 +34856,20 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
     return Legend;
   }(BaseClass);
 
-  function _typeof$j(obj) {
+  function _typeof$k(obj) {
     "@babel/helpers - typeof";
 
     if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") {
-      _typeof$j = function _typeof(obj) {
+      _typeof$k = function _typeof(obj) {
         return typeof obj;
       };
     } else {
-      _typeof$j = function _typeof(obj) {
+      _typeof$k = function _typeof(obj) {
         return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
       };
     }
 
-    return _typeof$j(obj);
+    return _typeof$k(obj);
   }
 
   function _defineProperty$2(obj, key, value) {
@@ -35195,7 +34953,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
   }
 
   function _possibleConstructorReturn$f(self, call) {
-    if (call && (_typeof$j(call) === "object" || typeof call === "function")) {
+    if (call && (_typeof$k(call) === "object" || typeof call === "function")) {
       return call;
     }
 
@@ -35269,6 +35027,28 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
       _this._align = "middle";
       _this._buckets = 5;
       _this._bucketAxis = false;
+
+      _this._bucketFormat = function (tick, i, ticks, allValues) {
+        var format = _this._axisConfig.tickFormat ? _this._axisConfig.tickFormat : formatAbbreviate;
+        var next = ticks[i + 1];
+        var prev = i ? ticks[i - 1] : false;
+        var last = i === ticks.length - 1;
+
+        if (tick === next || last) {
+          var suffix = last && tick < max(allValues) ? "+" : "";
+          return "".concat(format(tick)).concat(suffix);
+        } else {
+          var mod = next ? next / 100 : tick / 100;
+          var pow = mod >= 1 || mod <= -1 ? Math.round(mod).toString().length - 1 : mod.toString().split(".")[1].replace(/([1-9])[1-9].*$/, "$1").length * -1;
+          var ten = Math.pow(10, pow);
+          return prev === tick && i === 1 ? "".concat(format(min([tick + ten, allValues.find(function (d) {
+            return d > tick && d < next;
+          })])), " - ").concat(format(next)) : "".concat(format(tick), " - ").concat(format(max([next - ten, allValues.reverse().find(function (d) {
+            return d > tick && d < next;
+          })])));
+        }
+      };
+
       _this._centered = true;
       _this._colorMax = "#0C8040";
       _this._colorMid = "#f7f7f7";
@@ -35335,17 +35115,18 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
           return a - b;
         });
 
-        var domain = extent(allValues);
+        var domain = this._domain || extent(allValues);
         var negative = domain[0] < this._midpoint;
         var positive = domain[1] > this._midpoint;
         var diverging = negative && positive;
+        var numBuckets = this._buckets instanceof Array ? this._buckets.length : this._buckets;
         var colors = this._color,
             labels,
             ticks;
 
         if (colors && !(colors instanceof Array)) {
-          colors = range(0, this._buckets, 1).map(function (i) {
-            return colorLighter(colors, (i + 1) / _this2._buckets);
+          colors = range(0, numBuckets, 1).map(function (i) {
+            return colorLighter(colors, (i + 1) / numBuckets);
           }).reverse();
         }
 
@@ -35354,32 +35135,37 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
             return d !== null && typeof d === "number";
           });
 
-          var buckets = min([colors ? colors.length : this._buckets, data.length]);
+          var buckets = min([colors ? colors.length : numBuckets, data.length]);
           var jenks = [];
 
-          if (diverging && this._centered) {
-            var half = Math.floor(buckets / 2);
-            var residual = buckets % 2;
-            var negatives = data.filter(function (d) {
-              return d < _this2._midpoint;
-            });
-            var negativesDeviation = deviation(negatives);
-            var positives = data.concat(this._midpoint).filter(function (d) {
-              return d >= _this2._midpoint;
-            });
-            var positivesDeviation = deviation(positives);
-            var isNegativeMax = negativesDeviation > positivesDeviation ? 1 : 0;
-            var isPositiveMax = positivesDeviation > negativesDeviation ? 1 : 0;
-            var negativeJenks = ckmeans(negatives, half + residual * isNegativeMax);
-            var positiveJenks = ckmeans(positives, half + residual * isPositiveMax);
-            jenks = negativeJenks.concat(positiveJenks);
+          if (this._buckets instanceof Array) {
+            ticks = this._buckets;
           } else {
-            jenks = ckmeans(data, buckets);
+            if (diverging && this._centered) {
+              var half = Math.floor(buckets / 2);
+              var residual = buckets % 2;
+              var negatives = data.filter(function (d) {
+                return d < _this2._midpoint;
+              });
+              var negativesDeviation = deviation(negatives);
+              var positives = data.concat(this._midpoint).filter(function (d) {
+                return d >= _this2._midpoint;
+              });
+              var positivesDeviation = deviation(positives);
+              var isNegativeMax = negativesDeviation > positivesDeviation ? 1 : 0;
+              var isPositiveMax = positivesDeviation > negativesDeviation ? 1 : 0;
+              var negativeJenks = ckmeans(negatives, half + residual * isNegativeMax);
+              var positiveJenks = ckmeans(positives, half + residual * isPositiveMax);
+              jenks = negativeJenks.concat(positiveJenks);
+            } else {
+              jenks = ckmeans(data, buckets);
+            }
+
+            ticks = jenks.map(function (c) {
+              return c[0];
+            });
           }
 
-          ticks = merge(jenks.map(function (c, i) {
-            return i === jenks.length - 1 ? [c[0], c[c.length - 1]] : [c[0]];
-          }));
           var tickSet = new Set(ticks);
 
           if (ticks.length !== tickSet.size) {
@@ -35416,8 +35202,8 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
 
               colors = negativeColors.concat(spanningColors).concat(positiveColors);
             } else {
-              colors = range(0, this._buckets, 1).map(function (i) {
-                return colorLighter(_this2._colorMax, i / _this2._buckets);
+              colors = range(0, numBuckets, 1).map(function (i) {
+                return colorLighter(_this2._colorMax, i / numBuckets);
               }).reverse();
             }
           }
@@ -35426,18 +35212,19 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
             colors = colors.slice(buckets - data.length);
           }
 
-          this._colorScale = threshold().domain(ticks).range(["black"].concat(colors).concat(colors[colors.length - 1]));
+          colors = [colors[0]].concat(colors);
+          this._colorScale = threshold().domain(ticks).range(colors);
         } else {
-          var _buckets;
+          var _buckets = this._buckets instanceof Array ? this._buckets : undefined;
 
           if (diverging && !colors) {
-            var _half = Math.floor(this._buckets / 2);
+            var _half = Math.floor(numBuckets / 2);
 
             var _negativeColors = range(0, _half, 1).map(function (i) {
               return !i ? _this2._colorMin : colorLighter(_this2._colorMin, i / _half);
             });
 
-            var _spanningColors = (this._buckets % 2 ? [0] : []).map(function () {
+            var _spanningColors = (numBuckets % 2 ? [0] : []).map(function () {
               return _this2._colorMid;
             });
 
@@ -35446,14 +35233,17 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
             }).reverse();
 
             colors = _negativeColors.concat(_spanningColors).concat(_positiveColors);
-            var step = (colors.length - 1) / 2;
-            _buckets = [domain[0], this._midpoint, domain[1]];
-            _buckets = range(domain[0], this._midpoint, -(domain[0] - this._midpoint) / step).concat(range(this._midpoint, domain[1], (domain[1] - this._midpoint) / step)).concat([domain[1]]);
+
+            if (!_buckets) {
+              var step = (colors.length - 1) / 2;
+              _buckets = [domain[0], this._midpoint, domain[1]];
+              _buckets = range(domain[0], this._midpoint, -(domain[0] - this._midpoint) / step).concat(range(this._midpoint, domain[1], (domain[1] - this._midpoint) / step)).concat([domain[1]]);
+            }
           } else {
             if (!colors) {
               if (this._scale === "buckets" || this._scale === "quantile") {
-                colors = range(0, this._buckets, 1).map(function (i) {
-                  return colorLighter(negative ? _this2._colorMin : _this2._colorMax, i / _this2._buckets);
+                colors = range(0, numBuckets, 1).map(function (i) {
+                  return colorLighter(negative ? _this2._colorMin : _this2._colorMax, i / numBuckets);
                 });
                 if (positive) colors = colors.reverse();
               } else {
@@ -35461,27 +35251,30 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
               }
             }
 
-            if (this._scale === "quantile") {
-              var _step = 1 / (colors.length - 1);
+            if (!_buckets) {
+              if (this._scale === "quantile") {
+                var _step = 1 / (colors.length - 1);
 
-              _buckets = range(0, 1 + _step / 2, _step).map(function (d) {
-                return quantile(allValues, d);
-              });
-            } else if (diverging && this._color && this._centered) {
-              var negativeStep = (this._midpoint - domain[0]) / Math.floor(colors.length / 2);
-              var positiveStep = (domain[1] - this._midpoint) / Math.floor(colors.length / 2);
-              var negativeBuckets = range(domain[0], this._midpoint, negativeStep);
-              var positiveBuckets = range(this._midpoint, domain[1] + positiveStep / 2, positiveStep);
-              _buckets = negativeBuckets.concat(positiveBuckets);
-            } else {
-              var _step2 = (domain[1] - domain[0]) / (colors.length - 1);
+                _buckets = range(0, 1 + _step / 2, _step).map(function (d) {
+                  return quantile(allValues, d);
+                });
+              } else if (diverging && this._color && this._centered) {
+                var negativeStep = (this._midpoint - domain[0]) / Math.floor(colors.length / 2);
+                var positiveStep = (domain[1] - this._midpoint) / Math.floor(colors.length / 2);
+                var negativeBuckets = range(domain[0], this._midpoint, negativeStep);
+                var positiveBuckets = range(this._midpoint, domain[1] + positiveStep / 2, positiveStep);
+                _buckets = negativeBuckets.concat(positiveBuckets);
+              } else {
+                var _step2 = (domain[1] - domain[0]) / (colors.length - 1);
 
-              _buckets = range(domain[0], domain[1] + _step2 / 2, _step2);
+                _buckets = range(domain[0], domain[1] + _step2 / 2, _step2);
+              }
             }
           }
 
           if (this._scale === "buckets" || this._scale === "quantile") {
-            ticks = _buckets.concat([_buckets[_buckets.length - 1]]);
+            ticks = _buckets;
+            colors = [colors[0]].concat(colors);
           } else if (this._scale === "log") {
             var _negativeBuckets = _buckets.filter(function (d) {
               return d < 0;
@@ -35518,9 +35311,10 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
             if (_buckets.includes(0)) _buckets[_buckets.indexOf(0)] = 1;
           }
 
-          this._colorScale = linear$1().domain(_buckets).range(colors);
+          this._colorScale = (this._scale === "buckets" || this._scale === "quantile" ? threshold : linear$1)().domain(_buckets).range(colors);
         }
 
+        if (this._colorScale.clamp) this._colorScale.clamp(true);
         var gradient = this._bucketAxis || !["buckets", "jenks", "quantile"].includes(this._scale);
         var t = transition().duration(this._duration);
         var groupParams = {
@@ -35553,8 +35347,19 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
             x: 0,
             y: 0
           };
+          var axisDomain = domain.slice();
+
+          if (this._bucketAxis) {
+            var last = axisDomain[axisDomain.length - 1];
+            var prev = axisDomain[axisDomain.length - 2];
+            var mod = last ? last / 10 : prev / 10;
+            var pow = mod >= 1 || mod <= -1 ? Math.round(mod).toString().length - 1 : mod.toString().split(".")[1].replace(/([1-9])[1-9].*$/, "$1").length * -1;
+            var ten = Math.pow(10, pow);
+            axisDomain[axisDomain.length - 1] = last + ten;
+          }
+
           var axisConfig = assign({
-            domain: horizontal ? domain : domain.reverse(),
+            domain: axisDomain,
             duration: this._duration,
             height: this._height,
             labels: labels || ticks,
@@ -35646,19 +35451,19 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
           defsEnter.append("linearGradient").attr("id", "gradient-".concat(this._uuid));
           defs = defsEnter.merge(defs);
           defs.select("linearGradient").attr("".concat(x, "1"), horizontal ? "0%" : "100%").attr("".concat(x, "2"), horizontal ? "100%" : "0%").attr("".concat(y, "1"), "0%").attr("".concat(y, "2"), "0%");
-          var stops = defs.select("linearGradient").selectAll("stop").data(horizontal ? colors : colors);
+          var stops = defs.select("linearGradient").selectAll("stop").data(colors);
 
           var scaleDomain = this._colorScale.domain();
 
           var offsetScale = linear$1().domain(scaleRange).range(horizontal ? [0, 100] : [100, 0]);
           stops.enter().append("stop").merge(stops).attr("offset", function (d, i) {
-            return "".concat(offsetScale(axisScale(scaleDomain[i])), "%");
+            return "".concat(i <= scaleDomain.length - 1 ? offsetScale(axisScale(scaleDomain[i])) : 100, "%");
           }).attr("stop-color", String);
           /** determines the width of buckets */
 
           var bucketWidth = function bucketWidth(d, i) {
-            var w = Math.abs(axisScale(ticks[i + 1]) - axisScale(d));
-            return w || 2;
+            var next = ticks[i + 1] || axisDomain[axisDomain.length - 1];
+            return Math.abs(axisScale(next) - axisScale(d));
           };
 
           var rectConfig = assign((_assign = {
@@ -35670,7 +35475,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
             return axisScale(d) + bucketWidth(d, i) / 2 - (["left", "right"].includes(_this2._orient) ? bucketWidth(d, i) : 0);
           } : scaleRange[0] + (scaleRange[1] - scaleRange[0]) / 2 + offsets[x]), _defineProperty$2(_assign, y, this._outerBounds[y] + (["top", "left"].includes(this._orient) ? axisBounds[height] : 0) + this._size / 2 + offsets[y]), _defineProperty$2(_assign, width, ticks ? bucketWidth : scaleRange[1] - scaleRange[0]), _defineProperty$2(_assign, height, this._size), _assign), this._rectConfig);
 
-          this._rectClass.data(ticks ? ticks.slice(0, ticks.length - 1) : [0]).id(function (d, i) {
+          this._rectClass.data(ticks || [0]).id(function (d, i) {
             return i;
           }).select(rectGroup.node()).config(rectConfig).render();
 
@@ -35688,16 +35493,13 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
           elem("g.d3plus-ColorScale-axis", Object.assign({
             condition: gradient
           }, groupParams));
-          var format = this._axisConfig.tickFormat ? this._axisConfig.tickFormat : formatAbbreviate;
           var legendData = ticks.reduce(function (arr, tick, i) {
-            if (i !== ticks.length - 1) {
-              var next = ticks[i + 1];
-              arr.push({
-                color: colors[i],
-                id: tick === next ? "".concat(format(tick), "+") : "".concat(format(tick), " - ").concat(format(next))
-              });
-            }
+            var label = _this2._bucketFormat.bind(_this2)(tick, i, ticks, allValues);
 
+            arr.push({
+              color: colors[i + 1],
+              id: label
+            });
             return arr;
           }, []);
           var legendConfig = assign({
@@ -35757,8 +35559,8 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
       }
       /**
           @memberof ColorScale
-          @desc The number of discrete buckets to create in a bucketed color scale. Will be overridden by any custom Array of colors passed to the `color` method.
-          @param {Number} [*value* = 5]
+          @desc The number of discrete buckets to create in a bucketed color scale. Will be overridden by any custom Array of colors passed to the `color` method. Optionally, users can supply an Array of values used to separate buckets, such as `[0, 10, 25, 50, 90]` for a percentage scale. This value would create 4 buckets, with each value representing the break point between each bucket (so 5 values makes 4 buckets).
+          @param {Number|Array} [*value* = 5]
           @chainable
       */
 
@@ -35778,6 +35580,18 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
       key: "bucketAxis",
       value: function bucketAxis(_) {
         return arguments.length ? (this._bucketAxis = _, this) : this._bucketAxis;
+      }
+      /**
+          @memberof ColorScale
+          @desc A function for formatting the labels associated to each bucket in a bucket-type scale ("jenks", "quantile", etc). The function is passed four arguments: the start value of the current bucket, it's index in the full Array of buckets, the full Array of buckets, and an Array of every value present in the data used to construct the buckets. Keep in mind that the end value for the bucket is not actually the next bucket in the list, but includes every value up until that next bucket value (less than, but not equal to). By default, d3plus will make the end value slightly less than it's current value, so that it does not overlap with the start label for the next bucket.
+          @param {Function} [*value*]
+          @chainable
+      */
+
+    }, {
+      key: "bucketFormat",
+      value: function bucketFormat(_) {
+        return arguments.length ? (this._bucketFormat = _, this) : this._bucketFormat;
       }
       /**
           @memberof ColorScale
@@ -35850,6 +35664,18 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
       key: "data",
       value: function data(_) {
         return arguments.length ? (this._data = _, this) : this._data;
+      }
+      /**
+          @memberof ColorScale
+          @desc In a linear scale, this Array of 2 values defines the min and max values used in the color scale. Any values outside of this range will be mapped to the nearest color value.
+          @param {Array} [*value*]
+          @chainable
+      */
+
+    }, {
+      key: "domain",
+      value: function domain(_) {
+        return arguments.length ? (this._domain = _, this) : this._domain;
       }
       /**
           @memberof ColorScale
@@ -36052,20 +35878,20 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
     return ColorScale;
   }(BaseClass);
 
-  function _typeof$k(obj) {
+  function _typeof$l(obj) {
     "@babel/helpers - typeof";
 
     if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") {
-      _typeof$k = function _typeof(obj) {
+      _typeof$l = function _typeof(obj) {
         return typeof obj;
       };
     } else {
-      _typeof$k = function _typeof(obj) {
+      _typeof$l = function _typeof(obj) {
         return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
       };
     }
 
-    return _typeof$k(obj);
+    return _typeof$l(obj);
   }
 
   function _classCallCheck$i(instance, Constructor) {
@@ -36164,7 +35990,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
   }
 
   function _possibleConstructorReturn$g(self, call) {
-    if (call && (_typeof$k(call) === "object" || typeof call === "function")) {
+    if (call && (_typeof$l(call) === "object" || typeof call === "function")) {
       return call;
     }
 
@@ -39288,20 +39114,20 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
   Popper.placements = placements;
   Popper.Defaults = Defaults;
 
-  function _typeof$l(obj) {
+  function _typeof$m(obj) {
     "@babel/helpers - typeof";
 
     if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") {
-      _typeof$l = function _typeof(obj) {
+      _typeof$m = function _typeof(obj) {
         return typeof obj;
       };
     } else {
-      _typeof$l = function _typeof(obj) {
+      _typeof$m = function _typeof(obj) {
         return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
       };
     }
 
-    return _typeof$l(obj);
+    return _typeof$m(obj);
   }
 
   function _classCallCheck$j(instance, Constructor) {
@@ -39370,7 +39196,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
   }
 
   function _possibleConstructorReturn$h(self, call) {
-    if (call && (_typeof$l(call) === "object" || typeof call === "function")) {
+    if (call && (_typeof$m(call) === "object" || typeof call === "function")) {
       return call;
     }
 
@@ -52465,20 +52291,20 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
     if (Array.isArray(arr)) return arr;
   }
 
-  function _typeof$m(obj) {
+  function _typeof$n(obj) {
     "@babel/helpers - typeof";
 
     if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") {
-      _typeof$m = function _typeof(obj) {
+      _typeof$n = function _typeof(obj) {
         return typeof obj;
       };
     } else {
-      _typeof$m = function _typeof(obj) {
+      _typeof$n = function _typeof(obj) {
         return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
       };
     }
 
-    return _typeof$m(obj);
+    return _typeof$n(obj);
   }
 
   function _classCallCheck$l(instance, Constructor) {
@@ -52547,7 +52373,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
   }
 
   function _possibleConstructorReturn$i(self, call) {
-    if (call && (_typeof$m(call) === "object" || typeof call === "function")) {
+    if (call && (_typeof$n(call) === "object" || typeof call === "function")) {
       return call;
     }
 
@@ -52737,7 +52563,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
         "mousemove.legend": mousemoveLegend.bind(_assertThisInitialized$i(_this))
       };
       _this._queue = [];
-      _this._scrollContainer = (typeof window === "undefined" ? "undefined" : _typeof$m(window)) === undefined ? "" : window;
+      _this._scrollContainer = (typeof window === "undefined" ? "undefined" : _typeof$n(window)) === undefined ? "" : window;
       _this._shape = constant$5("Rect");
       _this._shapes = [];
       _this._shapeConfig = {
@@ -53481,12 +53307,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
       key: "data",
       value: function data(_, f) {
         if (arguments.length) {
-          var prev = this._queue.find(function (q) {
-            return q[3] === "data";
-          });
-
-          var d = [load.bind(this), _, f, "data"];
-          if (prev) this._queue[this._queue.indexOf(prev)] = d;else this._queue.push(d);
+          addToQueue.bind(this)(_, f, "data");
           this._hidden = [];
           this._solo = [];
           return this;
@@ -54877,12 +54698,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
       key: "links",
       value: function links(_, f) {
         if (arguments.length) {
-          var prev = this._queue.find(function (q) {
-            return q[3] === "links";
-          });
-
-          var d = [load.bind(this), _, f, "links"];
-          if (prev) this._queue[this._queue.indexOf(prev)] = d;else this._queue.push(d);
+          addToQueue.bind(this)(_, f, "links");
           return this;
         }
 
@@ -54964,12 +54780,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
       key: "nodes",
       value: function nodes(_, f) {
         if (arguments.length) {
-          var prev = this._queue.find(function (q) {
-            return q[3] === "nodes";
-          });
-
-          var d = [load.bind(this), _, f, "nodes"];
-          if (prev) this._queue[this._queue.indexOf(prev)] = d;else this._queue.push(d);
+          addToQueue.bind(this)(_, f, "nodes");
           return this;
         }
 
@@ -55462,18 +55273,18 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
 
             var angle = node.radians * (180 / Math.PI);
 
-            var _x7 = node.r + padding;
+            var _x6 = node.r + padding;
 
             var textAnchor = "start";
 
             if (angle < -90 || angle > 90) {
-              _x7 = -node.r - _width2 - padding;
+              _x6 = -node.r - _width2 - padding;
               textAnchor = "end";
               angle += 180;
             }
 
             node.labelBounds = {
-              x: _x7,
+              x: _x6,
               y: -lineHeight / 2,
               width: _width2,
               height: _height2
@@ -55622,12 +55433,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
       key: "links",
       value: function links(_, f) {
         if (arguments.length) {
-          var prev = this._queue.find(function (q) {
-            return q[3] === "links";
-          });
-
-          var d = [load.bind(this), _, f, "links"];
-          if (prev) this._queue[this._queue.indexOf(prev)] = d;else this._queue.push(d);
+          addToQueue.bind(this)(_, f, "links");
           return this;
         }
 
@@ -55709,12 +55515,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
       key: "nodes",
       value: function nodes(_, f) {
         if (arguments.length) {
-          var prev = this._queue.find(function (q) {
-            return q[3] === "nodes";
-          });
-
-          var d = [load.bind(this), _, f, "nodes"];
-          if (prev) this._queue[this._queue.indexOf(prev)] = d;else this._queue.push(d);
+          addToQueue.bind(this)(_, f, "nodes");
           return this;
         }
 
