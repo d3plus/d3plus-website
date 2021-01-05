@@ -1,9 +1,9 @@
 ---
 title: Box and Whisker Chart
-width: 0
-height: 0
-time: 1597951129754
-date: August 20, 2020
+width: 800
+height: 400
+time: 1609881109071
+date: January 05, 2021
 ---
 
 # Box and Whisker Chart
