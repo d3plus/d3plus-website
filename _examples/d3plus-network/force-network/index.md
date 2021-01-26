@@ -2,8 +2,8 @@
 title: Force Directed Network
 width: 800
 height: 400
-time: 1609880127036
-date: January 05, 2021
+time: 1611674611370
+date: January 26, 2021
 ---
 
 # Force Directed Network
