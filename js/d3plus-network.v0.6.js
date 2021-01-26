@@ -25,7 +25,7 @@ function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.g
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
 /*
-  d3plus-network v0.6.3
+  d3plus-network v0.6.4
   Javascript network visualizations built upon d3 modules.
   Copyright (c) 2021 D3plus - https://d3plus.org
   @license MIT
@@ -2759,12 +2759,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       key: "links",
       value: function links(_, f) {
         if (arguments.length) {
-          var prev = this._queue.find(function (q) {
-            return q[3] === "links";
-          });
-
-          var d = [d3plusViz.dataLoad.bind(this), _, f, "links"];
-          if (prev) this._queue[this._queue.indexOf(prev)] = d;else this._queue.push(d);
+          d3plusViz.addToQueue.bind(this)(_, f, "links");
           return this;
         }
 
@@ -2830,12 +2825,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       key: "nodes",
       value: function nodes(_, f) {
         if (arguments.length) {
-          var prev = this._queue.find(function (q) {
-            return q[3] === "nodes";
-          });
-
-          var d = [d3plusViz.dataLoad.bind(this), _, f, "nodes"];
-          if (prev) this._queue[this._queue.indexOf(prev)] = d;else this._queue.push(d);
+          d3plusViz.addToQueue.bind(this)(_, f, "nodes");
           return this;
         }
 
