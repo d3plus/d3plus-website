@@ -3,7 +3,7 @@ name: htmlPresets
 kind: function
 ---
 
-  <a name="htmlPresets"></a>
+<a name="htmlPresets"></a>
 
 ### d3plus.**htmlPresets**(selection) [<>](https://github.com/d3plus/d3plus-export/blob/master/src/htmlPresets.js#L3)
 

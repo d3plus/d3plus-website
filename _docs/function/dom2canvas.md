@@ -3,7 +3,7 @@ name: dom2canvas
 kind: function
 ---
 
-  <a name="dom2canvas"></a>
+<a name="dom2canvas"></a>
 
 ### d3plus.**dom2canvas**(elem, [options]) [<>](https://github.com/d3plus/d3plus-export/blob/master/src/dom2canvas.js#L50)
 
