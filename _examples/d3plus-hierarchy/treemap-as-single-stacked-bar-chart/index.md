@@ -2,8 +2,8 @@
 title: Changing the Treemap Tiling Method
 width: 800
 height: 400
-time: 1594825110289
-date: July 15, 2020
+time: 1612309538829
+date: February 02, 2021
 ---
 
 # Changing the Treemap Tiling Method
@@ -33,7 +33,7 @@ new d3plus.Treemap()
     },
     tooltipConfig: {
       tbody: [
-        ["Total", function(d) { return d["Number of Food Stores"] }],
+        ["Total", function(d) { return d["Number of Food Stores"] }], 
         ["Year", function(d) { return d.year }]
       ]
     },
