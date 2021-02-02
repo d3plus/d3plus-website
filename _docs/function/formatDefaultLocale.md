@@ -3,7 +3,7 @@ name: formatDefaultLocale
 kind: function
 ---
 
-  <a name="formatDefaultLocale"></a>
+<a name="formatDefaultLocale"></a>
 
 ### d3plus.**formatDefaultLocale**(definition) [<>](https://github.com/d3plus/d3plus-format/blob/master/src/formatDefaultLocale.js#L4)
 

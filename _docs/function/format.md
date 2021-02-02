@@ -3,7 +3,7 @@ name: format
 kind: function
 ---
 
-  <a name="format"></a>
+<a name="format"></a>
 
 ### d3plus.**format**(specifier) [<>](https://github.com/d3plus/d3plus-format/blob/master/src/format.js#L4)
 

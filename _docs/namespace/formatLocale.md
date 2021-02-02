@@ -3,7 +3,7 @@ name: formatLocale
 kind: namespace
 ---
 
-  <a name="formatLocale"></a>
+<a name="formatLocale"></a>
 
 ### **formatLocale** [<>](https://github.com/d3plus/d3plus-format/blob/master/src/locale.js#L1)
 
