@@ -6,29 +6,11 @@ function _iterableToArray2(iter) { if (typeof Symbol !== "undefined" && Symbol.i
 
 function _arrayWithoutHoles2(arr) { if (Array.isArray(arr)) return _arrayLikeToArray2(arr); }
 
-function _inherits2(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }); if (superClass) _setPrototypeOf2(subClass, superClass); }
-
-function _setPrototypeOf2(o, p) { _setPrototypeOf2 = Object.setPrototypeOf || function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf2(o, p); }
-
-function _createSuper2(Derived) { var hasNativeReflectConstruct = _isNativeReflectConstruct2(); return function _createSuperInternal() { var Super = _getPrototypeOf2(Derived), result; if (hasNativeReflectConstruct) { var NewTarget = _getPrototypeOf2(this).constructor; result = Reflect.construct(Super, arguments, NewTarget); } else { result = Super.apply(this, arguments); } return _possibleConstructorReturn2(this, result); }; }
-
-function _possibleConstructorReturn2(self, call) { if (call && (_typeof2(call) === "object" || typeof call === "function")) { return call; } return _assertThisInitialized2(self); }
-
-function _assertThisInitialized2(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
-
-function _isNativeReflectConstruct2() { if (typeof Reflect === "undefined" || !Reflect.construct) return false; if (Reflect.construct.sham) return false; if (typeof Proxy === "function") return true; try { Date.prototype.toString.call(Reflect.construct(Date, [], function () {})); return true; } catch (e) { return false; } }
-
-function _getPrototypeOf2(o) { _getPrototypeOf2 = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf2(o); }
-
-function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
-
-function _createClass2(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
-
 function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); keys.push.apply(keys, symbols); } return keys; }
 
 function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { ownKeys(Object(source), true).forEach(function (key) { _defineProperty2(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
+
+function _defineProperty2(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
 function _slicedToArray2(arr, i) { return _arrayWithHoles2(arr) || _iterableToArrayLimit2(arr, i) || _unsupportedIterableToArray2(arr, i) || _nonIterableRest2(); }
 
@@ -38,7 +20,35 @@ function _iterableToArrayLimit2(arr, i) { if (typeof Symbol === "undefined" || !
 
 function _arrayWithHoles2(arr) { if (Array.isArray(arr)) return arr; }
 
-function _defineProperty2(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+function _classCallCheck2(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
+
+function _createClass2(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
+
+function _get2(target, property, receiver) { if (typeof Reflect !== "undefined" && Reflect.get) { _get2 = Reflect.get; } else { _get2 = function _get(target, property, receiver) { var base = _superPropBase2(target, property); if (!base) return; var desc = Object.getOwnPropertyDescriptor(base, property); if (desc.get) { return desc.get.call(receiver); } return desc.value; }; } return _get2(target, property, receiver || target); }
+
+function _superPropBase2(object, property) { while (!Object.prototype.hasOwnProperty.call(object, property)) { object = _getPrototypeOf2(object); if (object === null) break; } return object; }
+
+function _inherits2(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }); if (superClass) _setPrototypeOf2(subClass, superClass); }
+
+function _createSuper2(Derived) { var hasNativeReflectConstruct = _isNativeReflectConstruct2(); return function _createSuperInternal() { var Super = _getPrototypeOf2(Derived), result; if (hasNativeReflectConstruct) { var NewTarget = _getPrototypeOf2(this).constructor; result = Reflect.construct(Super, arguments, NewTarget); } else { result = Super.apply(this, arguments); } return _possibleConstructorReturn2(this, result); }; }
+
+function _possibleConstructorReturn2(self, call) { if (call && (_typeof2(call) === "object" || typeof call === "function")) { return call; } return _assertThisInitialized2(self); }
+
+function _assertThisInitialized2(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
+
+function _wrapNativeSuper(Class) { var _cache = typeof Map === "function" ? new Map() : undefined; _wrapNativeSuper = function _wrapNativeSuper(Class) { if (Class === null || !_isNativeFunction(Class)) return Class; if (typeof Class !== "function") { throw new TypeError("Super expression must either be null or a function"); } if (typeof _cache !== "undefined") { if (_cache.has(Class)) return _cache.get(Class); _cache.set(Class, Wrapper); } function Wrapper() { return _construct(Class, arguments, _getPrototypeOf2(this).constructor); } Wrapper.prototype = Object.create(Class.prototype, { constructor: { value: Wrapper, enumerable: false, writable: true, configurable: true } }); return _setPrototypeOf2(Wrapper, Class); }; return _wrapNativeSuper(Class); }
+
+function _construct(Parent, args, Class) { if (_isNativeReflectConstruct2()) { _construct = Reflect.construct; } else { _construct = function _construct(Parent, args, Class) { var a = [null]; a.push.apply(a, args); var Constructor = Function.bind.apply(Parent, a); var instance = new Constructor(); if (Class) _setPrototypeOf2(instance, Class.prototype); return instance; }; } return _construct.apply(null, arguments); }
+
+function _isNativeReflectConstruct2() { if (typeof Reflect === "undefined" || !Reflect.construct) return false; if (Reflect.construct.sham) return false; if (typeof Proxy === "function") return true; try { Date.prototype.toString.call(Reflect.construct(Date, [], function () {})); return true; } catch (e) { return false; } }
+
+function _isNativeFunction(fn) { return Function.toString.call(fn).indexOf("[native code]") !== -1; }
+
+function _setPrototypeOf2(o, p) { _setPrototypeOf2 = Object.setPrototypeOf || function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf2(o, p); }
+
+function _getPrototypeOf2(o) { _getPrototypeOf2 = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf2(o); }
 
 function _createForOfIteratorHelper(o, allowArrayLike) { var it; if (typeof Symbol === "undefined" || o[Symbol.iterator] == null) { if (Array.isArray(o) || (it = _unsupportedIterableToArray2(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e2) { throw _e2; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = o[Symbol.iterator](); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e3) { didErr = true; err = _e3; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
 
@@ -49,7 +59,7 @@ function _arrayLikeToArray2(arr, len) { if (len == null || len > arr.length) len
 function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof2 = function _typeof2(obj) { return typeof obj; }; } else { _typeof2 = function _typeof2(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof2(obj); }
 
 /*
-  d3plus-viz v1.0.0
+  d3plus-viz v1.0.1
   Abstract ES6 class that drives d3plus visualizations.
   Copyright (c) 2021 D3plus - https://d3plus.org
   @license MIT
@@ -9127,6 +9137,183 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
     return [min, max];
   }
 
+  var InternMap = /*#__PURE__*/function (_Map) {
+    "use strict";
+
+    _inherits2(InternMap, _Map);
+
+    var _super2 = _createSuper2(InternMap);
+
+    function InternMap() {
+      var _this8;
+
+      var entries = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : [];
+      var key = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : keyof;
+
+      _classCallCheck2(this, InternMap);
+
+      _this8 = _super2.call(this);
+      Object.defineProperties(_assertThisInitialized2(_this8), {
+        _intern: {
+          value: new Map()
+        },
+        _key: {
+          value: key
+        }
+      });
+
+      var _iterator7 = _createForOfIteratorHelper(entries),
+          _step9;
+
+      try {
+        for (_iterator7.s(); !(_step9 = _iterator7.n()).done;) {
+          var _step9$value = _slicedToArray2(_step9.value, 2),
+              _key3 = _step9$value[0],
+              value = _step9$value[1];
+
+          _this8.set(_key3, value);
+        }
+      } catch (err) {
+        _iterator7.e(err);
+      } finally {
+        _iterator7.f();
+      }
+
+      return _this8;
+    }
+
+    _createClass2(InternMap, [{
+      key: "get",
+      value: function get(key) {
+        return _get2(_getPrototypeOf2(InternMap.prototype), "get", this).call(this, intern_get(this, key));
+      }
+    }, {
+      key: "has",
+      value: function has(key) {
+        return _get2(_getPrototypeOf2(InternMap.prototype), "has", this).call(this, intern_get(this, key));
+      }
+    }, {
+      key: "set",
+      value: function set(key, value) {
+        return _get2(_getPrototypeOf2(InternMap.prototype), "set", this).call(this, intern_set(this, key), value);
+      }
+    }, {
+      key: "delete",
+      value: function _delete(key) {
+        return _get2(_getPrototypeOf2(InternMap.prototype), "delete", this).call(this, intern_delete(this, key));
+      }
+    }]);
+
+    return InternMap;
+  }( /*#__PURE__*/_wrapNativeSuper(Map));
+
+  function intern_get(_ref5, value) {
+    var _intern = _ref5._intern,
+        _key = _ref5._key;
+
+    var key = _key(value);
+
+    return _intern.has(key) ? _intern.get(key) : value;
+  }
+
+  function intern_set(_ref6, value) {
+    var _intern = _ref6._intern,
+        _key = _ref6._key;
+
+    var key = _key(value);
+
+    if (_intern.has(key)) return _intern.get(key);
+
+    _intern.set(key, value);
+
+    return value;
+  }
+
+  function intern_delete(_ref7, value) {
+    var _intern = _ref7._intern,
+        _key = _ref7._key;
+
+    var key = _key(value);
+
+    if (_intern.has(key)) {
+      value = _intern.get(value);
+
+      _intern["delete"](key);
+    }
+
+    return value;
+  }
+
+  function keyof(value) {
+    return value !== null && _typeof2(value) === "object" ? value.valueOf() : value;
+  }
+
+  function identity(x) {
+    return x;
+  }
+
+  function group(values) {
+    for (var _len2 = arguments.length, keys = new Array(_len2 > 1 ? _len2 - 1 : 0), _key4 = 1; _key4 < _len2; _key4++) {
+      keys[_key4 - 1] = arguments[_key4];
+    }
+
+    return nest$1(values, identity, identity, keys);
+  }
+
+  function rollup(values, reduce) {
+    for (var _len3 = arguments.length, keys = new Array(_len3 > 2 ? _len3 - 2 : 0), _key5 = 2; _key5 < _len3; _key5++) {
+      keys[_key5 - 2] = arguments[_key5];
+    }
+
+    return nest$1(values, identity, reduce, keys);
+  }
+
+  function nest$1(values, map, reduce, keys) {
+    return function regroup(values, i) {
+      if (i >= keys.length) return reduce(values);
+      var groups = new InternMap();
+      var keyof = keys[i++];
+      var index = -1;
+
+      var _iterator8 = _createForOfIteratorHelper(values),
+          _step10;
+
+      try {
+        for (_iterator8.s(); !(_step10 = _iterator8.n()).done;) {
+          var value = _step10.value;
+          var key = keyof(value, ++index, values);
+
+          var _group = groups.get(key);
+
+          if (_group) _group.push(value);else groups.set(key, [value]);
+        }
+      } catch (err) {
+        _iterator8.e(err);
+      } finally {
+        _iterator8.f();
+      }
+
+      var _iterator9 = _createForOfIteratorHelper(groups),
+          _step11;
+
+      try {
+        for (_iterator9.s(); !(_step11 = _iterator9.n()).done;) {
+          var _step11$value = _slicedToArray2(_step11.value, 2),
+              _key6 = _step11$value[0],
+              _values = _step11$value[1];
+
+          groups.set(_key6, regroup(_values, i));
+        }
+      } catch (err) {
+        _iterator9.e(err);
+      } finally {
+        _iterator9.f();
+      }
+
+      return map(groups);
+    }(values, 0);
+  }
+
   var e10 = Math.sqrt(50),
       e5 = Math.sqrt(10),
       e2 = Math.sqrt(2);
@@ -9184,40 +9371,40 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
     var max;
 
     if (valueof === undefined) {
-      var _iterator7 = _createForOfIteratorHelper(values),
-          _step9;
+      var _iterator10 = _createForOfIteratorHelper(values),
+          _step12;
 
       try {
-        for (_iterator7.s(); !(_step9 = _iterator7.n()).done;) {
-          var value = _step9.value;
+        for (_iterator10.s(); !(_step12 = _iterator10.n()).done;) {
+          var value = _step12.value;
 
           if (value != null && (max < value || max === undefined && value >= value)) {
             max = value;
           }
         }
       } catch (err) {
-        _iterator7.e(err);
+        _iterator10.e(err);
       } finally {
-        _iterator7.f();
+        _iterator10.f();
       }
     } else {
       var index = -1;
 
-      var _iterator8 = _createForOfIteratorHelper(values),
-          _step10;
+      var _iterator11 = _createForOfIteratorHelper(values),
+          _step13;
 
       try {
-        for (_iterator8.s(); !(_step10 = _iterator8.n()).done;) {
-          var _value4 = _step10.value;
+        for (_iterator11.s(); !(_step13 = _iterator11.n()).done;) {
+          var _value4 = _step13.value;
 
           if ((_value4 = valueof(_value4, ++index, values)) != null && (max < _value4 || max === undefined && _value4 >= _value4)) {
             max = _value4;
           }
         }
       } catch (err) {
-        _iterator8.e(err);
+        _iterator11.e(err);
       } finally {
-        _iterator8.f();
+        _iterator11.f();
       }
     }
 
@@ -9228,40 +9415,40 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
     var min;
 
     if (valueof === undefined) {
-      var _iterator9 = _createForOfIteratorHelper(values),
-          _step11;
+      var _iterator12 = _createForOfIteratorHelper(values),
+          _step14;
 
       try {
-        for (_iterator9.s(); !(_step11 = _iterator9.n()).done;) {
-          var value = _step11.value;
+        for (_iterator12.s(); !(_step14 = _iterator12.n()).done;) {
+          var value = _step14.value;
 
           if (value != null && (min > value || min === undefined && value >= value)) {
             min = value;
           }
         }
       } catch (err) {
-        _iterator9.e(err);
+        _iterator12.e(err);
       } finally {
-        _iterator9.f();
+        _iterator12.f();
       }
     } else {
       var index = -1;
 
-      var _iterator10 = _createForOfIteratorHelper(values),
-          _step12;
+      var _iterator13 = _createForOfIteratorHelper(values),
+          _step15;
 
       try {
-        for (_iterator10.s(); !(_step12 = _iterator10.n()).done;) {
-          var _value5 = _step12.value;
+        for (_iterator13.s(); !(_step15 = _iterator13.n()).done;) {
+          var _value5 = _step15.value;
 
           if ((_value5 = valueof(_value5, ++index, values)) != null && (min > _value5 || min === undefined && _value5 >= _value5)) {
             min = _value5;
           }
         }
       } catch (err) {
-        _iterator10.e(err);
+        _iterator13.e(err);
       } finally {
-        _iterator10.f();
+        _iterator13.f();
       }
     }
 
@@ -9349,24 +9536,24 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
   }
 
   function flatten(arrays) {
-    var _iterator11, _step13, _array;
+    var _iterator14, _step16, _array;
 
     return regeneratorRuntime.wrap(function flatten$(_context2) {
       while (1) {
         switch (_context2.prev = _context2.next) {
           case 0:
-            _iterator11 = _createForOfIteratorHelper(arrays);
+            _iterator14 = _createForOfIteratorHelper(arrays);
             _context2.prev = 1;
 
-            _iterator11.s();
+            _iterator14.s();
 
           case 3:
-            if ((_step13 = _iterator11.n()).done) {
+            if ((_step16 = _iterator14.n()).done) {
               _context2.next = 8;
               break;
             }
 
-            _array = _step13.value;
+            _array = _step16.value;
             return _context2.delegateYield(_array, "t0", 6);
 
           case 6:
@@ -9381,12 +9568,12 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
             _context2.prev = 10;
             _context2.t1 = _context2["catch"](1);
 
-            _iterator11.e(_context2.t1);
+            _iterator14.e(_context2.t1);
 
           case 13:
             _context2.prev = 13;
 
-            _iterator11.f();
+            _iterator14.f();
 
             return _context2.finish(13);
 
@@ -9419,40 +9606,40 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
     var sum = 0;
 
     if (valueof === undefined) {
-      var _iterator12 = _createForOfIteratorHelper(values),
-          _step14;
+      var _iterator15 = _createForOfIteratorHelper(values),
+          _step17;
 
       try {
-        for (_iterator12.s(); !(_step14 = _iterator12.n()).done;) {
-          var value = _step14.value;
+        for (_iterator15.s(); !(_step17 = _iterator15.n()).done;) {
+          var value = _step17.value;
 
           if (value = +value) {
             sum += value;
           }
         }
       } catch (err) {
-        _iterator12.e(err);
+        _iterator15.e(err);
       } finally {
-        _iterator12.f();
+        _iterator15.f();
       }
     } else {
       var index = -1;
 
-      var _iterator13 = _createForOfIteratorHelper(values),
-          _step15;
+      var _iterator16 = _createForOfIteratorHelper(values),
+          _step18;
 
       try {
-        for (_iterator13.s(); !(_step15 = _iterator13.n()).done;) {
-          var _value6 = _step15.value;
+        for (_iterator16.s(); !(_step18 = _iterator16.n()).done;) {
+          var _value6 = _step18.value;
 
           if (_value6 = +valueof(_value6, ++index, values)) {
             sum += _value6;
           }
         }
       } catch (err) {
-        _iterator13.e(err);
+        _iterator16.e(err);
       } finally {
-        _iterator13.f();
+        _iterator16.f();
       }
     }
 
@@ -9860,19 +10047,19 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
   function selection_size() {
     var size = 0;
 
-    var _iterator14 = _createForOfIteratorHelper(this),
-        _step16;
+    var _iterator17 = _createForOfIteratorHelper(this),
+        _step19;
 
     try {
-      for (_iterator14.s(); !(_step16 = _iterator14.n()).done;) {
-        var node = _step16.value;
+      for (_iterator17.s(); !(_step19 = _iterator17.n()).done;) {
+        var node = _step19.value;
         ++size;
       } // eslint-disable-line no-unused-vars
 
     } catch (err) {
-      _iterator14.e(err);
+      _iterator17.e(err);
     } finally {
-      _iterator14.f();
+      _iterator17.f();
     }
 
     return size;
@@ -11074,7 +11261,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
   }
 
   var degrees = 180 / Math.PI;
-  var identity = {
+  var identity$1 = {
     translateX: 0,
     translateY: 0,
     rotate: 0,
@@ -11104,14 +11291,14 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
 
   function parseCss(value) {
     var m = new (typeof DOMMatrix === "function" ? DOMMatrix : WebKitCSSMatrix)(value + "");
-    return m.isIdentity ? identity : decompose(m.a, m.b, m.c, m.d, m.e, m.f);
+    return m.isIdentity ? identity$1 : decompose(m.a, m.b, m.c, m.d, m.e, m.f);
   }
 
   function parseSvg(value) {
-    if (value == null) return identity;
+    if (value == null) return identity$1;
     if (!svgNode) svgNode = document.createElementNS("http://www.w3.org/2000/svg", "g");
     svgNode.setAttribute("transform", value);
-    if (!(value = svgNode.transform.baseVal.consolidate())) return identity;
+    if (!(value = svgNode.transform.baseVal.consolidate())) return identity$1;
     value = value.matrix;
     return decompose(value.a, value.b, value.c, value.d, value.e, value.f);
   }
@@ -12282,12 +12469,12 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
     };
   };
 
-  function BrushEvent(type, _ref5) {
-    var sourceEvent = _ref5.sourceEvent,
-        target = _ref5.target,
-        selection = _ref5.selection,
-        mode = _ref5.mode,
-        dispatch = _ref5.dispatch;
+  function BrushEvent(type, _ref8) {
+    var sourceEvent = _ref8.sourceEvent,
+        target = _ref8.target,
+        selection = _ref8.selection,
+        mode = _ref8.mode,
+        dispatch = _ref8.dispatch;
     Object.defineProperties(this, {
       type: {
         value: type,
@@ -12690,31 +12877,31 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
       emit.start(event, mode.name);
 
       function moved(event) {
-        var _iterator15 = _createForOfIteratorHelper(event.changedTouches || [event]),
-            _step17;
+        var _iterator18 = _createForOfIteratorHelper(event.changedTouches || [event]),
+            _step20;
 
         try {
-          for (_iterator15.s(); !(_step17 = _iterator15.n()).done;) {
-            var p = _step17.value;
+          for (_iterator18.s(); !(_step20 = _iterator18.n()).done;) {
+            var p = _step20.value;
 
-            var _iterator17 = _createForOfIteratorHelper(points),
-                _step19;
+            var _iterator20 = _createForOfIteratorHelper(points),
+                _step22;
 
             try {
-              for (_iterator17.s(); !(_step19 = _iterator17.n()).done;) {
-                var d = _step19.value;
+              for (_iterator20.s(); !(_step22 = _iterator20.n()).done;) {
+                var d = _step22.value;
                 if (d.identifier === p.identifier) d.cur = pointer(p, that);
               }
             } catch (err) {
-              _iterator17.e(err);
+              _iterator20.e(err);
             } finally {
-              _iterator17.f();
+              _iterator20.f();
             }
           }
         } catch (err) {
-          _iterator15.e(err);
+          _iterator18.e(err);
         } finally {
-          _iterator15.f();
+          _iterator18.f();
         }
 
         if (shifting && !lockX && !lockY && points.length === 1) {
@@ -12722,18 +12909,18 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
           if (abs(_point.cur[0] - _point[0]) > abs(_point.cur[1] - _point[1])) lockY = true;else lockX = true;
         }
 
-        var _iterator16 = _createForOfIteratorHelper(points),
-            _step18;
+        var _iterator19 = _createForOfIteratorHelper(points),
+            _step21;
 
         try {
-          for (_iterator16.s(); !(_step18 = _iterator16.n()).done;) {
-            var _point2 = _step18.value;
+          for (_iterator19.s(); !(_step21 = _iterator19.n()).done;) {
+            var _point2 = _step21.value;
             if (_point2.cur) _point2[0] = _point2.cur[0], _point2[1] = _point2.cur[1];
           }
         } catch (err) {
-          _iterator16.e(err);
+          _iterator19.e(err);
         } finally {
-          _iterator16.f();
+          _iterator19.f();
         }
 
         moving = true;
@@ -13108,11 +13295,11 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
     };
   };
 
-  function ZoomEvent(type, _ref6) {
-    var sourceEvent = _ref6.sourceEvent,
-        target = _ref6.target,
-        transform = _ref6.transform,
-        dispatch = _ref6.dispatch;
+  function ZoomEvent(type, _ref9) {
+    var sourceEvent = _ref9.sourceEvent,
+        target = _ref9.target,
+        transform = _ref9.transform,
+        dispatch = _ref9.dispatch;
     Object.defineProperties(this, {
       type: {
         value: type,
@@ -13182,12 +13369,12 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
       return "translate(" + this.x + "," + this.y + ") scale(" + this.k + ")";
     }
   };
-  var identity$1 = new Transform(1, 0, 0);
+  var identity$2 = new Transform(1, 0, 0);
   transform.prototype = Transform.prototype;
 
   function transform(node) {
     while (!node.__zoom) {
-      if (!(node = node.parentNode)) return identity$1;
+      if (!(node = node.parentNode)) return identity$2;
     }
 
     return node.__zoom;
@@ -13226,7 +13413,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
   }
 
   function defaultTransform() {
-    return this.__zoom || identity$1;
+    return this.__zoom || identity$2;
   }
 
   function defaultWheelDelta(event) {
@@ -13311,7 +13498,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
         var e = extent.apply(this, arguments),
             t = this.__zoom,
             p0 = p == null ? centroid(e) : typeof p === "function" ? p.apply(this, arguments) : p;
-        return constrain(identity$1.translate(p0[0], p0[1]).scale(t.k).translate(typeof x === "function" ? -x.apply(this, arguments) : -x, typeof y === "function" ? -y.apply(this, arguments) : -y), e, translateExtent);
+        return constrain(identity$2.translate(p0[0], p0[1]).scale(t.k).translate(typeof x === "function" ? -x.apply(this, arguments) : -x, typeof y === "function" ? -y.apply(this, arguments) : -y), e, translateExtent);
       }, p, event);
     };
 
@@ -13413,8 +13600,8 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
     };
 
     function wheeled(event) {
-      for (var _len2 = arguments.length, args = new Array(_len2 > 1 ? _len2 - 1 : 0), _key3 = 1; _key3 < _len2; _key3++) {
-        args[_key3 - 1] = arguments[_key3];
+      for (var _len4 = arguments.length, args = new Array(_len4 > 1 ? _len4 - 1 : 0), _key7 = 1; _key7 < _len4; _key7++) {
+        args[_key7 - 1] = arguments[_key7];
       }
 
       if (!filter.apply(this, arguments)) return;
@@ -13449,8 +13636,8 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
     }
 
     function mousedowned(event) {
-      for (var _len3 = arguments.length, args = new Array(_len3 > 1 ? _len3 - 1 : 0), _key4 = 1; _key4 < _len3; _key4++) {
-        args[_key4 - 1] = arguments[_key4];
+      for (var _len5 = arguments.length, args = new Array(_len5 > 1 ? _len5 - 1 : 0), _key8 = 1; _key8 < _len5; _key8++) {
+        args[_key8 - 1] = arguments[_key8];
       }
 
       if (touchending || !filter.apply(this, arguments)) return;
@@ -13489,8 +13676,8 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
     }
 
     function dblclicked(event) {
-      for (var _len4 = arguments.length, args = new Array(_len4 > 1 ? _len4 - 1 : 0), _key5 = 1; _key5 < _len4; _key5++) {
-        args[_key5 - 1] = arguments[_key5];
+      for (var _len6 = arguments.length, args = new Array(_len6 > 1 ? _len6 - 1 : 0), _key9 = 1; _key9 < _len6; _key9++) {
+        args[_key9 - 1] = arguments[_key9];
       }
 
       if (!filter.apply(this, arguments)) return;
@@ -13504,8 +13691,8 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
     }
 
     function touchstarted(event) {
-      for (var _len5 = arguments.length, args = new Array(_len5 > 1 ? _len5 - 1 : 0), _key6 = 1; _key6 < _len5; _key6++) {
-        args[_key6 - 1] = arguments[_key6];
+      for (var _len7 = arguments.length, args = new Array(_len7 > 1 ? _len7 - 1 : 0), _key10 = 1; _key10 < _len7; _key10++) {
+        args[_key10 - 1] = arguments[_key10];
       }
 
       if (!filter.apply(this, arguments)) return;
@@ -13538,8 +13725,8 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
     function touchmoved(event) {
       if (!this.__zooming) return;
 
-      for (var _len6 = arguments.length, args = new Array(_len6 > 1 ? _len6 - 1 : 0), _key7 = 1; _key7 < _len6; _key7++) {
-        args[_key7 - 1] = arguments[_key7];
+      for (var _len8 = arguments.length, args = new Array(_len8 > 1 ? _len8 - 1 : 0), _key11 = 1; _key11 < _len8; _key11++) {
+        args[_key11 - 1] = arguments[_key11];
       }
 
       var g = gesture(this, args).event(event),
@@ -13574,8 +13761,8 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
     }
 
     function touchended(event) {
-      for (var _len7 = arguments.length, args = new Array(_len7 > 1 ? _len7 - 1 : 0), _key8 = 1; _key8 < _len7; _key8++) {
-        args[_key8 - 1] = arguments[_key8];
+      for (var _len9 = arguments.length, args = new Array(_len9 > 1 ? _len9 - 1 : 0), _key12 = 1; _key12 < _len9; _key12++) {
+        args[_key12 - 1] = arguments[_key12];
       }
 
       if (!this.__zooming) return;
@@ -14875,20 +15062,20 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
       if (!arguments.length) return domain.slice();
       domain = [], index = new Map();
 
-      var _iterator18 = _createForOfIteratorHelper(_),
-          _step20;
+      var _iterator21 = _createForOfIteratorHelper(_),
+          _step23;
 
       try {
-        for (_iterator18.s(); !(_step20 = _iterator18.n()).done;) {
-          var value = _step20.value;
+        for (_iterator21.s(); !(_step23 = _iterator21.n()).done;) {
+          var value = _step23.value;
           var key = value + "";
           if (index.has(key)) continue;
           index.set(key, domain.push(value));
         }
       } catch (err) {
-        _iterator18.e(err);
+        _iterator21.e(err);
       } finally {
-        _iterator18.f();
+        _iterator21.f();
       }
 
       return scale;
@@ -14945,15 +15132,15 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
     };
 
     scale.range = function (_) {
-      var _ref7, _ref8;
+      var _ref10, _ref11;
 
-      return arguments.length ? ((_ref7 = _, _ref8 = _slicedToArray2(_ref7, 2), r0 = _ref8[0], r1 = _ref8[1], _ref7), r0 = +r0, r1 = +r1, rescale()) : [r0, r1];
+      return arguments.length ? ((_ref10 = _, _ref11 = _slicedToArray2(_ref10, 2), r0 = _ref11[0], r1 = _ref11[1], _ref10), r0 = +r0, r1 = +r1, rescale()) : [r0, r1];
     };
 
     scale.rangeRound = function (_) {
-      var _ref9, _ref10;
+      var _ref12, _ref13;
 
-      return (_ref9 = _, _ref10 = _slicedToArray2(_ref9, 2), r0 = _ref10[0], r1 = _ref10[1], _ref9), r0 = +r0, r1 = +r1, round = true, rescale();
+      return (_ref12 = _, _ref13 = _slicedToArray2(_ref12, 2), r0 = _ref13[0], r1 = _ref13[1], _ref12), r0 = +r0, r1 = +r1, round = true, rescale();
     };
 
     scale.bandwidth = function () {
@@ -15020,7 +15207,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
 
   var unit = [0, 1];
 
-  function identity$2(x) {
+  function identity$3(x) {
     return x;
   }
 
@@ -15084,14 +15271,14 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
         transform,
         untransform,
         unknown,
-        clamp = identity$2,
+        clamp = identity$3,
         piecewise,
         output,
         input;
 
     function rescale() {
       var n = Math.min(domain.length, range.length);
-      if (clamp !== identity$2) clamp = clamper(domain[0], domain[n - 1]);
+      if (clamp !== identity$3) clamp = clamper(domain[0], domain[n - 1]);
       piecewise = n > 2 ? polymap : bimap;
       output = input = null;
       return scale;
@@ -15118,7 +15305,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
     };
 
     scale.clamp = function (_) {
-      return arguments.length ? (clamp = _ ? true : identity$2, rescale()) : clamp !== identity$2;
+      return arguments.length ? (clamp = _ ? true : identity$3, rescale()) : clamp !== identity$3;
     };
 
     scale.interpolate = function (_) {
@@ -15136,7 +15323,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
   }
 
   function continuous() {
-    return transformer()(identity$2, identity$2);
+    return transformer()(identity$3, identity$3);
   }
 
   function formatDecimal(x) {
@@ -15305,7 +15492,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
     }
   };
 
-  function identity$3(x) {
+  function identity$4(x) {
     return x;
   }
 
@@ -15313,11 +15500,11 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
       prefixes = ["y", "z", "a", "f", "p", "n", "µ", "m", "", "k", "M", "G", "T", "P", "E", "Z", "Y"];
 
   function formatLocale$1(locale) {
-    var group = locale.grouping === undefined || locale.thousands === undefined ? identity$3 : formatGroup(map$1.call(locale.grouping, Number), locale.thousands + ""),
+    var group = locale.grouping === undefined || locale.thousands === undefined ? identity$4 : formatGroup(map$1.call(locale.grouping, Number), locale.thousands + ""),
         currencyPrefix = locale.currency === undefined ? "" : locale.currency[0] + "",
         currencySuffix = locale.currency === undefined ? "" : locale.currency[1] + "",
         decimal = locale.decimal === undefined ? "." : locale.decimal + "",
-        numerals = locale.numerals === undefined ? identity$3 : formatNumerals(map$1.call(locale.numerals, String)),
+        numerals = locale.numerals === undefined ? identity$4 : formatNumerals(map$1.call(locale.numerals, String)),
         percent = locale.percent === undefined ? "%" : locale.percent + "",
         minus = locale.minus === undefined ? "−" : locale.minus + "",
         nan = locale.nan === undefined ? "NaN" : locale.nan + "";
@@ -15573,7 +15760,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
     return linearish(scale);
   }
 
-  function identity$4(domain) {
+  function identity$5(domain) {
     var unknown;
 
     function scale(x) {
@@ -15591,7 +15778,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
     };
 
     scale.copy = function () {
-      return identity$4(domain).unknown(unknown);
+      return identity$5(domain).unknown(unknown);
     };
 
     domain = arguments.length ? Array.from(domain, number$1) : [0, 1];
@@ -15808,11 +15995,11 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
   }
 
   function powish(transform) {
-    var scale = transform(identity$2, identity$2),
+    var scale = transform(identity$3, identity$3),
         exponent = 1;
 
     function rescale() {
-      return exponent === 1 ? transform(identity$2, identity$2) : exponent === 0.5 ? transform(transformSqrt, transformSquare) : transform(transformPow(exponent), transformPow(1 / exponent));
+      return exponent === 1 ? transform(identity$3, identity$3) : exponent === 0.5 ? transform(transformSqrt, transformSquare) : transform(transformPow(exponent), transformPow(1 / exponent));
     }
 
     scale.exponent = function (_) {
@@ -15923,18 +16110,18 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
       if (!arguments.length) return domain.slice();
       domain = [];
 
-      var _iterator19 = _createForOfIteratorHelper(_),
-          _step21;
+      var _iterator22 = _createForOfIteratorHelper(_),
+          _step24;
 
       try {
-        for (_iterator19.s(); !(_step21 = _iterator19.n()).done;) {
-          var d = _step21.value;
+        for (_iterator22.s(); !(_step24 = _iterator22.n()).done;) {
+          var d = _step24.value;
           if (d != null && !isNaN(d = +d)) domain.push(d);
         }
       } catch (err) {
-        _iterator19.e(err);
+        _iterator22.e(err);
       } finally {
-        _iterator19.f();
+        _iterator22.f();
       }
 
       domain.sort(ascending);
@@ -15984,9 +16171,9 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
     }
 
     scale.domain = function (_) {
-      var _ref11, _ref12;
+      var _ref14, _ref15;
 
-      return arguments.length ? ((_ref11 = _, _ref12 = _slicedToArray2(_ref11, 2), x0 = _ref12[0], x1 = _ref12[1], _ref11), x0 = +x0, x1 = +x1, rescale()) : [x0, x1];
+      return arguments.length ? ((_ref14 = _, _ref15 = _slicedToArray2(_ref14, 2), x0 = _ref15[0], x1 = _ref15[1], _ref14), x0 = +x0, x1 = +x1, rescale()) : [x0, x1];
     };
 
     scale.range = function (_) {
@@ -16163,7 +16350,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
         t1,
         k10,
         transform,
-        interpolator = identity$2,
+        interpolator = identity$3,
         clamp = false,
         unknown;
 
@@ -16172,9 +16359,9 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
     }
 
     scale.domain = function (_) {
-      var _ref13, _ref14;
+      var _ref16, _ref17;
 
-      return arguments.length ? ((_ref13 = _, _ref14 = _slicedToArray2(_ref13, 2), x0 = _ref14[0], x1 = _ref14[1], _ref13), t0 = transform(x0 = +x0), t1 = transform(x1 = +x1), k10 = t0 === t1 ? 0 : 1 / (t1 - t0), scale) : [x0, x1];
+      return arguments.length ? ((_ref16 = _, _ref17 = _slicedToArray2(_ref16, 2), x0 = _ref17[0], x1 = _ref17[1], _ref16), t0 = transform(x0 = +x0), t1 = transform(x1 = +x1), k10 = t0 === t1 ? 0 : 1 / (t1 - t0), scale) : [x0, x1];
     };
 
     scale.clamp = function (_) {
@@ -16187,10 +16374,10 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
 
     function range(interpolate) {
       return function (_) {
-        var _ref15, _ref16;
+        var _ref18, _ref19;
 
         var r0, r1;
-        return arguments.length ? ((_ref15 = _, _ref16 = _slicedToArray2(_ref15, 2), r0 = _ref16[0], r1 = _ref16[1], _ref15), interpolator = interpolate(r0, r1), scale) : [interpolator(0), interpolator(1)];
+        return arguments.length ? ((_ref18 = _, _ref19 = _slicedToArray2(_ref18, 2), r0 = _ref19[0], r1 = _ref19[1], _ref18), interpolator = interpolate(r0, r1), scale) : [interpolator(0), interpolator(1)];
       };
     }
 
@@ -16212,7 +16399,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
   }
 
   function sequential() {
-    var scale = linearish(transformer$1()(identity$2));
+    var scale = linearish(transformer$1()(identity$3));
 
     scale.copy = function () {
       return copy$1(scale, sequential());
@@ -16257,7 +16444,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
 
   function sequentialQuantile() {
     var domain = [],
-        interpolator = identity$2;
+        interpolator = identity$3;
 
     function scale(x) {
       if (!isNaN(x = +x)) return interpolator((bisectRight(domain, x, 1) - 1) / (domain.length - 1));
@@ -16267,18 +16454,18 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
       if (!arguments.length) return domain.slice();
       domain = [];
 
-      var _iterator20 = _createForOfIteratorHelper(_),
-          _step22;
+      var _iterator23 = _createForOfIteratorHelper(_),
+          _step25;
 
       try {
-        for (_iterator20.s(); !(_step22 = _iterator20.n()).done;) {
-          var d = _step22.value;
+        for (_iterator23.s(); !(_step25 = _iterator23.n()).done;) {
+          var d = _step25.value;
           if (d != null && !isNaN(d = +d)) domain.push(d);
         }
       } catch (err) {
-        _iterator20.e(err);
+        _iterator23.e(err);
       } finally {
-        _iterator20.f();
+        _iterator23.f();
       }
 
       domain.sort(ascending);
@@ -16320,7 +16507,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
         t2,
         k10,
         k21,
-        interpolator = identity$2,
+        interpolator = identity$3,
         transform,
         clamp = false,
         unknown;
@@ -16330,9 +16517,9 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
     }
 
     scale.domain = function (_) {
-      var _ref17, _ref18;
+      var _ref20, _ref21;
 
-      return arguments.length ? ((_ref17 = _, _ref18 = _slicedToArray2(_ref17, 3), x0 = _ref18[0], x1 = _ref18[1], x2 = _ref18[2], _ref17), t0 = transform(x0 = +x0), t1 = transform(x1 = +x1), t2 = transform(x2 = +x2), k10 = t0 === t1 ? 0 : 0.5 / (t1 - t0), k21 = t1 === t2 ? 0 : 0.5 / (t2 - t1), s = t1 < t0 ? -1 : 1, scale) : [x0, x1, x2];
+      return arguments.length ? ((_ref20 = _, _ref21 = _slicedToArray2(_ref20, 3), x0 = _ref21[0], x1 = _ref21[1], x2 = _ref21[2], _ref20), t0 = transform(x0 = +x0), t1 = transform(x1 = +x1), t2 = transform(x2 = +x2), k10 = t0 === t1 ? 0 : 0.5 / (t1 - t0), k21 = t1 === t2 ? 0 : 0.5 / (t2 - t1), s = t1 < t0 ? -1 : 1, scale) : [x0, x1, x2];
     };
 
     scale.clamp = function (_) {
@@ -16345,10 +16532,10 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
 
     function range(interpolate) {
       return function (_) {
-        var _ref19, _ref20;
+        var _ref22, _ref23;
 
         var r0, r1, r2;
-        return arguments.length ? ((_ref19 = _, _ref20 = _slicedToArray2(_ref19, 3), r0 = _ref20[0], r1 = _ref20[1], r2 = _ref20[2], _ref19), interpolator = piecewise(interpolate, [r0, r1, r2]), scale) : [interpolator(0), interpolator(0.5), interpolator(1)];
+        return arguments.length ? ((_ref22 = _, _ref23 = _slicedToArray2(_ref22, 3), r0 = _ref23[0], r1 = _ref23[1], r2 = _ref23[2], _ref22), interpolator = piecewise(interpolate, [r0, r1, r2]), scale) : [interpolator(0), interpolator(0.5), interpolator(1)];
       };
     }
 
@@ -16366,7 +16553,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
   }
 
   function diverging() {
-    var scale = linearish(transformer$2()(identity$2));
+    var scale = linearish(transformer$2()(identity$3));
 
     scale.copy = function () {
       return copy$1(scale, diverging());
@@ -16413,7 +16600,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
     __proto__: null,
     scaleBand: band,
     scalePoint: point,
-    scaleIdentity: identity$4,
+    scaleIdentity: identity$5,
     scaleLinear: linear$1,
     scaleLog: log,
     scaleSymlog: symlog,
@@ -28112,12 +28299,12 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
     return b < a ? -1 : b > a ? 1 : b >= a ? 0 : NaN;
   }
 
-  function identity$5(d) {
+  function identity$6(d) {
     return d;
   }
 
   function pie() {
-    var value = identity$5,
+    var value = identity$6,
         sortValues = descending,
         sort = null,
         startAngle = constant$5(0),
@@ -29591,21 +29778,21 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
           j = -1,
           oz;
 
-      var _iterator21 = _createForOfIteratorHelper(data),
-          _step23;
+      var _iterator24 = _createForOfIteratorHelper(data),
+          _step26;
 
       try {
-        for (_iterator21.s(); !(_step23 = _iterator21.n()).done;) {
-          var d = _step23.value;
+        for (_iterator24.s(); !(_step26 = _iterator24.n()).done;) {
+          var d = _step26.value;
 
           for (i = 0, ++j; i < n; ++i) {
             (sz[i][j] = [0, +value(d, sz[i].key, j, data)]).data = d;
           }
         }
       } catch (err) {
-        _iterator21.e(err);
+        _iterator24.e(err);
       } finally {
-        _iterator21.f();
+        _iterator24.f();
       }
 
       for (i = 0, oz = array$1(order(sz)); i < n; ++i) {
@@ -32806,12 +32993,12 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
           var bCommand = bCommands[i];
           var interpolatedCommand = interpolatedCommands[i];
 
-          var _iterator22 = _createForOfIteratorHelper(typeMap[interpolatedCommand.type]),
-              _step24;
+          var _iterator25 = _createForOfIteratorHelper(typeMap[interpolatedCommand.type]),
+              _step27;
 
           try {
-            for (_iterator22.s(); !(_step24 = _iterator22.n()).done;) {
-              var arg = _step24.value;
+            for (_iterator25.s(); !(_step27 = _iterator25.n()).done;) {
+              var arg = _step27.value;
               interpolatedCommand[arg] = (1 - t) * aCommand[arg] + t * bCommand[arg]; // do not use floats for flags (#27), round to integer
 
               if (arg === 'largeArcFlag' || arg === 'sweepFlag') {
@@ -32819,9 +33006,9 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
               }
             }
           } catch (err) {
-            _iterator22.e(err);
+            _iterator25.e(err);
           } finally {
-            _iterator22.f();
+            _iterator25.f();
           }
         }
       }
@@ -32865,18 +33052,18 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
 
       var interpolatedString = '';
 
-      var _iterator23 = _createForOfIteratorHelper(interpolatedCommands),
-          _step25;
+      var _iterator26 = _createForOfIteratorHelper(interpolatedCommands),
+          _step28;
 
       try {
-        for (_iterator23.s(); !(_step25 = _iterator23.n()).done;) {
-          var interpolatedCommand = _step25.value;
+        for (_iterator26.s(); !(_step28 = _iterator26.n()).done;) {
+          var interpolatedCommand = _step28.value;
           interpolatedString += commandToString(interpolatedCommand);
         }
       } catch (err) {
-        _iterator23.e(err);
+        _iterator26.e(err);
       } finally {
-        _iterator23.f();
+        _iterator26.f();
       }
 
       return interpolatedString;
@@ -43474,10 +43661,10 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
     }, {
       key: "hide",
       value: function hide() {
-        var _ref21 = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {},
-            _ref21$duration = _ref21.duration,
-            duration = _ref21$duration === void 0 ? 600 : _ref21$duration,
-            callback = _ref21.callback;
+        var _ref24 = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {},
+            _ref24$duration = _ref24.duration,
+            duration = _ref24$duration === void 0 ? 600 : _ref24$duration,
+            callback = _ref24.callback;
 
         this.mask.call(this.exit.bind(this), duration);
         this.elem.call(this.exit.bind(this), duration);
@@ -43495,18 +43682,18 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
     }, {
       key: "render",
       value: function render() {
-        var _ref22 = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {},
-            callback = _ref22.callback,
-            _ref22$container = _ref22.container,
-            container = _ref22$container === void 0 ? "body" : _ref22$container,
-            _ref22$duration = _ref22.duration,
-            duration = _ref22$duration === void 0 ? 600 : _ref22$duration,
-            _ref22$html = _ref22.html,
-            html = _ref22$html === void 0 ? "Please Wait" : _ref22$html,
-            _ref22$mask = _ref22.mask,
-            mask = _ref22$mask === void 0 ? "rgba(0, 0, 0, 0.05)" : _ref22$mask,
-            _ref22$style = _ref22.style,
-            style = _ref22$style === void 0 ? {} : _ref22$style;
+        var _ref25 = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {},
+            callback = _ref25.callback,
+            _ref25$container = _ref25.container,
+            container = _ref25$container === void 0 ? "body" : _ref25$container,
+            _ref25$duration = _ref25.duration,
+            duration = _ref25$duration === void 0 ? 600 : _ref25$duration,
+            _ref25$html = _ref25.html,
+            html = _ref25$html === void 0 ? "Please Wait" : _ref25$html,
+            _ref25$mask = _ref25.mask,
+            mask = _ref25$mask === void 0 ? "rgba(0, 0, 0, 0.05)" : _ref25$mask,
+            _ref25$style = _ref25.style,
+            style = _ref25$style === void 0 ? {} : _ref25$style;
 
         var parent = _select(container);
 
@@ -43565,7 +43752,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
 
 
   function drawColorScale() {
-    var _this8 = this;
+    var _this9 = this;
 
     var data = this._data;
     var position = this._colorScalePosition.bind(this)(this.config()) || "bottom";
@@ -43595,7 +43782,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
 
     if (showColorScale) {
       var scaleData = data.filter(function (d, i) {
-        var c = _this8._colorScale(d, i);
+        var c = _this9._colorScale(d, i);
 
         return c !== undefined && c !== null;
       });
@@ -43635,38 +43822,39 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
 
 
   function drawLegend() {
-    var _this9 = this;
+    var _this10 = this;
 
     var data = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : [];
     var legendData = [];
 
     var color = function color(d, i) {
-      var shape = _this9._shape(d, i);
+      var shape = _this10._shape(d, i);
 
       var attr = shape === "Line" ? "stroke" : "fill";
-      var value = _this9._shapeConfig[shape] && _this9._shapeConfig[shape][attr] ? _this9._shapeConfig[shape][attr] : _this9._shapeConfig[attr];
-      return typeof value === "function" ? value.bind(_this9)(d, i) : value;
+      var value = _this10._shapeConfig[shape] && _this10._shapeConfig[shape][attr] ? _this10._shapeConfig[shape][attr] : _this10._shapeConfig[attr];
+      return typeof value === "function" ? value.bind(_this10)(d, i) : value;
     };
 
     var opacity = function opacity(d, i) {
-      var shape = _this9._shape(d, i);
+      var shape = _this10._shape(d, i);
 
-      var value = _this9._shapeConfig[shape] && _this9._shapeConfig[shape].opacity ? _this9._shapeConfig[shape].opacity : _this9._shapeConfig.opacity;
-      return typeof value === "function" ? value.bind(_this9)(d, i) : value;
+      var value = _this10._shapeConfig[shape] && _this10._shapeConfig[shape].opacity ? _this10._shapeConfig[shape].opacity : _this10._shapeConfig.opacity;
+      return typeof value === "function" ? value.bind(_this10)(d, i) : value;
     };
 
     var fill = function fill(d, i) {
       return "".concat(color(d, i), "_").concat(opacity(d, i));
     };
 
-    nest().key(fill).rollup(function (leaves) {
-      return legendData.push(objectMerge(leaves, _this9._aggs));
-    }).entries(this._colorScale ? data.filter(function (d, i) {
-      return _this9._colorScale(d, i) === undefined;
-    }) : data);
+    var rollupData = this._colorScale ? data.filter(function (d, i) {
+      return _this10._colorScale(d, i) === undefined;
+    }) : data;
+    rollup(rollupData, function (leaves) {
+      return legendData.push(objectMerge(leaves, _this10._aggs));
+    }, fill);
     legendData.sort(this._legendSort);
     var labels = legendData.map(function (d, i) {
-      return _this9._ids(d, i).slice(0, _this9._drawDepth + 1);
+      return _this10._ids(d, i).slice(0, _this10._drawDepth + 1);
     });
     this._legendDepth = 0;
 
@@ -43678,7 +43866,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
       if (!values.some(function (v) {
         return v instanceof Array;
       }) && Array.from(new Set(values)).length === legendData.length) {
-        _this9._legendDepth = _x2;
+        _this10._legendDepth = _x2;
         return "break";
       }
     };
@@ -43690,10 +43878,10 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
     }
 
     var hidden = function hidden(d, i) {
-      var id = _this9._id(d, i);
+      var id = _this10._id(d, i);
 
       if (id instanceof Array) id = id[0];
-      return _this9._hidden.includes(id) || _this9._solo.length && !_this9._solo.includes(id);
+      return _this10._hidden.includes(id) || _this10._solo.length && !_this10._solo.includes(id);
     };
 
     var legendBounds = this._legendClass.outerBounds();
@@ -43725,11 +43913,11 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
 
     this._legendClass.id(fill).align(wide ? "center" : position).direction(wide ? "row" : "column").duration(this._duration).data(visible ? legendData : []).height(wide ? this._height - (this._margin.bottom + this._margin.top) : this._height - (this._margin.bottom + this._margin.top + padding.bottom + padding.top)).locale(this._locale).parent(this).select(legendGroup).verticalAlign(!wide ? "middle" : position).width(wide ? this._width - (this._margin.left + this._margin.right + padding.left + padding.right) : this._width - (this._margin.left + this._margin.right)).shapeConfig(configPrep.bind(this)(this._shapeConfig, "legend")).shapeConfig({
       fill: function fill(d, i) {
-        return hidden(d, i) ? _this9._hiddenColor(d, i) : color(d, i);
+        return hidden(d, i) ? _this10._hiddenColor(d, i) : color(d, i);
       },
       labelConfig: {
         fontOpacity: function fontOpacity(d, i) {
-          return hidden(d, i) ? _this9._hiddenOpacity(d, i) : 1;
+          return hidden(d, i) ? _this10._hiddenOpacity(d, i) : 1;
         }
       },
       opacity: opacity
@@ -43748,7 +43936,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
 
 
   function setTimeFilter(s) {
-    var _this10 = this;
+    var _this11 = this;
 
     if (!(s instanceof Array)) s = [s, s];
 
@@ -43756,7 +43944,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
       this._timelineSelection = s;
       s = s.map(Number);
       this.timeFilter(function (d) {
-        var ms = date$2(_this10._time(d)).getTime();
+        var ms = date$2(_this11._time(d)).getTime();
         return ms >= s[0] && ms <= s[1];
       }).render();
     }
@@ -43770,7 +43958,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
 
 
   function drawTimeline() {
-    var _this11 = this;
+    var _this12 = this;
 
     var data = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : [];
     var timelinePossible = this._time && this._timeline;
@@ -43809,7 +43997,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
       //   if (config.on && config.on.brush) config.on.brush(s);
       // })
       .on("end", function (s) {
-        setTimeFilter.bind(_this11)(s);
+        setTimeFilter.bind(_this12)(s);
         if (config.on && config.on.end) config.on.end(s);
       }).render();
       this._margin.bottom += timeline.outerBounds().height + timeline.padding() * 2;
@@ -43984,7 +44172,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
 
 
   function clickLegend(d, i, x, event) {
-    var _this12 = this;
+    var _this13 = this;
 
     this._select.style("cursor", "auto");
 
@@ -43999,7 +44187,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
     var soloIndex = this._solo.indexOf(id[0]);
 
     var dataLength = merge(this._legendClass.data().map(function (d, i) {
-      var id = _this12._id(d, i);
+      var id = _this13._id(d, i);
 
       if (!(id instanceof Array)) id = [id];
       return id;
@@ -44063,12 +44251,12 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
 
 
   function mouseenter(d, i) {
-    var _this13 = this;
+    var _this14 = this;
 
     if (this._shapeConfig.hoverOpacity !== 1) {
       var filterIds = flattenIds(this._ids(d, i));
       this.hover(function (h, x) {
-        var ids = flattenIds(_this13._ids(h, x));
+        var ids = flattenIds(_this14._ids(h, x));
         return filterIds.some(function (id) {
           return ids.includes(id);
         });
@@ -44084,23 +44272,23 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
 
 
   function mouseleave(d, i) {
-    var _this14 = this;
+    var _this15 = this;
 
     setTimeout(function () {
-      if (_this14._shapeConfig.hoverOpacity !== 1 && _this14._hover ? _this14._hover(d, i) : true) {
-        _this14.hover(false);
+      if (_this15._shapeConfig.hoverOpacity !== 1 && _this15._hover ? _this15._hover(d, i) : true) {
+        _this15.hover(false);
       }
 
-      var tooltipData = _this14._tooltipClass.data();
+      var tooltipData = _this15._tooltipClass.data();
 
-      if (tooltipData.length && _this14._tooltip(d, i)) {
+      if (tooltipData.length && _this15._tooltip(d, i)) {
         var tooltipDatum = tooltipData[0];
 
         while (tooltipDatum.__d3plus__ && tooltipDatum.data) {
           tooltipDatum = tooltipDatum.data;
         }
 
-        if (_this14._id(tooltipDatum) === _this14._id(d)) _this14._tooltipClass.data([]).render();
+        if (_this15._id(tooltipDatum) === _this15._id(d)) _this15._tooltipClass.data([]).render();
       }
     }, 50);
 
@@ -44116,11 +44304,11 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
 
 
   function mousemoveLegend(d, i, x, event) {
-    var _this15 = this;
+    var _this16 = this;
 
     var position = event.touches ? [event.touches[0].clientX, event.touches[0].clientY] : [event.clientX, event.clientY];
     var dataLength = merge(this._legendClass.data().map(function (d, i) {
-      var id = _this15._id(d, i);
+      var id = _this16._id(d, i);
 
       if (!(id instanceof Array)) id = [id];
       return id;
@@ -44175,7 +44363,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
   */
 
   function zoomControls() {
-    var _this16 = this;
+    var _this17 = this;
 
     if (!this._container || !this._zoomGroup) return;
     var height = this._zoomHeight || this._height - this._margin.top - this._margin.bottom,
@@ -44183,7 +44371,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
         width = this._zoomWidth || this._width - this._margin.left - this._margin.right;
 
     this._zoomBehavior.extent([[0, 0], [width, height]]).scaleExtent([1, this._zoomMax]).translateExtent([[0, 0], [width, height]]).on("zoom", function (event) {
-      return zoomed.bind(_this16)(event.transform);
+      return zoomed.bind(_this17)(event.transform);
     });
 
     this._zoomToBounds = zoomToBounds.bind(this);
@@ -44445,7 +44633,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
 
     _inherits2(Viz, _BaseClass2);
 
-    var _super2 = _createSuper2(Viz);
+    var _super3 = _createSuper2(Viz);
 
     /**
         @memberof Viz
@@ -44453,15 +44641,15 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
         @private
     */
     function Viz() {
-      var _this17;
+      var _this18;
 
       _classCallCheck2(this, Viz);
 
-      _this17 = _super2.call(this);
-      _this17._aggs = {};
-      _this17._ariaHidden = true;
-      _this17._attribution = false;
-      _this17._attributionStyle = {
+      _this18 = _super3.call(this);
+      _this18._aggs = {};
+      _this18._ariaHidden = true;
+      _this18._attribution = false;
+      _this18._attributionStyle = {
         background: "rgba(255, 255, 255, 0.75)",
         border: "1px solid rgba(0, 0, 0, 0.25)",
         color: "rgba(0, 0, 0, 0.75)",
@@ -44471,65 +44659,65 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
         opacity: 0.75,
         padding: "4px 6px 3px"
       };
-      _this17._backClass = new TextBox().on("click", function () {
-        if (_this17._history.length) _this17.config(_this17._history.pop()).render();else _this17.depth(_this17._drawDepth - 1).filter(false).render();
+      _this18._backClass = new TextBox().on("click", function () {
+        if (_this18._history.length) _this18.config(_this18._history.pop()).render();else _this18.depth(_this18._drawDepth - 1).filter(false).render();
       }).on("mousemove", function () {
-        return _this17._backClass.select().style("cursor", "pointer");
+        return _this18._backClass.select().style("cursor", "pointer");
       });
-      _this17._backConfig = {
+      _this18._backConfig = {
         fontSize: 10,
         padding: 5,
         resize: false
       };
-      _this17._cache = true;
+      _this18._cache = true;
 
-      _this17._color = function (d, i) {
-        return _this17._groupBy[0](d, i);
+      _this18._color = function (d, i) {
+        return _this18._groupBy[0](d, i);
       };
 
-      _this17._colorScaleClass = new ColorScale();
-      _this17._colorScaleConfig = {
+      _this18._colorScaleClass = new ColorScale();
+      _this18._colorScaleConfig = {
         scale: "jenks"
       };
-      _this17._colorScalePadding = defaultPadding;
+      _this18._colorScalePadding = defaultPadding;
 
-      _this17._colorScalePosition = function () {
-        return _this17._width > _this17._height ? "right" : "bottom";
+      _this18._colorScalePosition = function () {
+        return _this18._width > _this18._height ? "right" : "bottom";
       };
 
-      _this17._colorScaleMaxSize = 600;
-      _this17._data = [];
-      _this17._dataCutoff = 100;
-      _this17._detectResize = true;
-      _this17._detectResizeDelay = 400;
-      _this17._detectVisible = true;
-      _this17._detectVisibleInterval = 1000;
-      _this17._downloadButton = false;
-      _this17._downloadConfig = {
+      _this18._colorScaleMaxSize = 600;
+      _this18._data = [];
+      _this18._dataCutoff = 100;
+      _this18._detectResize = true;
+      _this18._detectResizeDelay = 400;
+      _this18._detectVisible = true;
+      _this18._detectVisibleInterval = 1000;
+      _this18._downloadButton = false;
+      _this18._downloadConfig = {
         type: "png"
       };
-      _this17._downloadPosition = "top";
-      _this17._duration = 600;
-      _this17._hidden = [];
-      _this17._hiddenColor = constant$4("#aaa");
-      _this17._hiddenOpacity = constant$4(0.5);
-      _this17._history = [];
-      _this17._groupBy = [accessor("id")];
+      _this18._downloadPosition = "top";
+      _this18._duration = 600;
+      _this18._hidden = [];
+      _this18._hiddenColor = constant$4("#aaa");
+      _this18._hiddenOpacity = constant$4(0.5);
+      _this18._history = [];
+      _this18._groupBy = [accessor("id")];
 
-      _this17._legend = function (config, arr) {
+      _this18._legend = function (config, arr) {
         var maxGrouped = max(arr, function (d, i) {
-          var id = _this17._groupBy[_this17._legendDepth].bind(_assertThisInitialized2(_this17))(d, i);
+          var id = _this18._groupBy[_this18._legendDepth].bind(_assertThisInitialized2(_this18))(d, i);
 
           return id instanceof Array ? id.length : 1;
         });
         return arr.length > 1 && maxGrouped <= 2;
       };
 
-      _this17._legendClass = new Legend();
-      _this17._legendConfig = {
-        label: legendLabel.bind(_assertThisInitialized2(_this17)),
+      _this18._legendClass = new Legend();
+      _this18._legendConfig = {
+        label: legendLabel.bind(_assertThisInitialized2(_this18)),
         shapeConfig: {
-          ariaLabel: legendLabel.bind(_assertThisInitialized2(_this17)),
+          ariaLabel: legendLabel.bind(_assertThisInitialized2(_this18)),
           labelConfig: {
             fontColor: undefined,
             fontResize: false,
@@ -44537,27 +44725,27 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
           }
         }
       };
-      _this17._legendPadding = defaultPadding;
+      _this18._legendPadding = defaultPadding;
 
-      _this17._legendPosition = function () {
-        return _this17._width > _this17._height ? "right" : "bottom";
+      _this18._legendPosition = function () {
+        return _this18._width > _this18._height ? "right" : "bottom";
       };
 
-      _this17._legendSort = function (a, b) {
-        return _this17._drawLabel(a).localeCompare(_this17._drawLabel(b));
+      _this18._legendSort = function (a, b) {
+        return _this18._drawLabel(a).localeCompare(_this18._drawLabel(b));
       };
 
-      _this17._legendTooltip = {};
+      _this18._legendTooltip = {};
 
-      _this17._loadingHTML = function () {
-        return "\n    <div style=\"left: 50%; top: 50%; position: absolute; transform: translate(-50%, -50%); font-family: 'Roboto', 'Helvetica Neue', Helvetica, Arial, sans-serif;\">\n      <strong>".concat(_this17._translate("Loading Visualization"), "</strong>\n      <sub style=\"bottom: 0; display: block; line-height: 1; margin-top: 5px;\"><a href=\"https://d3plus.org\" target=\"_blank\">").concat(_this17._translate("Powered by D3plus"), "</a></sub>\n    </div>");
+      _this18._loadingHTML = function () {
+        return "\n    <div style=\"left: 50%; top: 50%; position: absolute; transform: translate(-50%, -50%); font-family: 'Roboto', 'Helvetica Neue', Helvetica, Arial, sans-serif;\">\n      <strong>".concat(_this18._translate("Loading Visualization"), "</strong>\n      <sub style=\"bottom: 0; display: block; line-height: 1; margin-top: 5px;\"><a href=\"https://d3plus.org\" target=\"_blank\">").concat(_this18._translate("Powered by D3plus"), "</a></sub>\n    </div>");
       };
 
-      _this17._loadingMessage = true;
-      _this17._lrucache = lrucache(10);
-      _this17._messageClass = new Message();
-      _this17._messageMask = "rgba(0, 0, 0, 0.05)";
-      _this17._messageStyle = {
+      _this18._loadingMessage = true;
+      _this18._lrucache = lrucache(10);
+      _this18._messageClass = new Message();
+      _this18._messageMask = "rgba(0, 0, 0, 0.05)";
+      _this18._messageStyle = {
         "bottom": "0",
         "left": "0",
         "position": "absolute",
@@ -44566,26 +44754,26 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
         "top": "0"
       };
 
-      _this17._noDataHTML = function () {
-        return "\n    <div style=\"left: 50%; top: 50%; position: absolute; transform: translate(-50%, -50%); font-family: 'Roboto', 'Helvetica Neue', Helvetica, Arial, sans-serif;\">\n      <strong>".concat(_this17._translate("No Data Available"), "</strong>\n    </div>");
+      _this18._noDataHTML = function () {
+        return "\n    <div style=\"left: 50%; top: 50%; position: absolute; transform: translate(-50%, -50%); font-family: 'Roboto', 'Helvetica Neue', Helvetica, Arial, sans-serif;\">\n      <strong>".concat(_this18._translate("No Data Available"), "</strong>\n    </div>");
       };
 
-      _this17._noDataMessage = true;
-      _this17._on = {
-        "click.shape": clickShape.bind(_assertThisInitialized2(_this17)),
-        "click.legend": clickLegend.bind(_assertThisInitialized2(_this17)),
-        "mouseenter": mouseenter.bind(_assertThisInitialized2(_this17)),
-        "mouseleave": mouseleave.bind(_assertThisInitialized2(_this17)),
-        "mousemove.shape": mousemoveShape.bind(_assertThisInitialized2(_this17)),
-        "mousemove.legend": mousemoveLegend.bind(_assertThisInitialized2(_this17))
+      _this18._noDataMessage = true;
+      _this18._on = {
+        "click.shape": clickShape.bind(_assertThisInitialized2(_this18)),
+        "click.legend": clickLegend.bind(_assertThisInitialized2(_this18)),
+        "mouseenter": mouseenter.bind(_assertThisInitialized2(_this18)),
+        "mouseleave": mouseleave.bind(_assertThisInitialized2(_this18)),
+        "mousemove.shape": mousemoveShape.bind(_assertThisInitialized2(_this18)),
+        "mousemove.legend": mousemoveLegend.bind(_assertThisInitialized2(_this18))
       };
-      _this17._queue = [];
-      _this17._scrollContainer = (typeof window === "undefined" ? "undefined" : _typeof2(window)) === undefined ? "" : window;
-      _this17._shape = constant$4("Rect");
-      _this17._shapes = [];
-      _this17._shapeConfig = {
+      _this18._queue = [];
+      _this18._scrollContainer = (typeof window === "undefined" ? "undefined" : _typeof2(window)) === undefined ? "" : window;
+      _this18._shape = constant$4("Rect");
+      _this18._shapes = [];
+      _this18._shapeConfig = {
         ariaLabel: function ariaLabel(d, i) {
-          return _this17._drawLabel(d, i);
+          return _this18._drawLabel(d, i);
         },
         fill: function fill(d, i) {
           while (d.__d3plus__ && d.data) {
@@ -44593,97 +44781,97 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
             i = d.i;
           }
 
-          if (_this17._colorScale) {
-            var _c = _this17._colorScale(d, i);
+          if (_this18._colorScale) {
+            var _c = _this18._colorScale(d, i);
 
             if (_c !== undefined && _c !== null) {
-              var scale = _this17._colorScaleClass._colorScale;
+              var scale = _this18._colorScaleClass._colorScale;
 
-              var colors = _this17._colorScaleClass.color();
+              var colors = _this18._colorScaleClass.color();
 
               if (!scale) return colors instanceof Array ? colors[colors.length - 1] : colors;else if (!scale.domain().length) return scale.range()[scale.range().length - 1];
               return scale(_c);
             }
           }
 
-          var c = _this17._color(d, i);
+          var c = _this18._color(d, i);
 
           if (color(c)) return c;
           return colorAssign(c);
         },
         labelConfig: {
           fontColor: function fontColor(d, i) {
-            var c = typeof _this17._shapeConfig.fill === "function" ? _this17._shapeConfig.fill(d, i) : _this17._shapeConfig.fill;
+            var c = typeof _this18._shapeConfig.fill === "function" ? _this18._shapeConfig.fill(d, i) : _this18._shapeConfig.fill;
             return colorContrast(c);
           }
         },
         opacity: constant$4(1),
         stroke: function stroke(d, i) {
-          var c = typeof _this17._shapeConfig.fill === "function" ? _this17._shapeConfig.fill(d, i) : _this17._shapeConfig.fill;
+          var c = typeof _this18._shapeConfig.fill === "function" ? _this18._shapeConfig.fill(d, i) : _this18._shapeConfig.fill;
           return color(c).darker();
         },
         role: "presentation",
         strokeWidth: constant$4(0)
       };
-      _this17._solo = [];
-      _this17._svgDesc = "";
-      _this17._svgTitle = "";
-      _this17._timeline = true;
-      _this17._timelineClass = new Timeline().align("end");
-      _this17._timelineConfig = {
+      _this18._solo = [];
+      _this18._svgDesc = "";
+      _this18._svgTitle = "";
+      _this18._timeline = true;
+      _this18._timelineClass = new Timeline().align("end");
+      _this18._timelineConfig = {
         brushing: false,
         padding: 5
       };
-      _this17._timelinePadding = defaultPadding;
-      _this17._threshold = constant$4(0.0001);
-      _this17._thresholdKey = undefined;
+      _this18._timelinePadding = defaultPadding;
+      _this18._threshold = constant$4(0.0001);
+      _this18._thresholdKey = undefined;
 
-      _this17._thresholdName = function () {
-        return _this17._translate("Values");
+      _this18._thresholdName = function () {
+        return _this18._translate("Values");
       };
 
-      _this17._titleClass = new TextBox();
-      _this17._titleConfig = {
+      _this18._titleClass = new TextBox();
+      _this18._titleConfig = {
         ariaHidden: true,
         fontSize: 12,
         padding: 5,
         resize: false,
         textAnchor: "middle"
       };
-      _this17._titlePadding = defaultPadding;
-      _this17._tooltip = constant$4(true);
-      _this17._tooltipClass = new Tooltip();
-      _this17._tooltipConfig = {
+      _this18._titlePadding = defaultPadding;
+      _this18._tooltip = constant$4(true);
+      _this18._tooltipClass = new Tooltip();
+      _this18._tooltipConfig = {
         pointerEvents: "none",
         titleStyle: {
           "max-width": "200px"
         }
       };
-      _this17._totalClass = new TextBox();
-      _this17._totalConfig = {
+      _this18._totalClass = new TextBox();
+      _this18._totalConfig = {
         fontSize: 10,
         padding: 5,
         resize: false,
         textAnchor: "middle"
       };
 
-      _this17._totalFormat = function (d) {
-        return "".concat(_this17._translate("Total"), ": ").concat(formatAbbreviate(d, _this17._locale));
+      _this18._totalFormat = function (d) {
+        return "".concat(_this18._translate("Total"), ": ").concat(formatAbbreviate(d, _this18._locale));
       };
 
-      _this17._totalPadding = defaultPadding;
-      _this17._zoom = false;
-      _this17._zoomBehavior = zoom();
-      _this17._zoomBrush = brush();
-      _this17._zoomBrushHandleSize = 1;
-      _this17._zoomBrushHandleStyle = {
+      _this18._totalPadding = defaultPadding;
+      _this18._zoom = false;
+      _this18._zoomBehavior = zoom();
+      _this18._zoomBrush = brush();
+      _this18._zoomBrushHandleSize = 1;
+      _this18._zoomBrushHandleStyle = {
         fill: "#444"
       };
-      _this17._zoomBrushSelectionStyle = {
+      _this18._zoomBrushSelectionStyle = {
         "fill": "#777",
         "stroke-width": 0
       };
-      _this17._zoomControlStyle = {
+      _this18._zoomControlStyle = {
         "background": "rgba(255, 255, 255, 0.75)",
         "border": "1px solid rgba(0, 0, 0, 0.75)",
         "color": "rgba(0, 0, 0, 0.75)",
@@ -44696,21 +44884,21 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
         "text-align": "center",
         "width": "20px"
       };
-      _this17._zoomControlStyleActive = {
+      _this18._zoomControlStyleActive = {
         background: "rgba(0, 0, 0, 0.75)",
         color: "rgba(255, 255, 255, 0.75)",
         opacity: 1
       };
-      _this17._zoomControlStyleHover = {
+      _this18._zoomControlStyleHover = {
         cursor: "pointer",
         opacity: 1
       };
-      _this17._zoomFactor = 2;
-      _this17._zoomMax = 16;
-      _this17._zoomPadding = 20;
-      _this17._zoomPan = true;
-      _this17._zoomScroll = true;
-      return _this17;
+      _this18._zoomFactor = 2;
+      _this18._zoomMax = 16;
+      _this18._zoomPadding = 20;
+      _this18._zoomPan = true;
+      _this18._zoomScroll = true;
+      return _this18;
     }
     /**
      @memberof Viz
@@ -44722,7 +44910,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
     _createClass2(Viz, [{
       key: "_preDraw",
       value: function _preDraw() {
-        var _this18 = this;
+        var _this19 = this;
 
         var that = this; // based on the groupBy, determine the draw depth and current depth id
 
@@ -44730,7 +44918,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
         this._id = this._groupBy[this._drawDepth];
 
         this._ids = function (d, i) {
-          return _this18._groupBy.map(function (g) {
+          return _this19._groupBy.map(function (g) {
             return !d || d.__d3plus__ && !d.data ? undefined : g(d.__d3plus__ ? d.data : d, d.__d3plus__ ? d.i : i);
           }).filter(function (g) {
             return g !== undefined && g !== null;
@@ -44738,7 +44926,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
         };
 
         this._drawLabel = function (d, i) {
-          var depth = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : _this18._drawDepth;
+          var depth = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : _this19._drawDepth;
           if (!d) return "";
 
           while (d.__d3plus__ && d.data) {
@@ -44747,10 +44935,10 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
           }
 
           if (d._isAggregation) {
-            return "".concat(_this18._thresholdName(d, i), " < ").concat(formatAbbreviate(d._threshold * 100, _this18._locale), "%");
+            return "".concat(_this19._thresholdName(d, i), " < ").concat(formatAbbreviate(d._threshold * 100, _this19._locale), "%");
           }
 
-          if (_this18._label) return "".concat(_this18._label(d, i));
+          if (_this19._label) return "".concat(_this19._label(d, i));
 
           var l = that._ids(d, i).slice(0, depth + 1);
 
@@ -44775,7 +44963,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
             var latestTime = +max(dates);
 
             this._timeFilter = function (d, i) {
-              return +date$2(_this18._time(d, i)) === latestTime;
+              return +date$2(_this19._time(d, i)) === latestTime;
             };
           }
         }
@@ -44787,34 +44975,34 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
         if (this._data.length) {
           flatData = this._timeFilter ? this._data.filter(this._timeFilter) : this._data;
           if (this._filter) flatData = flatData.filter(this._filter);
-          var dataNest = nest();
+          var nestKeys = [];
 
           for (var _i3 = 0; _i3 <= this._drawDepth; _i3++) {
-            dataNest.key(this._groupBy[_i3]);
+            nestKeys.push(this._groupBy[_i3]);
           }
 
-          if (this._discrete && "_".concat(this._discrete) in this) dataNest.key(this["_".concat(this._discrete)]);
-          if (this._discrete && "_".concat(this._discrete, "2") in this) dataNest.key(this["_".concat(this._discrete, "2")]);
-          var tree = dataNest.rollup(function (leaves) {
-            var index = _this18._data.indexOf(leaves[0]);
+          if (this._discrete && "_".concat(this._discrete) in this) nestKeys.push(this["_".concat(this._discrete)]);
+          if (this._discrete && "_".concat(this._discrete, "2") in this) nestKeys.push(this["_".concat(this._discrete, "2")]);
+          var tree = rollup.apply(void 0, [flatData, function (leaves) {
+            var index = _this19._data.indexOf(leaves[0]);
 
-            var shape = _this18._shape(leaves[0], index);
+            var shape = _this19._shape(leaves[0], index);
 
-            var id = _this18._id(leaves[0], index);
+            var id = _this19._id(leaves[0], index);
 
-            var d = objectMerge(leaves, _this18._aggs);
+            var d = objectMerge(leaves, _this19._aggs);
 
-            if (!_this18._hidden.includes(id) && (!_this18._solo.length || _this18._solo.includes(id))) {
-              if (!_this18._discrete && shape === "Line") _this18._filteredData = _this18._filteredData.concat(leaves);else _this18._filteredData.push(d);
+            if (!_this19._hidden.includes(id) && (!_this19._solo.length || _this19._solo.includes(id))) {
+              if (!_this19._discrete && shape === "Line") _this19._filteredData = _this19._filteredData.concat(leaves);else _this19._filteredData.push(d);
             }
 
-            _this18._legendData.push(d);
-          }).entries(flatData);
+            _this19._legendData.push(d);
+          }].concat(nestKeys));
           this._filteredData = this._thresholdFunction(this._filteredData, tree);
         } // overrides the hoverOpacity of shapes if data is larger than cutoff
 
 
-        var uniqueIds = nest().key(this._id).entries(this._filteredData).length;
+        var uniqueIds = group(this._filteredData, this._id).size;
 
         if (uniqueIds > this._dataCutoff) {
           if (this._userHover === undefined) this._userHover = this._shapeConfig.hoverOpacity || 0.5;
@@ -44918,7 +45106,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
     }, {
       key: "render",
       value: function render(callback) {
-        var _this19 = this;
+        var _this20 = this;
 
         // Resets margins and padding
         this._margin = {
@@ -45009,40 +45197,40 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
 
         if (this._detectVisible && this._select.style("visibility") === "hidden") {
           this._visiblePoll = setInterval(function () {
-            if (_this19._select.style("visibility") !== "hidden") {
-              _this19._visiblePoll = clearInterval(_this19._visiblePoll);
+            if (_this20._select.style("visibility") !== "hidden") {
+              _this20._visiblePoll = clearInterval(_this20._visiblePoll);
 
-              _this19.render(callback);
+              _this20.render(callback);
             }
           }, this._detectVisibleInterval);
         } else if (this._detectVisible && this._select.style("display") === "none") {
           this._visiblePoll = setInterval(function () {
-            if (_this19._select.style("display") !== "none") {
-              _this19._visiblePoll = clearInterval(_this19._visiblePoll);
+            if (_this20._select.style("display") !== "none") {
+              _this20._visiblePoll = clearInterval(_this20._visiblePoll);
 
-              _this19.render(callback);
+              _this20.render(callback);
             }
           }, this._detectVisibleInterval);
         } else if (this._detectVisible && !inViewport(this._select.node())) {
           _select(this._scrollContainer).on("scroll.".concat(this._uuid), function () {
-            if (!_this19._scrollPoll) {
-              _this19._scrollPoll = setTimeout(function () {
-                if (inViewport(_this19._select.node())) {
-                  _select(_this19._scrollContainer).on("scroll.".concat(_this19._uuid), null);
+            if (!_this20._scrollPoll) {
+              _this20._scrollPoll = setTimeout(function () {
+                if (inViewport(_this20._select.node())) {
+                  _select(_this20._scrollContainer).on("scroll.".concat(_this20._uuid), null);
 
-                  _this19.render(callback);
+                  _this20.render(callback);
                 }
 
-                _this19._scrollPoll = clearTimeout(_this19._scrollPoll);
-              }, _this19._detectVisibleInterval);
+                _this20._scrollPoll = clearTimeout(_this20._scrollPoll);
+              }, _this20._detectVisibleInterval);
             }
           });
         } else {
           var q = queue();
 
           this._queue.forEach(function (p) {
-            var cache = _this19._cache ? _this19._lrucache.get("".concat(p[3], "_").concat(p[1])) : undefined;
-            if (!cache) q.defer.apply(q, _toConsumableArray2(p));else _this19["_".concat(p[3])] = p[2] ? p[2](cache) : cache;
+            var cache = _this20._cache ? _this20._lrucache.get("".concat(p[3], "_").concat(p[1])) : undefined;
+            if (!cache) q.defer.apply(q, _toConsumableArray2(p));else _this20["_".concat(p[3])] = p[2] ? p[2](cache) : cache;
           });
 
           this._queue = [];
@@ -45057,19 +45245,19 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
           }
 
           q.awaitAll(function () {
-            var columns = _this19._data instanceof Array && _this19._data.length > 0 ? Object.keys(_this19._data[0]) : [];
+            var columns = _this20._data instanceof Array && _this20._data.length > 0 ? Object.keys(_this20._data[0]) : [];
 
-            var svgTable = _this19._select.selectAll("g.data-table").data(!_this19._ariaHidden && _this19._data instanceof Array && _this19._data.length ? [0] : []);
+            var svgTable = _this20._select.selectAll("g.data-table").data(!_this20._ariaHidden && _this20._data instanceof Array && _this20._data.length ? [0] : []);
 
             var svgTableEnter = svgTable.enter().append("g").attr("class", "data-table").attr("role", "table");
             svgTable.exit().remove();
-            var rows = svgTable.merge(svgTableEnter).selectAll("text").data(_this19._data instanceof Array ? range(0, _this19._data.length + 1) : []);
+            var rows = svgTable.merge(svgTableEnter).selectAll("text").data(_this20._data instanceof Array ? range(0, _this20._data.length + 1) : []);
             rows.exit().remove();
             var cells = rows.merge(rows.enter().append("text").attr("role", "row")).selectAll("tspan").data(function (d, i) {
               return columns.map(function (c) {
                 return {
                   role: i ? "cell" : "columnheader",
-                  text: i ? _this19._data[i - 1][c] : c
+                  text: i ? _this20._data[i - 1][c] : c
                 };
               });
             });
@@ -45080,27 +45268,27 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
               return d.text;
             });
 
-            _this19._preDraw();
+            _this20._preDraw();
 
-            _this19._draw(callback);
+            _this20._draw(callback);
 
-            zoomControls.bind(_this19)();
-            drawAttribution.bind(_this19)();
-            if (_this19._messageClass._isVisible && (!_this19._noDataMessage || _this19._filteredData.length)) _this19._messageClass.hide();
+            zoomControls.bind(_this20)();
+            drawAttribution.bind(_this20)();
+            if (_this20._messageClass._isVisible && (!_this20._noDataMessage || _this20._filteredData.length)) _this20._messageClass.hide();
 
-            if (_this19._detectResize && (_this19._autoWidth || _this19._autoHeight)) {
-              _select(_this19._scrollContainer).on("resize.".concat(_this19._uuid), function () {
-                _this19._resizePoll = clearTimeout(_this19._resizePoll);
-                _this19._resizePoll = setTimeout(function () {
-                  _this19._resizePoll = clearTimeout(_this19._resizePoll);
-                  setSVGSize.bind(_this19)();
+            if (_this20._detectResize && (_this20._autoWidth || _this20._autoHeight)) {
+              _select(_this20._scrollContainer).on("resize.".concat(_this20._uuid), function () {
+                _this20._resizePoll = clearTimeout(_this20._resizePoll);
+                _this20._resizePoll = setTimeout(function () {
+                  _this20._resizePoll = clearTimeout(_this20._resizePoll);
+                  setSVGSize.bind(_this20)();
 
-                  _this19.render(callback);
-                }, _this19._detectResizeDelay);
+                  _this20.render(callback);
+                }, _this20._detectResizeDelay);
               });
             }
 
-            if (callback) setTimeout(callback, _this19._duration + 100);
+            if (callback) setTimeout(callback, _this20._duration + 100);
           });
         } // Attaches touchstart event listener to the BODY to hide the tooltip when the user touches any element without data
 
@@ -45457,14 +45645,14 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
     }, {
       key: "groupBy",
       value: function groupBy(_) {
-        var _this20 = this;
+        var _this21 = this;
 
         if (!arguments.length) return this._groupBy;
         if (!(_ instanceof Array)) _ = [_];
         return this._groupBy = _.map(function (k) {
           if (typeof k === "function") return k;else {
-            if (!_this20._aggs[k]) {
-              _this20._aggs[k] = function (a, c) {
+            if (!_this21._aggs[k]) {
+              _this21._aggs[k] = function (a, c) {
                 var v = unique(a.map(c));
                 return v.length === 1 ? v[0] : v;
               };
@@ -45520,7 +45708,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
     }, {
       key: "hover",
       value: function hover(_) {
-        var _this21 = this;
+        var _this22 = this;
 
         var hoverFunction = this._hover = _;
 
@@ -45541,7 +45729,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
               return activeIds.indexOf(id) === i;
             });
             if (activeIds.length) hoverFunction = function hoverFunction(d, i) {
-              return activeIds.includes(JSON.stringify(_this21._ids(d, i)));
+              return activeIds.includes(JSON.stringify(_this22._ids(d, i)));
             };
           }
 

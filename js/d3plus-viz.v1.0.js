@@ -41,7 +41,7 @@ function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _d
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
 /*
-  d3plus-viz v1.0.0
+  d3plus-viz v1.0.1
   Abstract ES6 class that drives d3plus visualizations.
   Copyright (c) 2021 D3plus - https://d3plus.org
   @license MIT
@@ -7909,8 +7909,8 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
 });
 
 (function (global, factory) {
-  (typeof exports === "undefined" ? "undefined" : _typeof(exports)) === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-request'), require('d3-array'), require('d3-brush'), require('d3-color'), require('d3-collection'), require('d3-queue'), require('d3-selection'), require('d3-transition'), require('d3-zoom'), require('lrucache'), require('d3plus-axis'), require('d3plus-color'), require('d3plus-common'), require('d3plus-format'), require('d3plus-legend'), require('d3plus-text'), require('d3plus-timeline'), require('d3plus-tooltip')) : typeof define === 'function' && define.amd ? define('d3plus-viz', ['exports', 'd3-request', 'd3-array', 'd3-brush', 'd3-color', 'd3-collection', 'd3-queue', 'd3-selection', 'd3-transition', 'd3-zoom', 'lrucache', 'd3plus-axis', 'd3plus-color', 'd3plus-common', 'd3plus-format', 'd3plus-legend', 'd3plus-text', 'd3plus-timeline', 'd3plus-tooltip'], factory) : (global = typeof globalThis !== 'undefined' ? globalThis : global || self, factory(global.d3plus = {}, global.d3Request, global.d3Array, global.d3Brush, global.d3Color, global.d3Collection, global.d3Queue, global.d3Selection, global.d3Transition, global.d3Zoom, global.lrucache, global.d3plusAxis, global.d3plusColor, global.d3plusCommon, global.d3plusFormat, global.d3plusLegend, global.d3plusText, global.d3plusTimeline, global.d3plusTooltip));
-})(this, function (exports, d3Request, d3Array, d3Brush, d3Color, d3Collection, d3Queue, d3Selection, d3Transition, d3Zoom, lrucache, d3plusAxis, d3plusColor, d3plusCommon, d3plusFormat, d3plusLegend, d3plusText, d3plusTimeline, d3plusTooltip) {
+  (typeof exports === "undefined" ? "undefined" : _typeof(exports)) === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-request'), require('d3-array'), require('d3-brush'), require('d3-color'), require('d3-queue'), require('d3-selection'), require('d3-transition'), require('d3-zoom'), require('lrucache'), require('d3plus-axis'), require('d3plus-color'), require('d3plus-common'), require('d3plus-format'), require('d3plus-legend'), require('d3plus-text'), require('d3plus-timeline'), require('d3plus-tooltip')) : typeof define === 'function' && define.amd ? define('d3plus-viz', ['exports', 'd3-request', 'd3-array', 'd3-brush', 'd3-color', 'd3-queue', 'd3-selection', 'd3-transition', 'd3-zoom', 'lrucache', 'd3plus-axis', 'd3plus-color', 'd3plus-common', 'd3plus-format', 'd3plus-legend', 'd3plus-text', 'd3plus-timeline', 'd3plus-tooltip'], factory) : (global = typeof globalThis !== 'undefined' ? globalThis : global || self, factory(global.d3plus = {}, global.d3Request, global.d3Array, global.d3Brush, global.d3Color, global.d3Queue, global.d3Selection, global.d3Transition, global.d3Zoom, global.lrucache, global.d3plusAxis, global.d3plusColor, global.d3plusCommon, global.d3plusFormat, global.d3plusLegend, global.d3plusText, global.d3plusTimeline, global.d3plusTooltip));
+})(this, function (exports, d3Request, d3Array, d3Brush, d3Color, d3Queue, d3Selection, d3Transition, d3Zoom, lrucache, d3plusAxis, d3plusColor, d3plusCommon, d3plusFormat, d3plusLegend, d3plusText, d3plusTimeline, d3plusTooltip) {
   'use strict';
 
   function _interopDefaultLegacy(e) {
@@ -8368,11 +8368,12 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       return "".concat(color(d, i), "_").concat(opacity(d, i));
     };
 
-    d3Collection.nest().key(fill).rollup(function (leaves) {
-      return legendData.push(d3plusCommon.merge(leaves, _this3._aggs));
-    }).entries(this._colorScale ? data.filter(function (d, i) {
+    var rollupData = this._colorScale ? data.filter(function (d, i) {
       return _this3._colorScale(d, i) === undefined;
-    }) : data);
+    }) : data;
+    d3Array.rollup(rollupData, function (leaves) {
+      return legendData.push(d3plusCommon.merge(leaves, _this3._aggs));
+    }, fill);
     legendData.sort(this._legendSort);
     var labels = legendData.map(function (d, i) {
       return _this3._ids(d, i).slice(0, _this3._drawDepth + 1);
@@ -9488,15 +9489,15 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
         if (this._data.length) {
           flatData = this._timeFilter ? this._data.filter(this._timeFilter) : this._data;
           if (this._filter) flatData = flatData.filter(this._filter);
-          var dataNest = d3Collection.nest();
+          var nestKeys = [];
 
           for (var _i2 = 0; _i2 <= this._drawDepth; _i2++) {
-            dataNest.key(this._groupBy[_i2]);
+            nestKeys.push(this._groupBy[_i2]);
           }
 
-          if (this._discrete && "_".concat(this._discrete) in this) dataNest.key(this["_".concat(this._discrete)]);
-          if (this._discrete && "_".concat(this._discrete, "2") in this) dataNest.key(this["_".concat(this._discrete, "2")]);
-          var tree = dataNest.rollup(function (leaves) {
+          if (this._discrete && "_".concat(this._discrete) in this) nestKeys.push(this["_".concat(this._discrete)]);
+          if (this._discrete && "_".concat(this._discrete, "2") in this) nestKeys.push(this["_".concat(this._discrete, "2")]);
+          var tree = d3Array.rollup.apply(d3Array, [flatData, function (leaves) {
             var index = _this12._data.indexOf(leaves[0]);
 
             var shape = _this12._shape(leaves[0], index);
@@ -9510,12 +9511,12 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
             }
 
             _this12._legendData.push(d);
-          }).entries(flatData);
+          }].concat(nestKeys));
           this._filteredData = this._thresholdFunction(this._filteredData, tree);
         } // overrides the hoverOpacity of shapes if data is larger than cutoff
 
 
-        var uniqueIds = d3Collection.nest().key(this._id).entries(this._filteredData).length;
+        var uniqueIds = d3Array.group(this._filteredData, this._id).size;
 
         if (uniqueIds > this._dataCutoff) {
           if (this._userHover === undefined) this._userHover = this._shapeConfig.hoverOpacity || 0.5;
