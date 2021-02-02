@@ -3,7 +3,7 @@ name: colorContrast
 kind: function
 ---
 
-  <a name="colorContrast"></a>
+<a name="colorContrast"></a>
 
 ### d3plus.**colorContrast**(c, [u]) [<>](https://github.com/d3plus/d3plus-color/blob/master/src/contrast.js#L4)
 

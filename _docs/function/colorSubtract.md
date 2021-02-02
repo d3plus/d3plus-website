@@ -3,7 +3,7 @@ name: colorSubtract
 kind: function
 ---
 
-  <a name="colorSubtract"></a>
+<a name="colorSubtract"></a>
 
 ### d3plus.**colorSubtract**(c1, c2, [o1], [o2]) [<>](https://github.com/d3plus/d3plus-color/blob/master/src/subtract.js#L3)
 

@@ -3,7 +3,7 @@ name: colorLegible
 kind: function
 ---
 
-  <a name="colorLegible"></a>
+<a name="colorLegible"></a>
 
 ### d3plus.**colorLegible**(c) [<>](https://github.com/d3plus/d3plus-color/blob/master/src/legible.js#L3)
 

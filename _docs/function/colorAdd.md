@@ -3,7 +3,7 @@ name: colorAdd
 kind: function
 ---
 
-  <a name="colorAdd"></a>
+<a name="colorAdd"></a>
 
 ### d3plus.**colorAdd**(c1, c2, [o1], [o2]) [<>](https://github.com/d3plus/d3plus-color/blob/master/src/add.js#L3)
 

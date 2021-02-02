@@ -3,7 +3,7 @@ name: colorLighter
 kind: function
 ---
 
-  <a name="colorLighter"></a>
+<a name="colorLighter"></a>
 
 ### d3plus.**colorLighter**(c, [i]) [<>](https://github.com/d3plus/d3plus-color/blob/master/src/lighter.js#L3)
 
