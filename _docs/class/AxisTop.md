@@ -3,7 +3,7 @@ name: AxisTop
 kind: class
 ---
 
-  <a name="AxisTop"></a>
+<a name="AxisTop"></a>
 
 ### **AxisTop** [<>](https://github.com/d3plus/d3plus-axis/blob/master/src/AxisTop.js#L3)
 

@@ -3,7 +3,7 @@ name: AxisLeft
 kind: class
 ---
 
-  <a name="AxisLeft"></a>
+<a name="AxisLeft"></a>
 
 ### **AxisLeft** [<>](https://github.com/d3plus/d3plus-axis/blob/master/src/AxisLeft.js#L3)
 

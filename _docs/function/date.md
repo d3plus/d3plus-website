@@ -3,7 +3,7 @@ name: date
 kind: function
 ---
 
-  <a name="date"></a>
+<a name="date"></a>
 
 ### d3plus.**date**(*date*) [<>](https://github.com/d3plus/d3plus-axis/blob/master/src/date.js#L1)
 
