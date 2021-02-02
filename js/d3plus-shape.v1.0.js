@@ -37,7 +37,7 @@ function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _d
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
 /*
-  d3plus-shape v1.0.0
+  d3plus-shape v1.0.1
   Fancy SVG shapes for visualizations
   Copyright (c) 2021 D3plus - https://d3plus.org
   @license MIT
@@ -8369,7 +8369,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
               d = d.values[i];
             }
 
-            _this3._on[events[e]].bind(_this3)(d, i);
+            _this3._on[events[e]].bind(_this3)(d, i, undefined, event);
           });
         };
 
