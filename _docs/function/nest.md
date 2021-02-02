@@ -3,7 +3,7 @@ name: nest
 kind: function
 ---
 
-  <a name="nest"></a>
+<a name="nest"></a>
 
 ### d3plus.**nest**(*data*, *keys*) [<>](https://github.com/d3plus/d3plus-hierarchy/blob/master/src/nest.js#L3)
 

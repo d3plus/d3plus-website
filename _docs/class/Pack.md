@@ -3,7 +3,7 @@ name: Pack
 kind: class
 ---
 
-  <a name="Pack"></a>
+<a name="Pack"></a>
 
 ### **Pack** [<>](https://github.com/d3plus/d3plus-hierarchy/blob/master/src/Pack.js#L25)
 
@@ -28,7 +28,7 @@ Uses the [d3 pack layout](https://github.com/d3/d3-hierarchy#pack) to creates Ci
 
 
 
-<a name="Pack.hover" href="#Pack.hover">#</a> Pack.**hover**([*value*]) [<>](https://github.com/d3plus/d3plus-hierarchy/blob/master/src/Pack.js#L137)
+<a name="Pack.hover" href="#Pack.hover">#</a> Pack.**hover**([*value*]) [<>](https://github.com/d3plus/d3plus-hierarchy/blob/master/src/Pack.js#L144)
 
 If *value* is specified, sets the hover method to the specified function and returns the current class instance.
 
@@ -36,7 +36,7 @@ If *value* is specified, sets the hover method to the specified function and ret
 This is a static method of [<code>Pack</code>](#Pack), and is chainable with other methods of this Class.
 
 
-<a name="Pack.layoutPadding" href="#Pack.layoutPadding">#</a> Pack.**layoutPadding**([*value*]) [<>](https://github.com/d3plus/d3plus-hierarchy/blob/master/src/Pack.js#L150)
+<a name="Pack.layoutPadding" href="#Pack.layoutPadding">#</a> Pack.**layoutPadding**([*value*]) [<>](https://github.com/d3plus/d3plus-hierarchy/blob/master/src/Pack.js#L157)
 
 If *value* is specified, sets the opacity accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current pack opacity accessor.
 
@@ -44,7 +44,7 @@ If *value* is specified, sets the opacity accessor to the specified function or 
 This is a static method of [<code>Pack</code>](#Pack).
 
 
-<a name="Pack.packOpacity" href="#Pack.packOpacity">#</a> Pack.**packOpacity**([*value*]) [<>](https://github.com/d3plus/d3plus-hierarchy/blob/master/src/Pack.js#L159)
+<a name="Pack.packOpacity" href="#Pack.packOpacity">#</a> Pack.**packOpacity**([*value*]) [<>](https://github.com/d3plus/d3plus-hierarchy/blob/master/src/Pack.js#L166)
 
 If *value* is specified, sets the padding accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current pack opacity accessor.
 
@@ -52,7 +52,7 @@ If *value* is specified, sets the padding accessor to the specified function or 
 This is a static method of [<code>Pack</code>](#Pack).
 
 
-<a name="Pack.sort" href="#Pack.sort">#</a> Pack.**sort**([*comparator*]) [<>](https://github.com/d3plus/d3plus-hierarchy/blob/master/src/Pack.js#L172)
+<a name="Pack.sort" href="#Pack.sort">#</a> Pack.**sort**([*comparator*]) [<>](https://github.com/d3plus/d3plus-hierarchy/blob/master/src/Pack.js#L179)
 
 If *comparator* is specified, sets the sort order for the pack using the specified comparator function. If *comparator* is not specified, returns the current group sort order, which defaults to descending order by the associated input data's numeric value attribute.
 
@@ -67,7 +67,7 @@ function comparator(a, b) {
 ```
 
 
-<a name="Pack.sum" href="#Pack.sum">#</a> Pack.**sum**([*value*]) [<>](https://github.com/d3plus/d3plus-hierarchy/blob/master/src/Pack.js#L186)
+<a name="Pack.sum" href="#Pack.sum">#</a> Pack.**sum**([*value*]) [<>](https://github.com/d3plus/d3plus-hierarchy/blob/master/src/Pack.js#L193)
 
 If *value* is specified, sets the sum accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current sum accessor.
 

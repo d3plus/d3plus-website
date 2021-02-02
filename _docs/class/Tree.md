@@ -3,7 +3,7 @@ name: Tree
 kind: class
 ---
 
-  <a name="Tree"></a>
+<a name="Tree"></a>
 
 ### **Tree** [<>](https://github.com/d3plus/d3plus-hierarchy/blob/master/src/Tree.js#L11)
 

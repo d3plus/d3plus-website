@@ -3,7 +3,7 @@ name: Donut
 kind: class
 ---
 
-  <a name="Donut"></a>
+<a name="Donut"></a>
 
 ### **Donut** [<>](https://github.com/d3plus/d3plus-hierarchy/blob/master/src/Donut.js#L4)
 
