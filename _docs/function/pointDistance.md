@@ -3,7 +3,7 @@ name: pointDistance
 kind: function
 ---
 
-  <a name="pointDistance"></a>
+<a name="pointDistance"></a>
 
 ### d3plus.**pointDistance**(p1, p2) [<>](https://github.com/d3plus/d3plus-shape/blob/master/src/geom/pointDistance.js#L3)
 

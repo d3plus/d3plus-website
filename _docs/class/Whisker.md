@@ -3,7 +3,7 @@ name: Whisker
 kind: class
 ---
 
-  <a name="Whisker"></a>
+<a name="Whisker"></a>
 
 ### **Whisker** [<>](https://github.com/d3plus/d3plus-shape/blob/master/src/Shape/Whisker.js#L12)
 

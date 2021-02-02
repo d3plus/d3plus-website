@@ -3,7 +3,7 @@ name: largestRect
 kind: function
 ---
 
-  <a name="largestRect"></a>
+<a name="largestRect"></a>
 
 ### d3plus.**largestRect**(poly, [options]) [<>](https://github.com/d3plus/d3plus-shape/blob/master/src/geom/largestRect.js#L28)
 

@@ -3,7 +3,7 @@ name: pointDistanceSquared
 kind: function
 ---
 
-  <a name="pointDistanceSquared"></a>
+<a name="pointDistanceSquared"></a>
 
 ### d3plus.**pointDistanceSquared**(p1, p2) [<>](https://github.com/d3plus/d3plus-shape/blob/master/src/geom/pointDistanceSquared.js#L1)
 

@@ -3,7 +3,7 @@ name: path2polygon
 kind: function
 ---
 
-  <a name="path2polygon"></a>
+<a name="path2polygon"></a>
 
 ### d3plus.**path2polygon**(path, [segmentLength]) [<>](https://github.com/d3plus/d3plus-shape/blob/master/src/geom/path2polygon.js#L6)
 

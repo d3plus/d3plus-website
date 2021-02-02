@@ -3,7 +3,7 @@ name: polygonInside
 kind: function
 ---
 
-  <a name="polygonInside"></a>
+<a name="polygonInside"></a>
 
 ### d3plus.**polygonInside**(polyA, polyB) [<>](https://github.com/d3plus/d3plus-shape/blob/master/src/geom/polygonInside.js#L5)
 

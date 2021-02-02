@@ -3,7 +3,7 @@ name: Box
 kind: class
 ---
 
-  <a name="Box"></a>
+<a name="Box"></a>
 
 ### **Box** [<>](https://github.com/d3plus/d3plus-shape/blob/master/src/Shape/Box.js#L13)
 

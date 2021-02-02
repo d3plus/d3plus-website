@@ -3,7 +3,7 @@ name: Path
 kind: class
 ---
 
-  <a name="Path"></a>
+<a name="Path"></a>
 
 ### **Path** [<>](https://github.com/d3plus/d3plus-shape/blob/master/src/Shape/Path.js#L7)
 

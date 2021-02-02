@@ -3,7 +3,7 @@ name: Circle
 kind: class
 ---
 
-  <a name="Circle"></a>
+<a name="Circle"></a>
 
 ### **Circle** [<>](https://github.com/d3plus/d3plus-shape/blob/master/src/Shape/Circle.js#L5)
 

@@ -3,7 +3,7 @@ name: Area
 kind: class
 ---
 
-  <a name="Area"></a>
+<a name="Area"></a>
 
 ### **Area** [<>](https://github.com/d3plus/d3plus-shape/blob/master/src/Shape/Area.js#L12)
 

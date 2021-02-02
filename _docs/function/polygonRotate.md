@@ -3,7 +3,7 @@ name: polygonRotate
 kind: function
 ---
 
-  <a name="polygonRotate"></a>
+<a name="polygonRotate"></a>
 
 ### d3plus.**polygonRotate**(poly, alpha, [origin]) [<>](https://github.com/d3plus/d3plus-shape/blob/master/src/geom/polygonRotate.js#L3)
 

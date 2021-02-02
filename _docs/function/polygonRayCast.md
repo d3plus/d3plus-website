@@ -3,7 +3,7 @@ name: polygonRayCast
 kind: function
 ---
 
-  <a name="polygonRayCast"></a>
+<a name="polygonRayCast"></a>
 
 ### d3plus.**polygonRayCast**(poly, origin, [alpha]) [<>](https://github.com/d3plus/d3plus-shape/blob/master/src/geom/polygonRayCast.js#L5)
 

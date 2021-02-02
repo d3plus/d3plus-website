@@ -3,7 +3,7 @@ name: pointRotate
 kind: function
 ---
 
-  <a name="pointRotate"></a>
+<a name="pointRotate"></a>
 
 ### d3plus.**pointRotate**(p, alpha, [origin]) [<>](https://github.com/d3plus/d3plus-shape/blob/master/src/geom/pointRotate.js#L1)
 

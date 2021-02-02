@@ -3,7 +3,7 @@ name: segmentsIntersect
 kind: function
 ---
 
-  <a name="segmentsIntersect"></a>
+<a name="segmentsIntersect"></a>
 
 ### d3plus.**segmentsIntersect**(p1, q1, p2, q2) [<>](https://github.com/d3plus/d3plus-shape/blob/master/src/geom/segmentsIntersect.js#L4)
 

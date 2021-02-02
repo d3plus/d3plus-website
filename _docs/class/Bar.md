@@ -3,7 +3,7 @@ name: Bar
 kind: class
 ---
 
-  <a name="Bar"></a>
+<a name="Bar"></a>
 
 ### **Bar** [<>](https://github.com/d3plus/d3plus-shape/blob/master/src/Shape/Bar.js#L5)
 

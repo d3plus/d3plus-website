@@ -3,7 +3,7 @@ name: segmentBoxContains
 kind: function
 ---
 
-  <a name="segmentBoxContains"></a>
+<a name="segmentBoxContains"></a>
 
 ### d3plus.**segmentBoxContains**(s1, s2, p) [<>](https://github.com/d3plus/d3plus-shape/blob/master/src/geom/segmentBoxContains.js#L1)
 
