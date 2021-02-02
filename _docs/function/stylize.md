@@ -3,7 +3,7 @@ name: stylize
 kind: function
 ---
 
-  <a name="stylize"></a>
+<a name="stylize"></a>
 
 ### d3plus.**stylize**(elem, styles) [<>](https://github.com/d3plus/d3plus-common/blob/master/src/stylize.js#L1)
 

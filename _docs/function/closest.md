@@ -3,7 +3,7 @@ name: closest
 kind: function
 ---
 
-  <a name="closest"></a>
+<a name="closest"></a>
 
 ### d3plus.**closest**(n, arr) [<>](https://github.com/d3plus/d3plus-common/blob/master/src/closest.js#L1)
 

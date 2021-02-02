@@ -3,7 +3,7 @@ name: merge
 kind: function
 ---
 
-  <a name="merge"></a>
+<a name="merge"></a>
 
 ### d3plus.**merge**(objects, aggs) [<>](https://github.com/d3plus/d3plus-common/blob/master/src/merge.js#L5)
 

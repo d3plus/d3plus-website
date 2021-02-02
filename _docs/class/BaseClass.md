@@ -3,7 +3,7 @@ name: BaseClass
 kind: class
 ---
 
-  <a name="BaseClass"></a>
+<a name="BaseClass"></a>
 
 ### **BaseClass** [<>](https://github.com/d3plus/d3plus-common/blob/master/src/BaseClass.js#L46)
 

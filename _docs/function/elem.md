@@ -3,7 +3,7 @@ name: elem
 kind: function
 ---
 
-  <a name="elem"></a>
+<a name="elem"></a>
 
 ### d3plus.**elem**(selector, params) [<>](https://github.com/d3plus/d3plus-common/blob/master/src/elem.js#L6)
 

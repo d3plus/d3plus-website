@@ -3,7 +3,7 @@ name: parseSides
 kind: function
 ---
 
-  <a name="parseSides"></a>
+<a name="parseSides"></a>
 
 ### d3plus.**parseSides**(sides) [<>](https://github.com/d3plus/d3plus-common/blob/master/src/parseSides.js#L1)
 

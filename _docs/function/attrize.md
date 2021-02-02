@@ -3,7 +3,7 @@ name: attrize
 kind: function
 ---
 
-  <a name="attrize"></a>
+<a name="attrize"></a>
 
 ### d3plus.**attrize**(elem, attrs) [<>](https://github.com/d3plus/d3plus-common/blob/master/src/attrize.js#L1)
 
