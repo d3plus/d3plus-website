@@ -3,7 +3,7 @@ name: textWidth
 kind: function
 ---
 
-  <a name="textWidth"></a>
+<a name="textWidth"></a>
 
 ### d3plus.**textWidth**(text, [style]) [<>](https://github.com/d3plus/d3plus-text/blob/master/src/textWidth.js#L12)
 

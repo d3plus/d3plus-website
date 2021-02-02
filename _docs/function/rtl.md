@@ -3,7 +3,7 @@ name: rtl
 kind: function
 ---
 
-  <a name="rtl"></a>
+<a name="rtl"></a>
 
 ### d3plus.**rtl**() [<>](https://github.com/d3plus/d3plus-text/blob/master/src/rtl.js#L3)
 

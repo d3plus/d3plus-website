@@ -3,7 +3,7 @@ name: trimRight
 kind: function
 ---
 
-  <a name="trimRight"></a>
+<a name="trimRight"></a>
 
 ### d3plus.**trimRight**(str) [<>](https://github.com/d3plus/d3plus-text/blob/master/src/trim.js#L19)
 

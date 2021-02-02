@@ -3,7 +3,7 @@ name: textWrap
 kind: function
 ---
 
-  <a name="textWrap"></a>
+<a name="textWrap"></a>
 
 ### d3plus.**textWrap**() [<>](https://github.com/d3plus/d3plus-text/blob/master/src/textWrap.js#L6)
 

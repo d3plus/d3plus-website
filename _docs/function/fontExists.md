@@ -3,7 +3,7 @@ name: fontExists
 kind: function
 ---
 
-  <a name="fontExists"></a>
+<a name="fontExists"></a>
 
 ### d3plus.**fontExists**(font) [<>](https://github.com/d3plus/d3plus-text/blob/master/src/fontExists.js#L10)
 

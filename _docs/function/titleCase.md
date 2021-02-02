@@ -3,7 +3,7 @@ name: titleCase
 kind: function
 ---
 
-  <a name="titleCase"></a>
+<a name="titleCase"></a>
 
 ### d3plus.**titleCase**(str) [<>](https://github.com/d3plus/d3plus-text/blob/master/src/titleCase.js#L6)
 

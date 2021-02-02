@@ -3,7 +3,7 @@ name: htmlDecode
 kind: function
 ---
 
-  <a name="htmlDecode"></a>
+<a name="htmlDecode"></a>
 
 ### d3plus.**htmlDecode**(input) [<>](https://github.com/d3plus/d3plus-text/blob/master/src/textWidth.js#L5)
 
