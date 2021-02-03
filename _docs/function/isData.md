@@ -3,7 +3,7 @@ name: isData
 kind: function
 ---
 
-  <a name="isData"></a>
+<a name="isData"></a>
 
 ### d3plus.**isData**(data, [data], data) [<>](https://github.com/d3plus/d3plus-viz/blob/master/src/data/addToQueue.js#L4)
 

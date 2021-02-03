@@ -3,7 +3,7 @@ name: dataFold
 kind: function
 ---
 
-  <a name="dataFold"></a>
+<a name="dataFold"></a>
 
 ### d3plus.**dataFold**(json, [data], [headers]) [<>](https://github.com/d3plus/d3plus-viz/blob/master/src/data/fold.js#L1)
 
