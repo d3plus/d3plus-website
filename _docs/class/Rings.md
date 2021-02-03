@@ -3,7 +3,7 @@ name: Rings
 kind: class
 ---
 
-  <a name="Rings"></a>
+<a name="Rings"></a>
 
 ### **Rings** [<>](https://github.com/d3plus/d3plus-network/blob/master/src/Rings.js#L15)
 

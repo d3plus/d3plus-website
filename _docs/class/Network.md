@@ -3,7 +3,7 @@ name: Network
 kind: class
 ---
 
-  <a name="Network"></a>
+<a name="Network"></a>
 
 ### **Network** [<>](https://github.com/d3plus/d3plus-network/blob/master/src/Network.js#L17)
 

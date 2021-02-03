@@ -3,7 +3,7 @@ name: Sankey
 kind: class
 ---
 
-  <a name="Sankey"></a>
+<a name="Sankey"></a>
 
 ### **Sankey** [<>](https://github.com/d3plus/d3plus-network/blob/master/src/Sankey.js#L27)
 
