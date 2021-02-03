@@ -3,7 +3,7 @@ name: Priestley
 kind: class
 ---
 
-  <a name="Priestley"></a>
+<a name="Priestley"></a>
 
 ### **Priestley** [<>](https://github.com/d3plus/d3plus-priestley/blob/master/src/Priestley.js#L15)
 
