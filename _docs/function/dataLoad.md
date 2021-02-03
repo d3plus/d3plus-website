@@ -3,7 +3,7 @@ name: dataLoad
 kind: function
 ---
 
-<a name="dataLoad"></a>
+  <a name="dataLoad"></a>
 
 ### d3plus.**dataLoad**(path, [formatter], [key], [callback]) [<>](https://github.com/d3plus/d3plus-viz/blob/master/src/data/load.js#L6)
 

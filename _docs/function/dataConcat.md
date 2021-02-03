@@ -3,7 +3,7 @@ name: dataConcat
 kind: function
 ---
 
-<a name="dataConcat"></a>
+  <a name="dataConcat"></a>
 
 ### d3plus.**dataConcat**(arrayOfArray, [data]) [<>](https://github.com/d3plus/d3plus-viz/blob/master/src/data/concat.js#L1)
 
