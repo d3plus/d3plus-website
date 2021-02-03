@@ -59,7 +59,7 @@ function _arrayLikeToArray2(arr, len) { if (len == null || len > arr.length) len
 function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof2 = function _typeof2(obj) { return typeof obj; }; } else { _typeof2 = function _typeof2(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof2(obj); }
 
 /*
-  d3plus-viz v1.0.2
+  d3plus-viz v1.0.3
   Abstract ES6 class that drives d3plus visualizations.
   Copyright (c) 2021 D3plus - https://d3plus.org
   @license MIT
@@ -27023,7 +27023,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
       @param {Object} [params.enter = {}] A collection of key/value pairs that map to attributes to be given on enter.
       @param {Object} [params.exit = {}] A collection of key/value pairs that map to attributes to be given on exit.
       @param {D3Selection} [params.parent = d3.select("body")] The parent element for this new element to be appended to.
-      @param {D3Transition} [params.transition = d3.transition().duration(0)] The transition to use when animated the different life cycle stages.
+      @param {Number} [params.duration = 0] The duration for the d3 transition.
       @param {Object} [params.update = {}] A collection of key/value pairs that map to attributes to be given on update.
   */
 
@@ -27034,20 +27034,21 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
       condition: true,
       enter: {},
       exit: {},
+      duration: 0,
       parent: _select("body"),
-      transition: transition().duration(0),
       update: {}
     }, p);
     var className = /\.([^#]+)/g.exec(selector),
         id = /#([^\.]+)/g.exec(selector),
+        t = transition().duration(p.duration),
         tag = /^([^.^#]+)/g.exec(selector)[1];
     var elem = p.parent.selectAll(selector.includes(":") ? selector.split(":")[1] : selector).data(p.condition ? [null] : []);
     var enter = elem.enter().append(tag).call(attrize, p.enter);
     if (id) enter.attr("id", id[1]);
     if (className) enter.attr("class", className[1]);
-    elem.exit().transition(p.transition).call(attrize, p.exit).remove();
+    elem.exit().transition(t).call(attrize, p.exit).remove();
     var update = enter.merge(elem);
-    update.transition(p.transition).call(attrize, p.update);
+    update.transition(t).call(attrize, p.update);
     return update;
   }
   /**
@@ -43730,7 +43731,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
     var visible = this._history.length;
     var backGroup = elem("g.d3plus-viz-back", {
       parent: this._select,
-      transition: this._transition,
+      duration: this._duration,
       update: {
         transform: "translate(".concat(this._margin.left, ", ").concat(this._margin.top, ")")
       }
@@ -43776,7 +43777,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
       condition: showColorScale && !this._colorScaleConfig.select,
       enter: transform,
       parent: this._select,
-      transition: this._transition,
+      duration: this._duration,
       update: transform
     }).node();
 
@@ -43907,7 +43908,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
       condition: visible && !this._legendConfig.select,
       enter: transform,
       parent: this._select,
-      transition: this._transition,
+      duration: this._duration,
       update: transform
     }).node();
 
@@ -43977,7 +43978,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
       condition: timelinePossible,
       enter: transform,
       parent: this._select,
-      transition: this._transition,
+      duration: this._duration,
       update: transform
     }).node();
 
@@ -44026,7 +44027,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
     var group = elem("g.d3plus-viz-title", {
       enter: transform,
       parent: this._select,
-      transition: this._transition,
+      duration: this._duration,
       update: transform
     }).node();
 
@@ -44059,7 +44060,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
     var group = elem("g.d3plus-viz-total", {
       enter: transform,
       parent: this._select,
-      transition: this._transition,
+      duration: this._duration,
       update: transform
     }).node();
 
@@ -45036,7 +45037,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
 
         var colorScalePosition = this._colorScalePosition.bind(this)(this.config());
 
-        if (legendPosition === "left" || legendPosition === "right") drawLegend.bind(this)(this._filteredData);
+        if (legendPosition === "left" || legendPosition === "right") drawLegend.bind(this)(this._legendData);
         if (colorScalePosition === "left" || colorScalePosition === "right" || colorScalePosition === false) drawColorScale.bind(this)(this._filteredData);
         drawBack.bind(this)();
         drawTitle.bind(this)(this._filteredData);
@@ -45120,8 +45121,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
           left: 0,
           right: 0,
           top: 0
-        };
-        this._transition = transition().duration(this._duration); // Appends a fullscreen SVG to the BODY if a container has not been provided through .select().
+        }; // Appends a fullscreen SVG to the BODY if a container has not been provided through .select().
 
         if (this._select === void 0 || this._select.node().tagName.toLowerCase() !== "svg") {
           var _parent = this._select === void 0 ? _select("body").append("div") : this._select;
@@ -45170,7 +45170,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
           setSVGSize.bind(this)();
         }
 
-        this._select.attr("class", "d3plus-viz").attr("aria-hidden", this._ariaHidden).attr("aria-labelledby", "".concat(this._uuid, "-title ").concat(this._uuid, "-desc")).attr("role", "img").attr("xmlns", "http://www.w3.org/2000/svg").attr("xmlns:xlink", "http://www.w3.org/1999/xlink").transition(transition).style("width", this._width !== undefined ? "".concat(this._width, "px") : undefined).style("height", this._height !== undefined ? "".concat(this._height, "px") : undefined).attr("width", this._width !== undefined ? "".concat(this._width, "px") : undefined).attr("height", this._height !== undefined ? "".concat(this._height, "px") : undefined); // sets "position: relative" on the SVG parent if currently undefined
+        this._select.attr("class", "d3plus-viz").attr("aria-hidden", this._ariaHidden).attr("aria-labelledby", "".concat(this._uuid, "-title ").concat(this._uuid, "-desc")).attr("role", "img").attr("xmlns", "http://www.w3.org/2000/svg").attr("xmlns:xlink", "http://www.w3.org/1999/xlink").transition().duration(this._duration).style("width", this._width !== undefined ? "".concat(this._width, "px") : undefined).style("height", this._height !== undefined ? "".concat(this._height, "px") : undefined).attr("width", this._width !== undefined ? "".concat(this._width, "px") : undefined).attr("height", this._height !== undefined ? "".concat(this._height, "px") : undefined); // sets "position: relative" on the SVG parent if currently undefined
 
 
         var parent = _select(this._select.node().parentNode);
