@@ -45,7 +45,7 @@ function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len 
 function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof2 = function _typeof2(obj) { return typeof obj; }; } else { _typeof2 = function _typeof2(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof2(obj); }
 
 /*
-  d3plus-shape v1.0.1
+  d3plus-shape v1.0.2
   Fancy SVG shapes for visualizations
   Copyright (c) 2021 D3plus - https://d3plus.org
   @license MIT
@@ -26332,7 +26332,13 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
 
         hitAreas.order().call(this._applyTransform.bind(this));
         var isLine = this._name === "Line";
-        isLine && this._path.curve(paths["curve".concat(this._curve.charAt(0).toUpperCase()).concat(this._curve.slice(1))]).defined(this._defined).x(this._x).y(this._y);
+
+        if (isLine) {
+          var curve = this._curve.bind(this)(this.config());
+
+          isLine && this._path.curve(paths["curve".concat(curve.charAt(0).toUpperCase()).concat(curve.slice(1))]).defined(this._defined).x(this._x).y(this._y);
+        }
+
         var hitEnter = hitAreas.enter().append(isLine ? "path" : "rect").attr("class", function (d, i) {
           return "d3plus-HitArea d3plus-id-".concat(strip(_this9._nestWrapper(_this9._id)(d, i)));
         }).attr("fill", "black").attr("stroke", "black").attr("pointer-events", "painted").attr("opacity", 0).call(this._applyTransform.bind(this));
@@ -28115,7 +28121,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
       _classCallCheck2(this, Area);
 
       _this10 = _super3.call(this);
-      _this10._curve = "linear";
+      _this10._curve = constant$2("linear");
 
       _this10._defined = function () {
         return true;
@@ -28225,10 +28231,13 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
 
         _get(_getPrototypeOf2(Area.prototype), "render", this).call(this, callback);
 
-        var path = this._path = area().defined(this._defined).curve(paths["curve".concat(this._curve.charAt(0).toUpperCase()).concat(this._curve.slice(1))]).x(this._x).x0(this._x0).x1(this._x1).y(this._y).y0(this._y0).y1(this._y1);
+        var userCurve = this._curve.bind(this)(this.config());
+
+        var curve = paths["curve".concat(userCurve.charAt(0).toUpperCase()).concat(userCurve.slice(1))];
+        var path = this._path = area().defined(this._defined).curve(curve).x(this._x).x0(this._x0).x1(this._x1).y(this._y).y0(this._y0).y1(this._y1);
         var exitPath = area().defined(function (d) {
           return d;
-        }).curve(paths["curve".concat(this._curve.charAt(0).toUpperCase()).concat(this._curve.slice(1))]).x(this._x).y(this._y).x0(function (d, i) {
+        }).curve(curve).x(this._x).y(this._y).x0(function (d, i) {
           return _this13._x1 ? _this13._x0(d, i) + (_this13._x1(d, i) - _this13._x0(d, i)) / 2 : _this13._x0(d, i);
         }).x1(function (d, i) {
           return _this13._x1 ? _this13._x0(d, i) + (_this13._x1(d, i) - _this13._x0(d, i)) / 2 : _this13._x0(d, i);
@@ -28261,14 +28270,14 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
       /**
           @memberof Area
           @desc If *value* is specified, sets the area curve to the specified string and returns the current class instance. If *value* is not specified, returns the current area curve.
-          @param {String} [*value* = "linear"]
+          @param {Function|String} [*value* = "linear"]
           @chainable
       */
 
     }, {
       key: "curve",
       value: function curve(_) {
-        return arguments.length ? (this._curve = _, this) : this._curve;
+        return arguments.length ? (this._curve = typeof _ === "function" ? _ : constant$2(_), this) : this._curve;
       }
       /**
           @memberof Area
@@ -28939,7 +28948,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
       _classCallCheck2(this, Line);
 
       _this21 = _super7.call(this);
-      _this21._curve = "linear";
+      _this21._curve = constant$2("linear");
 
       _this21._defined = function (d) {
         return d;
@@ -29041,7 +29050,11 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
           d.initialStrokeArray = newStrokeArray.join(" ");
         }
 
-        this._path.curve(paths["curve".concat(this._curve.charAt(0).toUpperCase()).concat(this._curve.slice(1))]).defined(this._defined).x(this._x).y(this._y);
+        var userCurve = this._curve.bind(this)(this.config());
+
+        var curve = paths["curve".concat(userCurve.charAt(0).toUpperCase()).concat(userCurve.slice(1))];
+
+        this._path.curve(curve).defined(this._defined).x(this._x).y(this._y);
 
         var enter = this._enter.append("path").attr("transform", function (d) {
           return "translate(".concat(-d.xR[0] - d.width / 2, ", ").concat(-d.yR[0] - d.height / 2, ")");
@@ -29100,15 +29113,15 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
       }
       /**
           @memberof Line
-          @desc If *value* is specified, sets the line curve to the specified string and returns the current class instance. If *value* is not specified, returns the current line curve.
-          @param {String} [*value* = "linear"]
+          @desc If *value* is specified, sets the area curve to the specified string and returns the current class instance. If *value* is not specified, returns the current area curve.
+          @param {Function|String} [*value* = "linear"]
           @chainable
       */
 
     }, {
       key: "curve",
       value: function curve(_) {
-        return arguments.length ? (this._curve = _, this) : this._curve;
+        return arguments.length ? (this._curve = typeof _ === "function" ? _ : constant$2(_), this) : this._curve;
       }
       /**
           @memberof Line
