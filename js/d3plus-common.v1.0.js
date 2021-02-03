@@ -9,7 +9,7 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
 /*
-  d3plus-common v1.0.1
+  d3plus-common v1.0.2
   Common functions and methods used across D3plus modules.
   Copyright (c) 2021 D3plus - https://d3plus.org
   @license MIT
@@ -8387,7 +8387,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       @param {Object} [params.enter = {}] A collection of key/value pairs that map to attributes to be given on enter.
       @param {Object} [params.exit = {}] A collection of key/value pairs that map to attributes to be given on exit.
       @param {D3Selection} [params.parent = d3.select("body")] The parent element for this new element to be appended to.
-      @param {D3Transition} [params.transition = d3.transition().duration(0)] The transition to use when animated the different life cycle stages.
+      @param {Number} [params.duration = 0] The duration for the d3 transition.
       @param {Object} [params.update = {}] A collection of key/value pairs that map to attributes to be given on update.
   */
 
@@ -8398,20 +8398,21 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       condition: true,
       enter: {},
       exit: {},
+      duration: 0,
       parent: d3Selection.select("body"),
-      transition: d3Transition.transition().duration(0),
       update: {}
     }, p);
     var className = /\.([^#]+)/g.exec(selector),
         id = /#([^\.]+)/g.exec(selector),
+        t = d3Transition.transition().duration(p.duration),
         tag = /^([^.^#]+)/g.exec(selector)[1];
     var elem = p.parent.selectAll(selector.includes(":") ? selector.split(":")[1] : selector).data(p.condition ? [null] : []);
     var enter = elem.enter().append(tag).call(attrize, p.enter);
     if (id) enter.attr("id", id[1]);
     if (className) enter.attr("class", className[1]);
-    elem.exit().transition(p.transition).call(attrize, p.exit).remove();
+    elem.exit().transition(t).call(attrize, p.exit).remove();
     var update = enter.merge(elem);
-    update.transition(p.transition).call(attrize, p.update);
+    update.transition(t).call(attrize, p.update);
     return update;
   }
   /**
