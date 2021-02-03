@@ -3,7 +3,7 @@ name: Geomap
 kind: class
 ---
 
-  <a name="Geomap"></a>
+<a name="Geomap"></a>
 
 ### **Geomap** [<>](https://github.com/d3plus/d3plus-geomap/blob/master/src/Geomap.js#L46)
 
