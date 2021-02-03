@@ -3,7 +3,7 @@ name: LinePlot
 kind: class
 ---
 
-  <a name="LinePlot"></a>
+<a name="LinePlot"></a>
 
 ### **LinePlot** [<>](https://github.com/d3plus/d3plus-plot/blob/master/src/LinePlot.js#L5)
 

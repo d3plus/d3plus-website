@@ -3,7 +3,7 @@ name: AreaPlot
 kind: class
 ---
 
-  <a name="AreaPlot"></a>
+<a name="AreaPlot"></a>
 
 ### **AreaPlot** [<>](https://github.com/d3plus/d3plus-plot/blob/master/src/AreaPlot.js#L5)
 

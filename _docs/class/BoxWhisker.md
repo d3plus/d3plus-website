@@ -3,7 +3,7 @@ name: BoxWhisker
 kind: class
 ---
 
-  <a name="BoxWhisker"></a>
+<a name="BoxWhisker"></a>
 
 ### **BoxWhisker** [<>](https://github.com/d3plus/d3plus-plot/blob/master/src/BoxWhisker.js#L5)
 

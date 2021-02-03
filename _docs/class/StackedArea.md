@@ -3,7 +3,7 @@ name: StackedArea
 kind: class
 ---
 
-  <a name="StackedArea"></a>
+<a name="StackedArea"></a>
 
 ### **StackedArea** [<>](https://github.com/d3plus/d3plus-plot/blob/master/src/StackedArea.js#L3)
 

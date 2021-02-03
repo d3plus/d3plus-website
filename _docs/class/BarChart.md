@@ -3,7 +3,7 @@ name: BarChart
 kind: class
 ---
 
-  <a name="BarChart"></a>
+<a name="BarChart"></a>
 
 ### **BarChart** [<>](https://github.com/d3plus/d3plus-plot/blob/master/src/BarChart.js#L5)
 

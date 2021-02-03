@@ -3,7 +3,7 @@ name: Radar
 kind: class
 ---
 
-  <a name="Radar"></a>
+<a name="Radar"></a>
 
 ### **Radar** [<>](https://github.com/d3plus/d3plus-plot/blob/master/src/Radar.js#L15)
 

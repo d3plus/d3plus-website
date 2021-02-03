@@ -3,7 +3,7 @@ name: BumpChart
 kind: class
 ---
 
-  <a name="BumpChart"></a>
+<a name="BumpChart"></a>
 
 ### **BumpChart** [<>](https://github.com/d3plus/d3plus-plot/blob/master/src/BumpChart.js#L5)
 
