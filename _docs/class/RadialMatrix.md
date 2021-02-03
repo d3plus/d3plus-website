@@ -3,7 +3,7 @@ name: RadialMatrix
 kind: class
 ---
 
-  <a name="RadialMatrix"></a>
+<a name="RadialMatrix"></a>
 
 ### **RadialMatrix** [<>](https://github.com/d3plus/d3plus-matrix/blob/master/src/RadialMatrix.js#L12)
 

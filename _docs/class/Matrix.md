@@ -3,7 +3,7 @@ name: Matrix
 kind: class
 ---
 
-  <a name="Matrix"></a>
+<a name="Matrix"></a>
 
 ### **Matrix** [<>](https://github.com/d3plus/d3plus-matrix/blob/master/src/Matrix.js#L20)
 
