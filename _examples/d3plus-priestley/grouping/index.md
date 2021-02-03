@@ -2,8 +2,8 @@
 title: Grouping Priestley Bars into Lanes
 width: 800
 height: 400
-time: 1594762921412
-date: July 14, 2020
+time: 1612362174632
+date: February 03, 2021
 ---
 
 # Grouping Priestley Bars into Lanes
