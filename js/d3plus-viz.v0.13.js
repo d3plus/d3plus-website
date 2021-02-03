@@ -41,7 +41,7 @@ function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _d
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
 /*
-  d3plus-viz v0.13.4
+  d3plus-viz v0.13.5
   Abstract ES6 class that drives d3plus visualizations.
   Copyright (c) 2021 D3plus - https://d3plus.org
   @license MIT
@@ -1400,10 +1400,10 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
 
     if (needToLoad) {
       var prev = this._queue.find(function (q) {
-        return q[3] === "data";
+        return q[3] === key;
       });
 
-      var d = [load.bind(this), _, f, "data"];
+      var d = [load.bind(this), _, f, key];
       if (prev) this._queue[this._queue.indexOf(prev)] = d;else this._queue.push(d);
     } else {
       this["_".concat(key)] = _;
