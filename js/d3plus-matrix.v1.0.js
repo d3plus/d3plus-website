@@ -45,7 +45,7 @@ function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len 
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
 /*
-  d3plus-matrix v1.0.0
+  d3plus-matrix v1.0.1
   Row/column layouts
   Copyright (c) 2021 D3plus - https://d3plus.org
   @license MIT
@@ -7946,8 +7946,8 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
     var _this = this;
 
     var data = this._filteredData;
-    var rowValues = d3plusCommon.unique(data.map(this._row)).sort(this._rowSort);
-    var columnValues = d3plusCommon.unique(data.map(this._column)).sort(this._columnSort);
+    var rowValues = (this._rowList || d3plusCommon.unique(data.map(this._row))).sort(this._rowSort);
+    var columnValues = (this._columnList || d3plusCommon.unique(data.map(this._column))).sort(this._columnSort);
     if (!rowValues.length || !columnValues.length) return this;
     var shapeData = cartesian(rowValues, columnValues).map(function (_ref2) {
       var _ref3 = _slicedToArray(_ref2, 2),
@@ -7989,6 +7989,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       stroke: 0
     },
     gridSize: 0,
+    padding: 5,
     paddingInner: 0,
     paddingOuter: 0,
     scale: "band",
@@ -8092,11 +8093,12 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
         this._rowAxis.select(selectElem("row", {
           enter: hidden,
           update: hidden
-        })).domain(rowValues).height(height).maxSize(width / 2).width(width).config(this._rowConfig).render();
+        })).domain(rowValues).height(height - this._margin.top - this._margin.bottom - this._padding.bottom - this._padding.top).maxSize(width / 3).width(width).config(this._rowConfig).render();
 
-        var rowPadding = this._rowAxis.outerBounds().width - this._rowAxis.padding() * 2;
+        var rowPadding = this._rowAxis.outerBounds().width;
+
         this._padding.left += rowPadding;
-        var columnTransform = "translate(".concat(rowPadding + this._margin.left, ", ").concat(this._margin.top, ")");
+        var columnTransform = "translate(0, ".concat(this._margin.top, ")");
         var hiddenTransform = Object.assign({
           transform: columnTransform
         }, hidden);
@@ -8104,15 +8106,16 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
         this._columnAxis.select(selectElem("column", {
           enter: hiddenTransform,
           update: hiddenTransform
-        })).domain(columnValues).height(height).maxSize(height / 2).width(width).config(this._columnConfig).render();
+        })).domain(columnValues).range([this._margin.left + this._padding.left, width - this._margin.right + this._padding.right]).height(height).maxSize(height / 3).width(width).config(this._columnConfig).render();
 
-        var columnPadding = this._columnAxis.outerBounds().height - this._columnAxis.padding() * 2;
+        var columnPadding = this._columnAxis.outerBounds().height;
+
         this._padding.top += columnPadding;
 
         _get(_getPrototypeOf(Matrix.prototype), "_draw", this).call(this, callback);
 
-        var rowTransform = "translate(".concat(this._margin.left, ", ").concat(columnPadding + this._margin.top, ")");
-        columnTransform = "translate(".concat(rowPadding + this._margin.left, ", ").concat(this._margin.top, ")");
+        var rowTransform = "translate(".concat(this._margin.left, ", ").concat(this._margin.top, ")");
+        columnTransform = "translate(0, ".concat(this._margin.top, ")");
         var visibleTransform = Object.assign({
           transform: columnTransform
         }, visible);
@@ -8121,11 +8124,11 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
           update: Object.assign({
             transform: rowTransform
           }, visible)
-        })).height(height - this._margin.top - this._margin.bottom - columnPadding).width(rowPadding + this._rowAxis.padding() * 2).render();
+        })).height(height - this._margin.top - this._margin.bottom - this._padding.bottom).maxSize(rowPadding).range([columnPadding + this._columnAxis.padding(), undefined]).render();
 
         this._columnAxis.select(selectElem("column", {
           update: visibleTransform
-        })).height(columnPadding + this._columnAxis.padding() * 2).width(width - this._margin.left - this._margin.right - rowPadding).render();
+        })).range([this._margin.left + this._padding.left + this._rowAxis.padding(), width - this._margin.right + this._padding.right]).maxSize(columnPadding).render();
 
         var rowScale = this._rowAxis._getPosition.bind(this._rowAxis);
 
@@ -8133,7 +8136,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
 
         var cellHeight = rowValues.length > 1 ? rowScale(rowValues[1]) - rowScale(rowValues[0]) : this._rowAxis.height();
         var cellWidth = columnValues.length > 1 ? columnScale(columnValues[1]) - columnScale(columnValues[0]) : this._columnAxis.width();
-        var transform = "translate(".concat(this._margin.left + rowPadding, ", ").concat(this._margin.top + columnPadding, ")");
+        var transform = "translate(0, ".concat(this._margin.top, ")");
         var rectConfig = d3plusCommon.configPrep.bind(this)(this._shapeConfig, "shape", "Rect");
 
         this._shapes.push(new d3plusShape.Rect().data(shapeData).select(d3plusCommon.elem("g.d3plus-Matrix-cells", {
@@ -8197,6 +8200,17 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       }
       /**
           @memberof Matrix
+          @desc A manual list of IDs to be used for columns.
+          @param {Array} [*value*]
+      */
+
+    }, {
+      key: "columnList",
+      value: function columnList(_) {
+        return arguments.length ? (this._columnList = _, this) : this._columnList;
+      }
+      /**
+          @memberof Matrix
           @desc A sort comparator function that is run on the unique set of column values.
           @param {Function} [*value*]
           @example
@@ -8236,6 +8250,17 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       key: "rowConfig",
       value: function rowConfig(_) {
         return arguments.length ? (this._rowConfig = d3plusCommon.assign(this._rowConfig, _), this) : this._rowConfig;
+      }
+      /**
+          @memberof Matrix
+          @desc A manual list of IDs to be used for rows.
+          @param {Array} [*value*]
+      */
+
+    }, {
+      key: "rowList",
+      value: function rowList(_) {
+        return arguments.length ? (this._rowList = _, this) : this._rowList;
       }
       /**
           @memberof Matrix
@@ -8469,6 +8494,17 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       }
       /**
           @memberof RadialMatrix
+          @desc A manual list of IDs to be used for columns.
+          @param {Array} [*value*]
+      */
+
+    }, {
+      key: "columnList",
+      value: function columnList(_) {
+        return arguments.length ? (this._columnList = _, this) : this._columnList;
+      }
+      /**
+          @memberof RadialMatrix
           @desc A sort comparator function that is run on the unique set of column values.
           @param {Function} [*value*]
           @example
@@ -8511,6 +8547,17 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       key: "row",
       value: function row(_) {
         return arguments.length ? (this._row = typeof _ === "function" ? _ : d3plusCommon.accessor(_), this) : this._row;
+      }
+      /**
+          @memberof RadialMatrix
+          @desc A manual list of IDs to be used for rows.
+          @param {Array} [*value*]
+      */
+
+    }, {
+      key: "rowList",
+      value: function rowList(_) {
+        return arguments.length ? (this._rowList = _, this) : this._rowList;
       }
       /**
           @memberof RadialMatrix
