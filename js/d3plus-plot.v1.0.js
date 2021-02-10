@@ -39,7 +39,7 @@ function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.g
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
 /*
-  d3plus-plot v1.0.1
+  d3plus-plot v1.0.2
   A reusable javascript x/y plot built on D3.
   Copyright (c) 2021 D3plus - https://d3plus.org
   @license MIT
@@ -9628,7 +9628,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
 
               var area = new shapes.Area().config(areaConfig).data(d.values);
               var confidenceConfig = Object.assign(_this6._shapeConfig, _this6._confidenceConfig);
-              area.config(d3plusCommon.configPrep.bind(_this6)(confidenceConfig, "shape", "Area")).render();
+              area.config(d3plusCommon.assign(d3plusCommon.configPrep.bind(_this6)(confidenceConfig, "shape", "Line"), d3plusCommon.configPrep.bind(_this6)(confidenceConfig, "shape", "Area"))).render();
 
               _this6._shapes.push(area);
             }
