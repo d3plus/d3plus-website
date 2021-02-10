@@ -51,7 +51,7 @@ function _arrayLikeToArray2(arr, len) { if (len == null || len > arr.length) len
 function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof2 = function _typeof2(obj) { return typeof obj; }; } else { _typeof2 = function _typeof2(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof2(obj); }
 
 /*
-  d3plus-plot v1.0.0
+  d3plus-plot v1.0.1
   A reusable javascript x/y plot built on D3.
   Copyright (c) 2021 D3plus - https://d3plus.org
   @license MIT
@@ -29721,7 +29721,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
           var labels = _this5._label(d, i);
 
           if (_this5._labelBounds && labels !== false && labels !== undefined && labels !== null) {
-            var bounds = _this5._labelBounds(d, i, _this5._aes(datum, i));
+            var bounds = _this5._labelBounds.bind(_this5)(d, i, _this5._aes(datum, i));
 
             if (bounds) {
               if (labels.constructor !== Array) labels = [labels];
@@ -47839,6 +47839,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
 
 
   function outside(d, i) {
+    if (this._stacked) return false;
     var other = this._discrete.charAt(0) === "x" ? "y" : "x";
 
     var nonDiscrete = this._discrete.replace(this._discrete.charAt(0), other);
@@ -47915,14 +47916,37 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
       _this11._shape = constant("Circle");
       _this11._shapeConfig = assign(_this11._shapeConfig, {
         Area: {
-          curve: function curve() {
-            return _this11._discrete ? "monotone".concat(_this11._discrete.charAt(0).toUpperCase()) : "linear";
-          },
           label: function label(d, i) {
             return _this11._stacked ? _this11._drawLabel(d, i) : false;
           },
+          labelBounds: function labelBounds(d, i, aes) {
+            var r = largestRect(aes.points, {
+              angle: range(-20, 20, 5)
+            });
+            if (!r || r.height < 20 || r.width < 50) r = largestRect(aes.points, {
+              angle: range(-80, 80, 5)
+            });
+            if (!r) return null;
+            var x = min(aes.points, function (d) {
+              return d[0];
+            });
+            var y = max(aes.points.filter(function (d) {
+              return d[0] === x;
+            }), function (d) {
+              return d[1];
+            });
+            return {
+              angle: r.angle,
+              width: r.width,
+              height: r.height,
+              x: r.cx - r.width / 2 - x,
+              y: r.cy - r.height / 2 - y
+            };
+          },
           labelConfig: {
-            fontResize: true
+            fontMin: 6,
+            fontResize: true,
+            padding: 10
           }
         },
         ariaLabel: function ariaLabel(d, i) {
@@ -47959,7 +47983,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
               return _ref29 = {}, _defineProperty2(_ref29, width, space - s[width]), _defineProperty2(_ref29, height, s[height]), _defineProperty2(_ref29, "x", invert ? -s.width / 2 : negative ? -space : s.width + padding), _defineProperty2(_ref29, "y", invert ? negative ? s.height + padding : -space : -s.height / 2 + 1), _ref29;
             }
 
-            return _ref30 = {}, _defineProperty2(_ref30, width, s[width]), _defineProperty2(_ref30, height, s[height]), _defineProperty2(_ref30, "x", invert ? -s.width / 2 : negative ? -s.width + padding : -padding), _defineProperty2(_ref30, "y", invert ? negative ? padding : -s.height + padding : -s.height / 2 + 1), _ref30;
+            return _ref30 = {}, _defineProperty2(_ref30, width, s[width]), _defineProperty2(_ref30, height, s[height]), _defineProperty2(_ref30, "x", invert ? -s.width / 2 : negative ? this._stacked ? padding : padding - s.width : -padding), _defineProperty2(_ref30, "y", invert ? negative ? this._stacked ? padding - s.height : padding : -s.height + padding : -s.height / 2 + padding), _ref30;
           },
           labelConfig: {
             fontMax: 16,
@@ -48856,7 +48880,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
           this._x2Axis.domain(x2Domain).height(height - (xHeight + topOffset + verticalMargin)).range(xRange).select(x2Group.node()).ticks(x2Ticks).width(width).config(xC).config(defaultX2Config).config(this._x2Config).scale(x2ConfigScale).render();
         }
 
-        _x3 = function x(d, _x2) {
+        this._xFunc = _x3 = function x(d, _x2) {
           if (_x2 === "x2") {
             if (x2ConfigScale === "log" && d === 0) d = x2Domain[0] < 0 ? _this13._x2Axis._d3Scale.domain()[1] : _this13._x2Axis._d3Scale.domain()[0];
             return _this13._x2Axis._getPosition.bind(_this13._x2Axis)(d);
@@ -48874,7 +48898,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
           this._y2Axis.config(yC).domain(y2Exists ? y2Domain : yDomain).gridSize(0).height(height).range(yRange).select(y2Group.node()).width(width - max([0, xOffsetRight - y2Width])).title(false).config(this._y2Config).config(defaultY2Config).scale(y2ConfigScale).render();
         }
 
-        _y2 = function y(d, _y) {
+        this._yFunc = _y2 = function y(d, _y) {
           if (_y === "y2") {
             if (y2ConfigScale === "log" && d === 0) d = y2Domain[1] < 0 ? _this13._y2Axis._d3ScaleNegative.domain()[0] : _this13._y2Axis._d3Scale.domain()[1];
             return _this13._y2Axis._getPosition.bind(_this13._y2Axis)(d) - x2Height;

@@ -39,7 +39,7 @@ function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.g
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
 /*
-  d3plus-plot v1.0.0
+  d3plus-plot v1.0.1
   A reusable javascript x/y plot built on D3.
   Copyright (c) 2021 D3plus - https://d3plus.org
   @license MIT
@@ -8401,6 +8401,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
 
 
   function outside(d, i) {
+    if (this._stacked) return false;
     var other = this._discrete.charAt(0) === "x" ? "y" : "x";
 
     var nonDiscrete = this._discrete.replace(this._discrete.charAt(0), other);
@@ -8475,14 +8476,37 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       _this4._shape = d3plusCommon.constant("Circle");
       _this4._shapeConfig = d3plusCommon.assign(_this4._shapeConfig, {
         Area: {
-          curve: function curve() {
-            return _this4._discrete ? "monotone".concat(_this4._discrete.charAt(0).toUpperCase()) : "linear";
-          },
           label: function label(d, i) {
             return _this4._stacked ? _this4._drawLabel(d, i) : false;
           },
+          labelBounds: function labelBounds(d, i, aes) {
+            var r = shapes.largestRect(aes.points, {
+              angle: d3Array.range(-20, 20, 5)
+            });
+            if (!r || r.height < 20 || r.width < 50) r = shapes.largestRect(aes.points, {
+              angle: d3Array.range(-80, 80, 5)
+            });
+            if (!r) return null;
+            var x = d3Array.min(aes.points, function (d) {
+              return d[0];
+            });
+            var y = d3Array.max(aes.points.filter(function (d) {
+              return d[0] === x;
+            }), function (d) {
+              return d[1];
+            });
+            return {
+              angle: r.angle,
+              width: r.width,
+              height: r.height,
+              x: r.cx - r.width / 2 - x,
+              y: r.cy - r.height / 2 - y
+            };
+          },
           labelConfig: {
-            fontResize: true
+            fontMin: 6,
+            fontResize: true,
+            padding: 10
           }
         },
         ariaLabel: function ariaLabel(d, i) {
@@ -8519,7 +8543,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
               return _ref6 = {}, _defineProperty(_ref6, width, space - s[width]), _defineProperty(_ref6, height, s[height]), _defineProperty(_ref6, "x", invert ? -s.width / 2 : negative ? -space : s.width + padding), _defineProperty(_ref6, "y", invert ? negative ? s.height + padding : -space : -s.height / 2 + 1), _ref6;
             }
 
-            return _ref7 = {}, _defineProperty(_ref7, width, s[width]), _defineProperty(_ref7, height, s[height]), _defineProperty(_ref7, "x", invert ? -s.width / 2 : negative ? -s.width + padding : -padding), _defineProperty(_ref7, "y", invert ? negative ? padding : -s.height + padding : -s.height / 2 + 1), _ref7;
+            return _ref7 = {}, _defineProperty(_ref7, width, s[width]), _defineProperty(_ref7, height, s[height]), _defineProperty(_ref7, "x", invert ? -s.width / 2 : negative ? this._stacked ? padding : padding - s.width : -padding), _defineProperty(_ref7, "y", invert ? negative ? this._stacked ? padding - s.height : padding : -s.height + padding : -s.height / 2 + padding), _ref7;
           },
           labelConfig: {
             fontMax: 16,
@@ -9415,7 +9439,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
           this._x2Axis.domain(x2Domain).height(height - (xHeight + topOffset + verticalMargin)).range(xRange).select(x2Group.node()).ticks(x2Ticks).width(width).config(xC).config(defaultX2Config).config(this._x2Config).scale(x2ConfigScale).render();
         }
 
-        _x2 = function x(d, _x) {
+        this._xFunc = _x2 = function x(d, _x) {
           if (_x === "x2") {
             if (x2ConfigScale === "log" && d === 0) d = x2Domain[0] < 0 ? _this6._x2Axis._d3Scale.domain()[1] : _this6._x2Axis._d3Scale.domain()[0];
             return _this6._x2Axis._getPosition.bind(_this6._x2Axis)(d);
@@ -9433,7 +9457,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
           this._y2Axis.config(yC).domain(y2Exists ? y2Domain : yDomain).gridSize(0).height(height).range(yRange).select(y2Group.node()).width(width - d3Array.max([0, xOffsetRight - y2Width])).title(false).config(this._y2Config).config(defaultY2Config).scale(y2ConfigScale).render();
         }
 
-        _y2 = function y(d, _y) {
+        this._yFunc = _y2 = function y(d, _y) {
           if (_y === "y2") {
             if (y2ConfigScale === "log" && d === 0) d = y2Domain[1] < 0 ? _this6._y2Axis._d3ScaleNegative.domain()[0] : _this6._y2Axis._d3Scale.domain()[1];
             return _this6._y2Axis._getPosition.bind(_this6._y2Axis)(d) - x2Height;
