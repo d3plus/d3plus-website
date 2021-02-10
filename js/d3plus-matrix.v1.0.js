@@ -45,7 +45,7 @@ function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len 
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
 /*
-  d3plus-matrix v1.0.1
+  d3plus-matrix v1.0.2
   Row/column layouts
   Copyright (c) 2021 D3plus - https://d3plus.org
   @license MIT
@@ -8082,6 +8082,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
         var visible = {
           opacity: 1
         };
+        var columnRotation = width / columnValues.length < 120;
 
         var selectElem = function selectElem(name, opts) {
           return d3plusCommon.elem("g.d3plus-Matrix-".concat(name), Object.assign({
@@ -8093,7 +8094,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
         this._rowAxis.select(selectElem("row", {
           enter: hidden,
           update: hidden
-        })).domain(rowValues).height(height - this._margin.top - this._margin.bottom - this._padding.bottom - this._padding.top).maxSize(width / 3).width(width).config(this._rowConfig).render();
+        })).domain(rowValues).height(height - this._margin.top - this._margin.bottom - this._padding.bottom - this._padding.top).maxSize(width / 4).width(width).config(this._rowConfig).render();
 
         var rowPadding = this._rowAxis.outerBounds().width;
 
@@ -8106,7 +8107,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
         this._columnAxis.select(selectElem("column", {
           enter: hiddenTransform,
           update: hiddenTransform
-        })).domain(columnValues).range([this._margin.left + this._padding.left, width - this._margin.right + this._padding.right]).height(height).maxSize(height / 3).width(width).config(this._columnConfig).render();
+        })).domain(columnValues).range([this._margin.left + this._padding.left, width - this._margin.right + this._padding.right]).height(height).maxSize(height / 4).width(width).labelRotation(columnRotation).config(this._columnConfig).render();
 
         var columnPadding = this._columnAxis.outerBounds().height;
 
