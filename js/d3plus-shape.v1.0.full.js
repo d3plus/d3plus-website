@@ -45,7 +45,7 @@ function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len 
 function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof2 = function _typeof2(obj) { return typeof obj; }; } else { _typeof2 = function _typeof2(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof2(obj); }
 
 /*
-  d3plus-shape v1.0.2
+  d3plus-shape v1.0.3
   Fancy SVG shapes for visualizations
   Copyright (c) 2021 D3plus - https://d3plus.org
   @license MIT
@@ -26190,7 +26190,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
           var labels = _this8._label(d, i);
 
           if (_this8._labelBounds && labels !== false && labels !== undefined && labels !== null) {
-            var bounds = _this8._labelBounds(d, i, _this8._aes(datum, i));
+            var bounds = _this8._labelBounds.bind(_this8)(d, i, _this8._aes(datum, i));
 
             if (bounds) {
               if (labels.constructor !== Array) labels = [labels];
