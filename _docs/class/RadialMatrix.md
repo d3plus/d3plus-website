@@ -16,9 +16,11 @@ This is a global class, and extends all of the methods and functionality of <cod
     * [.cellPadding([*value*])](#RadialMatrix.cellPadding)
     * [.column([*value*])](#RadialMatrix.column)
     * [.columnConfig(*value*)](#RadialMatrix.columnConfig) ↩︎
+    * [.columnList([*value*])](#RadialMatrix.columnList)
     * [.columnSort([*value*])](#RadialMatrix.columnSort)
     * [.innerRadius([*value*])](#RadialMatrix.innerRadius)
     * [.row([*value*])](#RadialMatrix.row)
+    * [.rowList([*value*])](#RadialMatrix.rowList)
     * [.rowSort([*value*])](#RadialMatrix.rowSort)
 
 
@@ -61,7 +63,15 @@ A pass-through to the underlying [Axis](http://d3plus.org/docs/#Axis) config use
 This is a static method of [<code>RadialMatrix</code>](#RadialMatrix), and is chainable with other methods of this Class.
 
 
-<a name="RadialMatrix.columnSort" href="#RadialMatrix.columnSort">#</a> RadialMatrix.**columnSort**([*value*]) [<>](https://github.com/d3plus/d3plus-matrix/blob/master/src/RadialMatrix.js#L196)
+<a name="RadialMatrix.columnList" href="#RadialMatrix.columnList">#</a> RadialMatrix.**columnList**([*value*]) [<>](https://github.com/d3plus/d3plus-matrix/blob/master/src/RadialMatrix.js#L192)
+
+A manual list of IDs to be used for columns.
+
+
+This is a static method of [<code>RadialMatrix</code>](#RadialMatrix).
+
+
+<a name="RadialMatrix.columnSort" href="#RadialMatrix.columnSort">#</a> RadialMatrix.**columnSort**([*value*]) [<>](https://github.com/d3plus/d3plus-matrix/blob/master/src/RadialMatrix.js#L205)
 
 A sort comparator function that is run on the unique set of column values.
 
@@ -76,7 +86,7 @@ function column(a, b) {
 ```
 
 
-<a name="RadialMatrix.innerRadius" href="#RadialMatrix.innerRadius">#</a> RadialMatrix.**innerRadius**([*value*]) [<>](https://github.com/d3plus/d3plus-matrix/blob/master/src/RadialMatrix.js#L209)
+<a name="RadialMatrix.innerRadius" href="#RadialMatrix.innerRadius">#</a> RadialMatrix.**innerRadius**([*value*]) [<>](https://github.com/d3plus/d3plus-matrix/blob/master/src/RadialMatrix.js#L218)
 
 The radius (in pixels) for the inner donut hole of the diagram. Can either be a static Number, or an accessor function that receives the outer radius as it's only argument.
 
@@ -91,7 +101,7 @@ function(outerRadius) {
 ```
 
 
-<a name="RadialMatrix.row" href="#RadialMatrix.row">#</a> RadialMatrix.**row**([*value*]) [<>](https://github.com/d3plus/d3plus-matrix/blob/master/src/RadialMatrix.js#L222)
+<a name="RadialMatrix.row" href="#RadialMatrix.row">#</a> RadialMatrix.**row**([*value*]) [<>](https://github.com/d3plus/d3plus-matrix/blob/master/src/RadialMatrix.js#L231)
 
 Determines which key in your data should be used for each row in the matrix. Can be either a String that matches a key used in every data point, or an accessor function that receives a data point and it's index in the data array, and is expected to return it's row value.
 
@@ -106,7 +116,15 @@ function row(d) {
 ```
 
 
-<a name="RadialMatrix.rowSort" href="#RadialMatrix.rowSort">#</a> RadialMatrix.**rowSort**([*value*]) [<>](https://github.com/d3plus/d3plus-matrix/blob/master/src/RadialMatrix.js#L235)
+<a name="RadialMatrix.rowList" href="#RadialMatrix.rowList">#</a> RadialMatrix.**rowList**([*value*]) [<>](https://github.com/d3plus/d3plus-matrix/blob/master/src/RadialMatrix.js#L240)
+
+A manual list of IDs to be used for rows.
+
+
+This is a static method of [<code>RadialMatrix</code>](#RadialMatrix).
+
+
+<a name="RadialMatrix.rowSort" href="#RadialMatrix.rowSort">#</a> RadialMatrix.**rowSort**([*value*]) [<>](https://github.com/d3plus/d3plus-matrix/blob/master/src/RadialMatrix.js#L253)
 
 A sort comparator function that is run on the unique set of row values.
 
