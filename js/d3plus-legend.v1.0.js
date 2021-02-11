@@ -23,7 +23,7 @@ function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.g
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
 /*
-  d3plus-legend v1.0.0
+  d3plus-legend v1.0.1
   An easy to use javascript chart legend.
   Copyright (c) 2021 D3plus - https://d3plus.org
   @license MIT
@@ -8160,12 +8160,13 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       @see https://github.com/d3plus/d3plus-common#BaseClass
   */
 
+
+  var padding = 5;
   /**
       @class Legend
       @extends external:BaseClass
       @desc Creates an SVG scale based on an array of data. If *data* is specified, immediately draws based on the specified array and returns the current class instance. If *data* is not specified on instantiation, it can be passed/updated after instantiation using the [data](#shape.data) method.
   */
-
 
   var Legend = /*#__PURE__*/function (_d3plusCommon$BaseCla) {
     _inherits(Legend, _d3plusCommon$BaseCla);
@@ -8183,6 +8184,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       _classCallCheck(this, Legend);
 
       _this = _super.call(this);
+      _this._titleClass = new d3plusText.TextBox();
       _this._align = "center";
       _this._data = [];
       _this._direction = "row";
@@ -8215,18 +8217,19 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
         },
         labelBounds: function labelBounds(dd, i) {
           var d = _this._lineData[i];
-          var x = d.shapeWidth;
-          if (d.shape === "Circle") x -= d.shapeR;
+          var x = d.shapeWidth / 2;
+          if (d.shape === "Circle") x -= d.shapeR / 2;
           var height = d3Array.max([d.shapeHeight, d.height]);
           return {
             width: d.width,
             height: height,
-            x: x,
+            x: x + padding,
             y: -height / 2
           };
         },
         labelConfig: {
           fontColor: d3plusCommon.constant(d3plusColor.colorDefaults.dark),
+          fontFamily: _this._titleClass.fontFamily(),
           fontResize: false,
           fontSize: d3plusCommon.constant(10),
           verticalAlign: "middle"
@@ -8260,7 +8263,6 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
           }))) / 2;
         }
       };
-      _this._titleClass = new d3plusText.TextBox();
       _this._titleConfig = {
         fontSize: 12
       };
@@ -8374,7 +8376,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
               "font-family": f,
               "font-size": s
             });
-          }))) + s * 0.75;
+          }))) + padding * 2;
           res.height = Math.ceil(res.lines.length * (lh + 1));
           res.og = {
             height: res.height,
