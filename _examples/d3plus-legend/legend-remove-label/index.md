@@ -2,8 +2,8 @@
 title: Removing Legend Labels
 width: 400
 height: 200
-time: 1612301302328
-date: February 02, 2021
+time: 1613058482499
+date: February 11, 2021
 ---
 
 [width]: 400
