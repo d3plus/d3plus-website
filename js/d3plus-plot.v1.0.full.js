@@ -51,7 +51,7 @@ function _arrayLikeToArray2(arr, len) { if (len == null || len > arr.length) len
 function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof2 = function _typeof2(obj) { return typeof obj; }; } else { _typeof2 = function _typeof2(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof2(obj); }
 
 /*
-  d3plus-plot v1.0.2
+  d3plus-plot v1.0.3
   A reusable javascript x/y plot built on D3.
   Copyright (c) 2021 D3plus - https://d3plus.org
   @license MIT
@@ -48135,7 +48135,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
             } // set axis title if not discrete
 
 
-            if (str !== k && (!_this12["_".concat(k, "Config")].title || _this12["_".concat(k, "Title")] === _this12["_".concat(k, "Config")].title) && _this12._discrete !== k) {
+            if (str !== k && _this12["_".concat(k, "Title")] === _this12["_".concat(k, "Config")].title && _this12._discrete !== k) {
               _this12["_".concat(k, "Title")] = str;
               _this12["_".concat(k, "Config")].title = str;
             }
