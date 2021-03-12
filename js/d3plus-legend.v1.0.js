@@ -23,7 +23,7 @@ function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.g
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
 /*
-  d3plus-legend v1.0.1
+  d3plus-legend v1.0.2
   An easy to use javascript chart legend.
   Copyright (c) 2021 D3plus - https://d3plus.org
   @license MIT
@@ -9176,7 +9176,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
           }
 
           var axisConfig = d3plusCommon.assign({
-            domain: axisDomain,
+            domain: horizontal ? axisDomain : axisDomain.slice().reverse(),
             duration: this._duration,
             height: this._height,
             labels: labels || ticks,
@@ -9319,6 +9319,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
             });
             return arr;
           }, []);
+          if (!horizontal) legendData = legendData.reverse();
           var legendConfig = d3plusCommon.assign({
             align: horizontal ? "center" : {
               start: "left",
