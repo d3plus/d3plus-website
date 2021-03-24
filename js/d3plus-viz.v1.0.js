@@ -41,7 +41,7 @@ function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _d
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
 /*
-  d3plus-viz v1.0.3
+  d3plus-viz v1.0.4
   Abstract ES6 class that drives d3plus visualizations.
   Copyright (c) 2021 D3plus - https://d3plus.org
   @license MIT
@@ -8277,7 +8277,10 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
     var _this2 = this;
 
     var data = this._data;
-    var position = this._colorScalePosition.bind(this)(this.config()) || "bottom";
+
+    var position = this._colorScalePosition.bind(this)(this.config());
+
+    if (![false, "top", "bottom", "left", "right"].includes(position)) position = "bottom";
     var wide = ["top", "bottom"].includes(position);
     var padding = this._colorScalePadding() ? this._padding : {
       top: 0,
@@ -8412,6 +8415,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
 
     var position = this._legendPosition.bind(this)(config);
 
+    if (![false, "top", "bottom", "left", "right"].includes(position)) position = "bottom";
     var wide = ["top", "bottom"].includes(position);
     var padding = this._legendPadding() ? this._padding : {
       top: 0,
@@ -9548,8 +9552,11 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       value: function _draw() {
         var legendPosition = this._legendPosition.bind(this)(this.config());
 
+        if (![false, "top", "bottom", "left", "right"].includes(legendPosition)) legendPosition = "bottom";
+
         var colorScalePosition = this._colorScalePosition.bind(this)(this.config());
 
+        if (![false, "top", "bottom", "left", "right"].includes(colorScalePosition)) colorScalePosition = "bottom";
         if (legendPosition === "left" || legendPosition === "right") drawLegend.bind(this)(this._legendData);
         if (colorScalePosition === "left" || colorScalePosition === "right" || colorScalePosition === false) drawColorScale.bind(this)(this._filteredData);
         drawBack.bind(this)();

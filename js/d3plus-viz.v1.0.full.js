@@ -59,7 +59,7 @@ function _arrayLikeToArray2(arr, len) { if (len == null || len > arr.length) len
 function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof2 = function _typeof2(obj) { return typeof obj; }; } else { _typeof2 = function _typeof2(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof2(obj); }
 
 /*
-  d3plus-viz v1.0.3
+  d3plus-viz v1.0.4
   Abstract ES6 class that drives d3plus visualizations.
   Copyright (c) 2021 D3plus - https://d3plus.org
   @license MIT
@@ -28885,6 +28885,76 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
     return new BasisOpen(context);
   }
 
+  var Bump = /*#__PURE__*/function () {
+    "use strict";
+
+    function Bump(context, x) {
+      _classCallCheck2(this, Bump);
+
+      this._context = context;
+      this._x = x;
+    }
+
+    _createClass2(Bump, [{
+      key: "areaStart",
+      value: function areaStart() {
+        this._line = 0;
+      }
+    }, {
+      key: "areaEnd",
+      value: function areaEnd() {
+        this._line = NaN;
+      }
+    }, {
+      key: "lineStart",
+      value: function lineStart() {
+        this._point = 0;
+      }
+    }, {
+      key: "lineEnd",
+      value: function lineEnd() {
+        if (this._line || this._line !== 0 && this._point === 1) this._context.closePath();
+        this._line = 1 - this._line;
+      }
+    }, {
+      key: "point",
+      value: function point(x, y) {
+        x = +x, y = +y;
+
+        switch (this._point) {
+          case 0:
+            {
+              this._point = 1;
+              if (this._line) this._context.lineTo(x, y);else this._context.moveTo(x, y);
+              break;
+            }
+
+          case 1:
+            this._point = 2;
+          // proceed
+
+          default:
+            {
+              if (this._x) this._context.bezierCurveTo(this._x0 = (this._x0 + x) / 2, this._y0, this._x0, y, x, y);else this._context.bezierCurveTo(this._x0, this._y0 = (this._y0 + y) / 2, x, this._y0, x, y);
+              break;
+            }
+        }
+
+        this._x0 = x, this._y0 = y;
+      }
+    }]);
+
+    return Bump;
+  }();
+
+  function bumpX(context) {
+    return new Bump(context, true);
+  }
+
+  function bumpY(context) {
+    return new Bump(context, false);
+  }
+
   function Bundle(context, beta) {
     this._basis = new Basis(context);
     this._beta = beta;
@@ -29998,6 +30068,8 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
     curveBasisClosed: basisClosed,
     curveBasisOpen: basisOpen,
     curveBasis: basis,
+    curveBumpX: bumpX,
+    curveBumpY: bumpY,
     curveBundle: bundle,
     curveCardinalClosed: cardinalClosed,
     curveCardinalOpen: cardinalOpen,
@@ -31823,7 +31895,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
           var labels = _this5._label(d, i);
 
           if (_this5._labelBounds && labels !== false && labels !== undefined && labels !== null) {
-            var bounds = _this5._labelBounds(d, i, _this5._aes(datum, i));
+            var bounds = _this5._labelBounds.bind(_this5)(d, i, _this5._aes(datum, i));
 
             if (bounds) {
               if (labels.constructor !== Array) labels = [labels];
@@ -31964,7 +32036,13 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
 
         hitAreas.order().call(this._applyTransform.bind(this));
         var isLine = this._name === "Line";
-        isLine && this._path.curve(paths["curve".concat(this._curve.charAt(0).toUpperCase()).concat(this._curve.slice(1))]).defined(this._defined).x(this._x).y(this._y);
+
+        if (isLine) {
+          var curve = this._curve.bind(this)(this.config());
+
+          isLine && this._path.curve(paths["curve".concat(curve.charAt(0).toUpperCase()).concat(curve.slice(1))]).defined(this._defined).x(this._x).y(this._y);
+        }
+
         var hitEnter = hitAreas.enter().append(isLine ? "path" : "rect").attr("class", function (d, i) {
           return "d3plus-HitArea d3plus-id-".concat(strip(_this6._nestWrapper(_this6._id)(d, i)));
         }).attr("fill", "black").attr("stroke", "black").attr("pointer-events", "painted").attr("opacity", 0).call(this._applyTransform.bind(this));
@@ -34065,7 +34143,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
       _classCallCheck$4(this, Area);
 
       _this = _super.call(this);
-      _this._curve = "linear";
+      _this._curve = constant$4("linear");
 
       _this._defined = function () {
         return true;
@@ -34175,10 +34253,13 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
 
         _get(_getPrototypeOf$2(Area.prototype), "render", this).call(this, callback);
 
-        var path = this._path = area().defined(this._defined).curve(paths["curve".concat(this._curve.charAt(0).toUpperCase()).concat(this._curve.slice(1))]).x(this._x).x0(this._x0).x1(this._x1).y(this._y).y0(this._y0).y1(this._y1);
+        var userCurve = this._curve.bind(this)(this.config());
+
+        var curve = paths["curve".concat(userCurve.charAt(0).toUpperCase()).concat(userCurve.slice(1))];
+        var path = this._path = area().defined(this._defined).curve(curve).x(this._x).x0(this._x0).x1(this._x1).y(this._y).y0(this._y0).y1(this._y1);
         var exitPath = area().defined(function (d) {
           return d;
-        }).curve(paths["curve".concat(this._curve.charAt(0).toUpperCase()).concat(this._curve.slice(1))]).x(this._x).y(this._y).x0(function (d, i) {
+        }).curve(curve).x(this._x).y(this._y).x0(function (d, i) {
           return _this4._x1 ? _this4._x0(d, i) + (_this4._x1(d, i) - _this4._x0(d, i)) / 2 : _this4._x0(d, i);
         }).x1(function (d, i) {
           return _this4._x1 ? _this4._x0(d, i) + (_this4._x1(d, i) - _this4._x0(d, i)) / 2 : _this4._x0(d, i);
@@ -34211,14 +34292,14 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
       /**
           @memberof Area
           @desc If *value* is specified, sets the area curve to the specified string and returns the current class instance. If *value* is not specified, returns the current area curve.
-          @param {String} [*value* = "linear"]
+          @param {Function|String} [*value* = "linear"]
           @chainable
       */
 
     }, {
       key: "curve",
       value: function curve(_) {
-        return arguments.length ? (this._curve = _, this) : this._curve;
+        return arguments.length ? (this._curve = typeof _ === "function" ? _ : constant$4(_), this) : this._curve;
       }
       /**
           @memberof Area
@@ -35473,7 +35554,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
       _classCallCheck$8(this, Line);
 
       _this = _super.call(this);
-      _this._curve = "linear";
+      _this._curve = constant$4("linear");
 
       _this._defined = function (d) {
         return d;
@@ -35575,7 +35656,11 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
           d.initialStrokeArray = newStrokeArray.join(" ");
         }
 
-        this._path.curve(paths["curve".concat(this._curve.charAt(0).toUpperCase()).concat(this._curve.slice(1))]).defined(this._defined).x(this._x).y(this._y);
+        var userCurve = this._curve.bind(this)(this.config());
+
+        var curve = paths["curve".concat(userCurve.charAt(0).toUpperCase()).concat(userCurve.slice(1))];
+
+        this._path.curve(curve).defined(this._defined).x(this._x).y(this._y);
 
         var enter = this._enter.append("path").attr("transform", function (d) {
           return "translate(".concat(-d.xR[0] - d.width / 2, ", ").concat(-d.yR[0] - d.height / 2, ")");
@@ -35634,15 +35719,15 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
       }
       /**
           @memberof Line
-          @desc If *value* is specified, sets the line curve to the specified string and returns the current class instance. If *value* is not specified, returns the current line curve.
-          @param {String} [*value* = "linear"]
+          @desc If *value* is specified, sets the area curve to the specified string and returns the current class instance. If *value* is not specified, returns the current area curve.
+          @param {Function|String} [*value* = "linear"]
           @chainable
       */
 
     }, {
       key: "curve",
       value: function curve(_) {
-        return arguments.length ? (this._curve = _, this) : this._curve;
+        return arguments.length ? (this._curve = typeof _ === "function" ? _ : constant$4(_), this) : this._curve;
       }
       /**
           @memberof Line
@@ -38875,12 +38960,13 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
     };
     return _getPrototypeOf$b(o);
   }
+
+  var padding = 5;
   /**
       @class Legend
       @extends external:BaseClass
       @desc Creates an SVG scale based on an array of data. If *data* is specified, immediately draws based on the specified array and returns the current class instance. If *data* is not specified on instantiation, it can be passed/updated after instantiation using the [data](#shape.data) method.
   */
-
 
   var Legend = /*#__PURE__*/function (_BaseClass) {
     _inherits$b(Legend, _BaseClass);
@@ -38899,6 +38985,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
       _classCallCheck$d(this, Legend);
 
       _this = _super.call(this);
+      _this._titleClass = new TextBox();
       _this._align = "center";
       _this._data = [];
       _this._direction = "row";
@@ -38931,18 +39018,19 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
         },
         labelBounds: function labelBounds(dd, i) {
           var d = _this._lineData[i];
-          var x = d.shapeWidth;
-          if (d.shape === "Circle") x -= d.shapeR;
+          var x = d.shapeWidth / 2;
+          if (d.shape === "Circle") x -= d.shapeR / 2;
           var height = max([d.shapeHeight, d.height]);
           return {
             width: d.width,
             height: height,
-            x: x,
+            x: x + padding,
             y: -height / 2
           };
         },
         labelConfig: {
           fontColor: constant$4(defaults.dark),
+          fontFamily: _this._titleClass.fontFamily(),
           fontResize: false,
           fontSize: constant$4(10),
           verticalAlign: "middle"
@@ -38976,7 +39064,6 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
           }))) / 2;
         }
       };
-      _this._titleClass = new TextBox();
       _this._titleConfig = {
         fontSize: 12
       };
@@ -39090,7 +39177,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
               "font-family": f,
               "font-size": s
             });
-          }))) + s * 0.75;
+          }))) + padding * 2;
           res.height = Math.ceil(res.lines.length * (lh + 1));
           res.og = {
             height: res.height,
@@ -40018,7 +40105,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
           }
 
           var axisConfig = assign({
-            domain: axisDomain,
+            domain: horizontal ? axisDomain : axisDomain.slice().reverse(),
             duration: this._duration,
             height: this._height,
             labels: labels || ticks,
@@ -40161,6 +40248,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
             });
             return arr;
           }, []);
+          if (!horizontal) legendData = legendData.reverse();
           var legendConfig = assign({
             align: horizontal ? "center" : {
               start: "left",
@@ -43756,7 +43844,10 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
     var _this9 = this;
 
     var data = this._data;
-    var position = this._colorScalePosition.bind(this)(this.config()) || "bottom";
+
+    var position = this._colorScalePosition.bind(this)(this.config());
+
+    if (![false, "top", "bottom", "left", "right"].includes(position)) position = "bottom";
     var wide = ["top", "bottom"].includes(position);
     var padding = this._colorScalePadding() ? this._padding : {
       top: 0,
@@ -43891,6 +43982,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
 
     var position = this._legendPosition.bind(this)(config);
 
+    if (![false, "top", "bottom", "left", "right"].includes(position)) position = "bottom";
     var wide = ["top", "bottom"].includes(position);
     var padding = this._legendPadding() ? this._padding : {
       top: 0,
@@ -45035,8 +45127,11 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
       value: function _draw() {
         var legendPosition = this._legendPosition.bind(this)(this.config());
 
+        if (![false, "top", "bottom", "left", "right"].includes(legendPosition)) legendPosition = "bottom";
+
         var colorScalePosition = this._colorScalePosition.bind(this)(this.config());
 
+        if (![false, "top", "bottom", "left", "right"].includes(colorScalePosition)) colorScalePosition = "bottom";
         if (legendPosition === "left" || legendPosition === "right") drawLegend.bind(this)(this._legendData);
         if (colorScalePosition === "left" || colorScalePosition === "right" || colorScalePosition === false) drawColorScale.bind(this)(this._filteredData);
         drawBack.bind(this)();
