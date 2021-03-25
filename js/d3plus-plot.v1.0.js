@@ -39,7 +39,7 @@ function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.g
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
 /*
-  d3plus-plot v1.0.3
+  d3plus-plot v1.0.4
   A reusable javascript x/y plot built on D3.
   Copyright (c) 2021 D3plus - https://d3plus.org
   @license MIT
@@ -9195,13 +9195,32 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
         var x2Ticks = this._discrete === "x" && !x2Time ? domains.x2 : undefined,
             xTicks = !showY ? d3Array.extent(domains.x) : this._discrete === "x" && !xTime ? domains.x : undefined,
             y2Ticks = this._discrete === "y" && !y2Time ? domains.y2 : undefined,
-            yTicks = !showX ? d3Array.extent(domains.y) : this._discrete === "y" && !yTime ? domains.y : undefined; // hides repetitive axis ticks in BarCharts
+            yTicks = !showX ? d3Array.extent(domains.y) : this._discrete === "y" && !yTime ? domains.y : undefined;
+        /**
+         * Hides an axis' ticks and labels if they all exist as labels for the data to be displayed,
+         * primarily occuring in simple BarChart visualizations where the both the x-axis ticks and
+         * the Bar rectangles would be displaying the same text.
+         */
+        // generates an Array of String labels using the _drawLabel function from Viz
 
-        var uniques = Array.from(new Set(this._filteredData.map(this._id))).length;
-        if (x2Scale === "Point" && x2Ticks.length === uniques) x2Ticks = [];
-        if (xScale === "Point" && xTicks.length === uniques) xTicks = [];
-        if (y2Scale === "Point" && y2Ticks.length === uniques) y2Ticks = [];
-        if (yScale === "Point" && yTicks.length === uniques) yTicks = [];
+        var dataLabels = this._filteredData.map(function (d, i) {
+          return _this6._drawLabel(d, i);
+        }).map(String); // sets an axis' ticks to [] if the axis scale is "Point" (discrete) and every tick String
+        // is also in the dataLabels Array
+
+
+        if (x2Scale === "Point" && x2Ticks.every(function (t) {
+          return dataLabels.includes("".concat(t));
+        })) x2Ticks = [];
+        if (xScale === "Point" && xTicks.every(function (t) {
+          return dataLabels.includes("".concat(t));
+        })) xTicks = [];
+        if (y2Scale === "Point" && y2Ticks.every(function (t) {
+          return dataLabels.includes("".concat(t));
+        })) y2Ticks = [];
+        if (yScale === "Point" && yTicks.every(function (t) {
+          return dataLabels.includes("".concat(t));
+        })) yTicks = [];
 
         if (showY) {
           this._yTest.domain(yDomain).height(height).maxSize(width / 2).range([undefined, undefined]).select(testGroup.node()).ticks(yTicks).width(width).config(yC).config(this._yConfig).scale(yConfigScale).render();

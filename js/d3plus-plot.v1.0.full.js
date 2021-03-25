@@ -51,7 +51,7 @@ function _arrayLikeToArray2(arr, len) { if (len == null || len > arr.length) len
 function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof2 = function _typeof2(obj) { return typeof obj; }; } else { _typeof2 = function _typeof2(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof2(obj); }
 
 /*
-  d3plus-plot v1.0.3
+  d3plus-plot v1.0.4
   A reusable javascript x/y plot built on D3.
   Copyright (c) 2021 D3plus - https://d3plus.org
   @license MIT
@@ -39617,12 +39617,13 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
     };
     return _getPrototypeOf$f(o);
   }
+
+  var padding = 5;
   /**
       @class Legend
       @extends external:BaseClass
       @desc Creates an SVG scale based on an array of data. If *data* is specified, immediately draws based on the specified array and returns the current class instance. If *data* is not specified on instantiation, it can be passed/updated after instantiation using the [data](#shape.data) method.
   */
-
 
   var Legend = /*#__PURE__*/function (_BaseClass) {
     _inherits$f(Legend, _BaseClass);
@@ -39641,6 +39642,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
       _classCallCheck$h(this, Legend);
 
       _this = _super.call(this);
+      _this._titleClass = new TextBox();
       _this._align = "center";
       _this._data = [];
       _this._direction = "row";
@@ -39673,18 +39675,19 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
         },
         labelBounds: function labelBounds(dd, i) {
           var d = _this._lineData[i];
-          var x = d.shapeWidth;
-          if (d.shape === "Circle") x -= d.shapeR;
+          var x = d.shapeWidth / 2;
+          if (d.shape === "Circle") x -= d.shapeR / 2;
           var height = max([d.shapeHeight, d.height]);
           return {
             width: d.width,
             height: height,
-            x: x,
+            x: x + padding,
             y: -height / 2
           };
         },
         labelConfig: {
           fontColor: constant(defaults.dark),
+          fontFamily: _this._titleClass.fontFamily(),
           fontResize: false,
           fontSize: constant(10),
           verticalAlign: "middle"
@@ -39718,7 +39721,6 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
           }))) / 2;
         }
       };
-      _this._titleClass = new TextBox();
       _this._titleConfig = {
         fontSize: 12
       };
@@ -39832,7 +39834,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
               "font-family": f,
               "font-size": s
             });
-          }))) + s * 0.75;
+          }))) + padding * 2;
           res.height = Math.ceil(res.lines.length * (lh + 1));
           res.og = {
             height: res.height,
@@ -40760,7 +40762,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
           }
 
           var axisConfig = assign({
-            domain: axisDomain,
+            domain: horizontal ? axisDomain : axisDomain.slice().reverse(),
             duration: this._duration,
             height: this._height,
             labels: labels || ticks,
@@ -40903,6 +40905,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
             });
             return arr;
           }, []);
+          if (!horizontal) legendData = legendData.reverse();
           var legendConfig = assign({
             align: horizontal ? "center" : {
               start: "left",
@@ -41912,12 +41915,12 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
       y: rect.top
     };
   }
-  /*:: import type { Window } from '../types'; */
-
-  /*:: declare function getWindow(node: Node | Window): Window; */
-
 
   function getWindow(node) {
+    if (node == null) {
+      return window;
+    }
+
     if (node.toString() !== '[object Window]') {
       var ownerDocument = node.ownerDocument;
       return ownerDocument ? ownerDocument.defaultView || window : window;
@@ -41935,27 +41938,23 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
       scrollTop: scrollTop
     };
   }
-  /*:: declare function isElement(node: mixed): boolean %checks(node instanceof
-    Element); */
-
 
   function isElement(node) {
     var OwnElement = getWindow(node).Element;
     return node instanceof OwnElement || node instanceof Element;
   }
-  /*:: declare function isHTMLElement(node: mixed): boolean %checks(node instanceof
-    HTMLElement); */
-
 
   function isHTMLElement(node) {
     var OwnElement = getWindow(node).HTMLElement;
     return node instanceof OwnElement || node instanceof HTMLElement;
   }
-  /*:: declare function isShadowRoot(node: mixed): boolean %checks(node instanceof
-    ShadowRoot); */
-
 
   function isShadowRoot(node) {
+    // IE 11 has no ShadowRoot
+    if (typeof ShadowRoot === 'undefined') {
+      return false;
+    }
+
     var OwnElement = getWindow(node).ShadowRoot;
     return node instanceof OwnElement || node instanceof ShadowRoot;
   }
@@ -42049,16 +42048,29 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
       width: rect.width,
       height: rect.height
     };
-  } // Returns the layout rect of an element relative to its offsetParent. Layout
-  // means it doesn't take into account transforms.
+  } // means it doesn't take into account transforms.
 
 
   function getLayoutRect(element) {
+    var clientRect = getBoundingClientRect(element); // Use the clientRect sizes if it's not been transformed.
+    // Fixes https://github.com/popperjs/popper-core/issues/1223
+
+    var width = element.offsetWidth;
+    var height = element.offsetHeight;
+
+    if (Math.abs(clientRect.width - width) <= 1) {
+      width = clientRect.width;
+    }
+
+    if (Math.abs(clientRect.height - height) <= 1) {
+      height = clientRect.height;
+    }
+
     return {
       x: element.offsetLeft,
       y: element.offsetTop,
-      width: element.offsetWidth,
-      height: element.offsetHeight
+      width: width,
+      height: height
     };
   }
 
@@ -42071,9 +42083,8 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
       // $FlowFixMe[incompatible-return]
       // $FlowFixMe[prop-missing]
       element.assignedSlot || // step into the shadow DOM of the parent of a slotted node
-      element.parentNode || // DOM Element detected
-      // $FlowFixMe[incompatible-return]: need a better way to handle this...
-      element.host || // ShadowRoot detected
+      element.parentNode || ( // DOM Element detected
+      isShadowRoot(element) ? element.host : null) || // ShadowRoot detected
       // $FlowFixMe[incompatible-call]: HTMLElement is a Node
       getDocumentElement(element) // fallback
 
@@ -42101,12 +42112,14 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
 
 
   function listScrollParents(element, list) {
+    var _element$ownerDocumen;
+
     if (list === void 0) {
       list = [];
     }
 
     var scrollParent = getScrollParent(element);
-    var isBody = getNodeName(scrollParent) === 'body';
+    var isBody = scrollParent === ((_element$ownerDocumen = element.ownerDocument) == null ? void 0 : _element$ownerDocumen.body);
     var win = getWindow(scrollParent);
     var target = isBody ? [win].concat(win.visualViewport || [], isScrollParent(scrollParent) ? scrollParent : []) : scrollParent;
     var updatedList = list.concat(target);
@@ -42124,29 +42137,21 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
       return null;
     }
 
-    var offsetParent = element.offsetParent;
-
-    if (offsetParent) {
-      var html = getDocumentElement(offsetParent);
-
-      if (getNodeName(offsetParent) === 'body' && getComputedStyle(offsetParent).position === 'static' && getComputedStyle(html).position !== 'static') {
-        return html;
-      }
-    }
-
-    return offsetParent;
+    return element.offsetParent;
   } // `.offsetParent` reports `null` for fixed elements, while absolute elements
   // return the containing block
 
 
   function getContainingBlock(element) {
+    var isFirefox = navigator.userAgent.toLowerCase().indexOf('firefox') !== -1;
     var currentNode = getParentNode(element);
 
     while (isHTMLElement(currentNode) && ['html', 'body'].indexOf(getNodeName(currentNode)) < 0) {
       var css = getComputedStyle(currentNode); // This is non-exhaustive but covers the most common CSS properties that
       // create a containing block.
+      // https://developer.mozilla.org/en-US/docs/Web/CSS/Containing_block#identifying_the_containing_block
 
-      if (css.transform !== 'none' || css.perspective !== 'none' || css.willChange && css.willChange !== 'auto') {
+      if (css.transform !== 'none' || css.perspective !== 'none' || css.contain === 'paint' || ['transform', 'perspective'].indexOf(css.willChange) !== -1 || isFirefox && css.willChange === 'filter' || isFirefox && css.filter && css.filter !== 'none') {
         return currentNode;
       } else {
         currentNode = currentNode.parentNode;
@@ -42166,7 +42171,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
       offsetParent = getTrueOffsetParent(offsetParent);
     }
 
-    if (offsetParent && getNodeName(offsetParent) === 'body' && getComputedStyle(offsetParent).position === 'static') {
+    if (offsetParent && (getNodeName(offsetParent) === 'html' || getNodeName(offsetParent) === 'body' && getComputedStyle(offsetParent).position === 'static')) {
       return window;
     }
 
@@ -42271,9 +42276,9 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
   function mergeByName(modifiers) {
     var merged = modifiers.reduce(function (merged, current) {
       var existing = merged[current.name];
-      merged[current.name] = existing ? Object.assign(Object.assign(Object.assign({}, existing), current), {}, {
-        options: Object.assign(Object.assign({}, existing.options), current.options),
-        data: Object.assign(Object.assign({}, existing.data), current.data)
+      merged[current.name] = existing ? Object.assign({}, existing, current, {
+        options: Object.assign({}, existing.options, current.options),
+        data: Object.assign({}, existing.data, current.data)
       }) : current;
       return merged;
     }, {}); // IE11 does not support Object.values
@@ -42319,20 +42324,25 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
       x: x + getWindowScrollBarX(element),
       y: y
     };
-  } // of the `<html>` and `<body>` rect bounds if horizontally scrollable
+  }
 
+  var max$3 = Math.max;
+  var min$3 = Math.min;
+  var round$1 = Math.round; // of the `<html>` and `<body>` rect bounds if horizontally scrollable
 
   function getDocumentRect(element) {
+    var _element$ownerDocumen;
+
     var html = getDocumentElement(element);
     var winScroll = getWindowScroll(element);
-    var body = element.ownerDocument.body;
-    var width = Math.max(html.scrollWidth, html.clientWidth, body ? body.scrollWidth : 0, body ? body.clientWidth : 0);
-    var height = Math.max(html.scrollHeight, html.clientHeight, body ? body.scrollHeight : 0, body ? body.clientHeight : 0);
+    var body = (_element$ownerDocumen = element.ownerDocument) == null ? void 0 : _element$ownerDocumen.body;
+    var width = max$3(html.scrollWidth, html.clientWidth, body ? body.scrollWidth : 0, body ? body.clientWidth : 0);
+    var height = max$3(html.scrollHeight, html.clientHeight, body ? body.scrollHeight : 0, body ? body.clientHeight : 0);
     var x = -winScroll.scrollLeft + getWindowScrollBarX(element);
     var y = -winScroll.scrollTop;
 
     if (getComputedStyle(body || html).direction === 'rtl') {
-      x += Math.max(html.clientWidth, body ? body.clientWidth : 0) - width;
+      x += max$3(html.clientWidth, body ? body.clientWidth : 0) - width;
     }
 
     return {
@@ -42367,7 +42377,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
   }
 
   function rectToClientRect(rect) {
-    return Object.assign(Object.assign({}, rect), {}, {
+    return Object.assign({}, rect, {
       left: rect.x,
       top: rect.y,
       right: rect.x + rect.width,
@@ -42418,10 +42428,10 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
     var firstClippingParent = clippingParents[0];
     var clippingRect = clippingParents.reduce(function (accRect, clippingParent) {
       var rect = getClientRectFromMixedType(element, clippingParent);
-      accRect.top = Math.max(rect.top, accRect.top);
-      accRect.right = Math.min(rect.right, accRect.right);
-      accRect.bottom = Math.min(rect.bottom, accRect.bottom);
-      accRect.left = Math.max(rect.left, accRect.left);
+      accRect.top = max$3(rect.top, accRect.top);
+      accRect.right = min$3(rect.right, accRect.right);
+      accRect.bottom = min$3(rect.bottom, accRect.bottom);
+      accRect.left = max$3(rect.left, accRect.left);
       return accRect;
     }, getClientRectFromMixedType(element, firstClippingParent));
     clippingRect.width = clippingRect.right - clippingRect.left;
@@ -42514,7 +42524,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
   }
 
   function mergePaddingObject(paddingObject) {
-    return Object.assign(Object.assign({}, getFreshSideObject()), paddingObject);
+    return Object.assign({}, getFreshSideObject(), paddingObject);
   }
 
   function expandToHashMap(value, keys) {
@@ -42555,7 +42565,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
       strategy: 'absolute',
       placement: placement
     });
-    var popperClientRect = rectToClientRect(Object.assign(Object.assign({}, popperRect), popperOffsets));
+    var popperClientRect = rectToClientRect(Object.assign({}, popperRect, popperOffsets));
     var elementClientRect = elementContext === popper ? popperClientRect : referenceClientRect; // positive = overflowing the clipping rect
     // 0 or negative = within the clipping rect
 
@@ -42613,7 +42623,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
       var state = {
         placement: 'bottom',
         orderedModifiers: [],
-        options: Object.assign(Object.assign({}, DEFAULT_OPTIONS), defaultOptions),
+        options: Object.assign({}, DEFAULT_OPTIONS, defaultOptions),
         modifiersData: {},
         elements: {
           reference: reference,
@@ -42628,7 +42638,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
         state: state,
         setOptions: function setOptions(options) {
           cleanupModifierEffects();
-          state.options = Object.assign(Object.assign(Object.assign({}, defaultOptions), state.options), options);
+          state.options = Object.assign({}, defaultOptions, state.options, options);
           state.scrollParents = {
             reference: isElement(reference) ? listScrollParents(reference) : reference.contextElement ? listScrollParents(reference.contextElement) : [],
             popper: listScrollParents(popper)
@@ -42853,8 +42863,8 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
     var win = window;
     var dpr = win.devicePixelRatio || 1;
     return {
-      x: Math.round(x * dpr) / dpr || 0,
-      y: Math.round(y * dpr) / dpr || 0
+      x: round$1(round$1(x * dpr) / dpr) || 0,
+      y: round$1(round$1(y * dpr) / dpr) || 0
     };
   }
 
@@ -42870,7 +42880,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
         adaptive = _ref2.adaptive,
         roundOffsets = _ref2.roundOffsets;
 
-    var _ref3 = roundOffsets ? roundOffsetsByDPR(offsets) : offsets,
+    var _ref3 = roundOffsets === true ? roundOffsetsByDPR(offsets) : typeof roundOffsets === 'function' ? roundOffsets(offsets) : offsets,
         _ref3$x = _ref3.x,
         x = _ref3$x === void 0 ? 0 : _ref3$x,
         _ref3$y = _ref3.y,
@@ -42884,23 +42894,32 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
 
     if (adaptive) {
       var offsetParent = getOffsetParent(popper);
+      var heightProp = 'clientHeight';
+      var widthProp = 'clientWidth';
 
       if (offsetParent === getWindow(popper)) {
         offsetParent = getDocumentElement(popper);
+
+        if (getComputedStyle(offsetParent).position !== 'static') {
+          heightProp = 'scrollHeight';
+          widthProp = 'scrollWidth';
+        }
       } // $FlowFixMe[incompatible-cast]: force type refinement, we compare offsetParent with window above, but Flow doesn't detect it
 
-      /*:: offsetParent = (offsetParent: Element); */
 
+      offsetParent = offsetParent;
 
       if (placement === top) {
-        sideY = bottom;
-        y -= offsetParent.clientHeight - popperRect.height;
+        sideY = bottom; // $FlowFixMe[prop-missing]
+
+        y -= offsetParent[heightProp] - popperRect.height;
         y *= gpuAcceleration ? 1 : -1;
       }
 
       if (placement === left) {
-        sideX = right;
-        x -= offsetParent.clientWidth - popperRect.width;
+        sideX = right; // $FlowFixMe[prop-missing]
+
+        x -= offsetParent[widthProp] - popperRect.width;
         x *= gpuAcceleration ? 1 : -1;
       }
     }
@@ -42912,10 +42931,10 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
     if (gpuAcceleration) {
       var _Object$assign;
 
-      return Object.assign(Object.assign({}, commonStyles), {}, (_Object$assign = {}, _Object$assign[sideY] = hasY ? '0' : '', _Object$assign[sideX] = hasX ? '0' : '', _Object$assign.transform = (win.devicePixelRatio || 1) < 2 ? "translate(" + x + "px, " + y + "px)" : "translate3d(" + x + "px, " + y + "px, 0)", _Object$assign));
+      return Object.assign({}, commonStyles, (_Object$assign = {}, _Object$assign[sideY] = hasY ? '0' : '', _Object$assign[sideX] = hasX ? '0' : '', _Object$assign.transform = (win.devicePixelRatio || 1) < 2 ? "translate(" + x + "px, " + y + "px)" : "translate3d(" + x + "px, " + y + "px, 0)", _Object$assign));
     }
 
-    return Object.assign(Object.assign({}, commonStyles), {}, (_Object$assign2 = {}, _Object$assign2[sideY] = hasY ? y + "px" : '', _Object$assign2[sideX] = hasX ? x + "px" : '', _Object$assign2.transform = '', _Object$assign2));
+    return Object.assign({}, commonStyles, (_Object$assign2 = {}, _Object$assign2[sideY] = hasY ? y + "px" : '', _Object$assign2[sideX] = hasX ? x + "px" : '', _Object$assign2.transform = '', _Object$assign2));
   }
 
   function computeStyles(_ref4) {
@@ -42935,7 +42954,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
     };
 
     if (state.modifiersData.popperOffsets != null) {
-      state.styles.popper = Object.assign(Object.assign({}, state.styles.popper), mapToStyles(Object.assign(Object.assign({}, commonStyles), {}, {
+      state.styles.popper = Object.assign({}, state.styles.popper, mapToStyles(Object.assign({}, commonStyles, {
         offsets: state.modifiersData.popperOffsets,
         position: state.options.strategy,
         adaptive: adaptive,
@@ -42944,7 +42963,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
     }
 
     if (state.modifiersData.arrow != null) {
-      state.styles.arrow = Object.assign(Object.assign({}, state.styles.arrow), mapToStyles(Object.assign(Object.assign({}, commonStyles), {}, {
+      state.styles.arrow = Object.assign({}, state.styles.arrow, mapToStyles(Object.assign({}, commonStyles, {
         offsets: state.modifiersData.arrow,
         position: 'absolute',
         adaptive: false,
@@ -42952,7 +42971,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
       })));
     }
 
-    state.attributes.popper = Object.assign(Object.assign({}, state.attributes.popper), {}, {
+    state.attributes.popper = Object.assign({}, state.attributes.popper, {
       'data-popper-placement': state.placement
     });
   } // eslint-disable-next-line import/no-unused-modules
@@ -43008,6 +43027,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
       reference: {}
     };
     Object.assign(state.elements.popper.style, initialStyles.popper);
+    state.styles = initialStyles;
 
     if (state.elements.arrow) {
       Object.assign(state.elements.arrow.style, initialStyles.arrow);
@@ -43050,7 +43070,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
     var basePlacement = getBasePlacement(placement);
     var invertDistance = [left, top].indexOf(basePlacement) >= 0 ? -1 : 1;
 
-    var _ref = typeof offset === 'function' ? offset(Object.assign(Object.assign({}, rects), {}, {
+    var _ref = typeof offset === 'function' ? offset(Object.assign({}, rects, {
       placement: placement
     })) : offset,
         skidding = _ref[0],
@@ -43120,10 +43140,6 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
       return hash$1[matched];
     });
   }
-  /*:: type OverflowsMap = { [ComputedPlacement]: number }; */
-
-  /*;; type OverflowsMap = { [key in ComputedPlacement]: number }; */
-
 
   function computeAutoPlacement(state, options) {
     if (options === void 0) {
@@ -43310,7 +43326,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
   }
 
   function within(min, value, max) {
-    return Math.max(min, Math.min(value, max));
+    return max$3(min, min$3(value, max));
   }
 
   function preventOverflow(_ref) {
@@ -43343,7 +43359,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
     var popperOffsets = state.modifiersData.popperOffsets;
     var referenceRect = state.rects.reference;
     var popperRect = state.rects.popper;
-    var tetherOffsetValue = typeof tetherOffset === 'function' ? tetherOffset(Object.assign(Object.assign({}, state.rects), {}, {
+    var tetherOffsetValue = typeof tetherOffset === 'function' ? tetherOffset(Object.assign({}, state.rects, {
       placement: state.placement
     })) : tetherOffset;
     var data = {
@@ -43355,7 +43371,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
       return;
     }
 
-    if (checkMainAxis) {
+    if (checkMainAxis || checkAltAxis) {
       var mainSide = mainAxis === 'y' ? top : left;
       var altSide = mainAxis === 'y' ? bottom : right;
       var len = mainAxis === 'y' ? 'height' : 'width';
@@ -43388,26 +43404,29 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
       var offsetModifierValue = state.modifiersData.offset ? state.modifiersData.offset[state.placement][mainAxis] : 0;
       var tetherMin = popperOffsets[mainAxis] + minOffset - offsetModifierValue - clientOffset;
       var tetherMax = popperOffsets[mainAxis] + maxOffset - offsetModifierValue;
-      var preventedOffset = within(tether ? Math.min(min, tetherMin) : min, offset, tether ? Math.max(max, tetherMax) : max);
-      popperOffsets[mainAxis] = preventedOffset;
-      data[mainAxis] = preventedOffset - offset;
-    }
 
-    if (checkAltAxis) {
-      var _mainSide = mainAxis === 'x' ? top : left;
+      if (checkMainAxis) {
+        var preventedOffset = within(tether ? min$3(min, tetherMin) : min, offset, tether ? max$3(max, tetherMax) : max);
+        popperOffsets[mainAxis] = preventedOffset;
+        data[mainAxis] = preventedOffset - offset;
+      }
 
-      var _altSide = mainAxis === 'x' ? bottom : right;
+      if (checkAltAxis) {
+        var _mainSide = mainAxis === 'x' ? top : left;
 
-      var _offset = popperOffsets[altAxis];
+        var _altSide = mainAxis === 'x' ? bottom : right;
 
-      var _min = _offset + overflow[_mainSide];
+        var _offset = popperOffsets[altAxis];
 
-      var _max = _offset - overflow[_altSide];
+        var _min = _offset + overflow[_mainSide];
 
-      var _preventedOffset = within(_min, _offset, _max);
+        var _max = _offset - overflow[_altSide];
 
-      popperOffsets[altAxis] = _preventedOffset;
-      data[altAxis] = _preventedOffset - _offset;
+        var _preventedOffset = within(tether ? min$3(_min, tetherMin) : _min, _offset, tether ? max$3(_max, tetherMax) : _max);
+
+        popperOffsets[altAxis] = _preventedOffset;
+        data[altAxis] = _preventedOffset - _offset;
+      }
     }
 
     state.modifiersData[name] = data;
@@ -43422,11 +43441,19 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
     requiresIfExists: ['offset']
   };
 
+  var toPaddingObject = function toPaddingObject(padding, state) {
+    padding = typeof padding === 'function' ? padding(Object.assign({}, state.rects, {
+      placement: state.placement
+    })) : padding;
+    return mergePaddingObject(typeof padding !== 'number' ? padding : expandToHashMap(padding, basePlacements));
+  };
+
   function arrow(_ref) {
     var _state$modifiersData$;
 
     var state = _ref.state,
-        name = _ref.name;
+        name = _ref.name,
+        options = _ref.options;
     var arrowElement = state.elements.arrow;
     var popperOffsets = state.modifiersData.popperOffsets;
     var basePlacement = getBasePlacement(state.placement);
@@ -43438,7 +43465,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
       return;
     }
 
-    var paddingObject = state.modifiersData[name + "#persistent"].padding;
+    var paddingObject = toPaddingObject(options.padding, state);
     var arrowRect = getLayoutRect(arrowElement);
     var minProp = axis === 'y' ? top : left;
     var maxProp = axis === 'y' ? bottom : right;
@@ -43460,12 +43487,9 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
 
   function effect$2(_ref2) {
     var state = _ref2.state,
-        options = _ref2.options,
-        name = _ref2.name;
+        options = _ref2.options;
     var _options$element = options.element,
-        arrowElement = _options$element === void 0 ? '[data-popper-arrow]' : _options$element,
-        _options$padding = options.padding,
-        padding = _options$padding === void 0 ? 0 : _options$padding;
+        arrowElement = _options$element === void 0 ? '[data-popper-arrow]' : _options$element;
 
     if (arrowElement == null) {
       return;
@@ -43485,9 +43509,6 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
     }
 
     state.elements.arrow = arrowElement;
-    state.modifiersData[name + "#persistent"] = {
-      padding: mergePaddingObject(typeof padding !== 'number' ? padding : expandToHashMap(padding, basePlacements))
-    };
   } // eslint-disable-next-line import/no-unused-modules
 
 
@@ -43545,7 +43566,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
       isReferenceHidden: isReferenceHidden,
       hasPopperEscaped: hasPopperEscaped
     };
-    state.attributes.popper = Object.assign(Object.assign({}, state.attributes.popper), {}, {
+    state.attributes.popper = Object.assign({}, state.attributes.popper, {
       'data-popper-reference-hidden': isReferenceHidden,
       'data-popper-escaped': hasPopperEscaped
     });
@@ -44518,7 +44539,10 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
     var _this = this;
 
     var data = this._data;
-    var position = this._colorScalePosition.bind(this)(this.config()) || "bottom";
+
+    var position = this._colorScalePosition.bind(this)(this.config());
+
+    if (![false, "top", "bottom", "left", "right"].includes(position)) position = "bottom";
     var wide = ["top", "bottom"].includes(position);
     var padding = this._colorScalePadding() ? this._padding : {
       top: 0,
@@ -44653,6 +44677,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
 
     var position = this._legendPosition.bind(this)(config);
 
+    if (![false, "top", "bottom", "left", "right"].includes(position)) position = "bottom";
     var wide = ["top", "bottom"].includes(position);
     var padding = this._legendPadding() ? this._padding : {
       top: 0,
@@ -46039,8 +46064,11 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
       value: function _draw() {
         var legendPosition = this._legendPosition.bind(this)(this.config());
 
+        if (![false, "top", "bottom", "left", "right"].includes(legendPosition)) legendPosition = "bottom";
+
         var colorScalePosition = this._colorScalePosition.bind(this)(this.config());
 
+        if (![false, "top", "bottom", "left", "right"].includes(colorScalePosition)) colorScalePosition = "bottom";
         if (legendPosition === "left" || legendPosition === "right") drawLegend.bind(this)(this._legendData);
         if (colorScalePosition === "left" || colorScalePosition === "right" || colorScalePosition === false) drawColorScale.bind(this)(this._filteredData);
         drawBack.bind(this)();
@@ -48636,13 +48664,32 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
         var x2Ticks = this._discrete === "x" && !x2Time ? domains.x2 : undefined,
             xTicks = !showY ? extent(domains.x) : this._discrete === "x" && !xTime ? domains.x : undefined,
             y2Ticks = this._discrete === "y" && !y2Time ? domains.y2 : undefined,
-            yTicks = !showX ? extent(domains.y) : this._discrete === "y" && !yTime ? domains.y : undefined; // hides repetitive axis ticks in BarCharts
+            yTicks = !showX ? extent(domains.y) : this._discrete === "y" && !yTime ? domains.y : undefined;
+        /**
+         * Hides an axis' ticks and labels if they all exist as labels for the data to be displayed,
+         * primarily occuring in simple BarChart visualizations where the both the x-axis ticks and
+         * the Bar rectangles would be displaying the same text.
+         */
+        // generates an Array of String labels using the _drawLabel function from Viz
 
-        var uniques = Array.from(new Set(this._filteredData.map(this._id))).length;
-        if (x2Scale === "Point" && x2Ticks.length === uniques) x2Ticks = [];
-        if (xScale === "Point" && xTicks.length === uniques) xTicks = [];
-        if (y2Scale === "Point" && y2Ticks.length === uniques) y2Ticks = [];
-        if (yScale === "Point" && yTicks.length === uniques) yTicks = [];
+        var dataLabels = this._filteredData.map(function (d, i) {
+          return _this13._drawLabel(d, i);
+        }).map(String); // sets an axis' ticks to [] if the axis scale is "Point" (discrete) and every tick String
+        // is also in the dataLabels Array
+
+
+        if (x2Scale === "Point" && x2Ticks.every(function (t) {
+          return dataLabels.includes("".concat(t));
+        })) x2Ticks = [];
+        if (xScale === "Point" && xTicks.every(function (t) {
+          return dataLabels.includes("".concat(t));
+        })) xTicks = [];
+        if (y2Scale === "Point" && y2Ticks.every(function (t) {
+          return dataLabels.includes("".concat(t));
+        })) y2Ticks = [];
+        if (yScale === "Point" && yTicks.every(function (t) {
+          return dataLabels.includes("".concat(t));
+        })) yTicks = [];
 
         if (showY) {
           this._yTest.domain(yDomain).height(height).maxSize(width / 2).range([undefined, undefined]).select(testGroup.node()).ticks(yTicks).width(width).config(yC).config(this._yConfig).scale(yConfigScale).render();
