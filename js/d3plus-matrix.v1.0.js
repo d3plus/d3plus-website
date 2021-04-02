@@ -45,7 +45,7 @@ function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len 
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
 /*
-  d3plus-matrix v1.0.2
+  d3plus-matrix v1.0.3
   Row/column layouts
   Copyright (c) 2021 D3plus - https://d3plus.org
   @license MIT
@@ -8403,8 +8403,16 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
             y: radius * Math.cos(radians + Math.PI) + yMod
           };
         });
+        /**
+         * Extracts the axis config "labels" Array, if it exists, it filters
+         * the column labels by the values included in the Array.
+         */
 
-        this._columnLabels.data(labelData).x(function (d) {
+        var displayLabels = this._columnConfig.labels instanceof Array ? labelData.filter(function (d) {
+          return _this4._columnConfig.labels.includes(d.key);
+        }) : labelData;
+
+        this._columnLabels.data(displayLabels).x(function (d) {
           return d.x;
         }).y(function (d) {
           return d.y;
