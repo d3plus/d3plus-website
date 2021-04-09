@@ -15,7 +15,7 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
 /*
-  d3plus-common v1.0.2
+  d3plus-common v1.0.3
   Common functions and methods used across D3plus modules.
   Copyright (c) 2021 D3plus - https://d3plus.org
   @license MIT
@@ -7901,11 +7901,11 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
   }
   */
   function accessor(key, def) {
-    if (def === void 0) return function (d) {
+    if (def === undefined) return function (d) {
       return d[key];
     };
     return function (d) {
-      return d[key] === void 0 ? def : d[key];
+      return d[key] === undefined ? def : d[key];
     };
   }
   /**
@@ -18103,9 +18103,8 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
           } else if (obj[key] instanceof Array) {
             newObj[key] = arrayEval(obj[key]);
           } else if (_typeof(obj[key]) === "object") {
-            newObj[key] = {
-              on: {}
-            };
+            if (!newObj[key]) newObj[key] = {};
+            newObj[key].on = {};
             keyEval(newObj[key], obj[key]);
           } else newObj[key] = obj[key];
         }
