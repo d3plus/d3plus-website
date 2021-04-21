@@ -59,7 +59,7 @@ function _arrayLikeToArray2(arr, len) { if (len == null || len > arr.length) len
 function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof2 = function _typeof2(obj) { return typeof obj; }; } else { _typeof2 = function _typeof2(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof2(obj); }
 
 /*
-  d3plus-viz v1.0.4
+  d3plus-viz v1.0.5
   Abstract ES6 class that drives d3plus visualizations.
   Copyright (c) 2021 D3plus - https://d3plus.org
   @license MIT
@@ -45114,6 +45114,8 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
             mask: false,
             style: this._messageStyle
           });
+
+          this._select.transition().duration(this._duration).attr("opacity", 0);
         }
       }
       /**
@@ -45265,7 +45267,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
           setSVGSize.bind(this)();
         }
 
-        this._select.attr("class", "d3plus-viz").attr("aria-hidden", this._ariaHidden).attr("aria-labelledby", "".concat(this._uuid, "-title ").concat(this._uuid, "-desc")).attr("role", "img").attr("xmlns", "http://www.w3.org/2000/svg").attr("xmlns:xlink", "http://www.w3.org/1999/xlink").transition().duration(this._duration).style("width", this._width !== undefined ? "".concat(this._width, "px") : undefined).style("height", this._height !== undefined ? "".concat(this._height, "px") : undefined).attr("width", this._width !== undefined ? "".concat(this._width, "px") : undefined).attr("height", this._height !== undefined ? "".concat(this._height, "px") : undefined); // sets "position: relative" on the SVG parent if currently undefined
+        this._select.attr("class", "d3plus-viz").attr("aria-hidden", this._ariaHidden).attr("aria-labelledby", "".concat(this._uuid, "-title ").concat(this._uuid, "-desc")).attr("opacity", 1).attr("role", "img").attr("xmlns", "http://www.w3.org/2000/svg").attr("xmlns:xlink", "http://www.w3.org/1999/xlink").transition().duration(this._duration).style("width", this._width !== undefined ? "".concat(this._width, "px") : undefined).style("height", this._height !== undefined ? "".concat(this._height, "px") : undefined).attr("width", this._width !== undefined ? "".concat(this._width, "px") : undefined).attr("height", this._height !== undefined ? "".concat(this._height, "px") : undefined); // sets "position: relative" on the SVG parent if currently undefined
 
 
         var parent = _select(this._select.node().parentNode);
@@ -45369,7 +45371,12 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
 
             zoomControls.bind(_this20)();
             drawAttribution.bind(_this20)();
-            if (_this20._messageClass._isVisible && (!_this20._noDataMessage || _this20._filteredData.length)) _this20._messageClass.hide();
+
+            if (_this20._messageClass._isVisible && (!_this20._noDataMessage || _this20._filteredData.length)) {
+              _this20._messageClass.hide();
+
+              if (_this20._select.attr("opacity") === "0") _this20._select.transition().duration(_this20._duration).attr("opacity", 1);
+            }
 
             if (_this20._detectResize && (_this20._autoWidth || _this20._autoHeight)) {
               _select(_this20._scrollContainer).on("resize.".concat(_this20._uuid), function () {
