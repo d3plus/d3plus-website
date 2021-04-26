@@ -39,7 +39,7 @@ function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.g
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
 /*
-  d3plus-plot v1.0.5
+  d3plus-plot v1.0.6
   A reusable javascript x/y plot built on D3.
   Copyright (c) 2021 D3plus - https://d3plus.org
   @license MIT
@@ -8095,16 +8095,42 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
     discreteBuffer(isDiscreteX ? x : y, data, this._discrete);
     return [x, y];
   }
+
+  var floor10 = function floor10(v) {
+    return Math.pow(10, Math.floor(Math.log10(Math.abs(v)))) * Math.pow(-1, v < 0);
+  };
+
+  var ceil10 = function ceil10(v) {
+    return Math.pow(10, Math.ceil(Math.log10(Math.abs(v)))) * Math.pow(-1, v < 0);
+  };
   /** */
 
 
   function numericBuffer(axis, scale, value, size, range, domain, index, invert) {
+    if (isNaN(domain[0]) || isNaN(domain[1])) return domain;
+
     if (invert) {
       domain = domain.slice().reverse();
       range = range.slice().reverse();
     }
 
-    var logMod = Math.abs(Math.log(domain[1] - domain[0]) / 10);
+    if (domain[0] === domain[1]) {
+      domain = domain.slice();
+
+      if (scale === "log") {
+        domain = [floor10(domain[0]), ceil10(domain[0])];
+        if (domain[1] < domain[0]) domain.reverse();
+      } else {
+        var mod = Math.abs(parseFloat(domain[0].toPrecision(1).replace(/[0-9]{1}$/, "1")));
+        domain[0] -= mod;
+        domain[1] += mod;
+      }
+
+      axis.domain(invert ? domain.slice().reverse() : domain);
+      return invert ? domain.reverse() : domain;
+    }
+
+    var logMod = domain[0] === domain[1] ? 10 : Math.abs(Math.log(domain[1] - domain[0]) / 10);
 
     var needsBuffer = function needsBuffer() {
       var tempAxis = axis.copy();
@@ -8150,27 +8176,27 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
     };
 
     if (axis.invert && needsBuffer()) {
-      var mod = 10;
+      var _mod = 10;
 
       if (scale === "log") {
         var i = 0;
 
         while (i < 10 && needsBuffer()) {
-          var _mod = (index === 0 ? -1 : 1) * (domain[index] < 0 ? -1 : 1);
+          var _mod2 = (index === 0 ? -1 : 1) * (domain[index] < 0 ? -1 : 1);
 
-          domain[index] += domain[index] * logMod * _mod;
+          domain[index] += domain[index] * logMod * _mod2;
           axis.domain(invert ? domain.slice().reverse() : domain);
           i++;
         }
       } else if (index === 0) {
-        var v = axis.invert(axis(value) + (size + mod) * (invert ? 1 : -1));
+        var v = axis.invert(axis(value) + (size + _mod) * (invert ? 1 : -1));
 
         if (v < domain[index]) {
           domain[index] = v;
           axis.domain(invert ? domain.slice().reverse() : domain);
         }
       } else if (index === 1) {
-        var _v = axis.invert(axis(value) + (size + mod) * (invert ? -1 : 1));
+        var _v = axis.invert(axis(value) + (size + _mod) * (invert ? -1 : 1));
 
         if (_v > domain[index]) {
           domain[index] = _v;
