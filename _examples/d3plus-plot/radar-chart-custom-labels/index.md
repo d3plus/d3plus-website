@@ -2,8 +2,8 @@
 title: Radar Chart Custom Labels
 width: 800
 height: 400
-time: 1617986244775
-date: April 09, 2021
+time: 1619465300796
+date: April 26, 2021
 ---
 
 # Radar Chart Custom Labels
