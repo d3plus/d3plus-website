@@ -9,7 +9,7 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
 /*
-  d3plus-common v1.0.3
+  d3plus-common v1.0.4
   Common functions and methods used across D3plus modules.
   Copyright (c) 2021 D3plus - https://d3plus.org
   @license MIT
@@ -7950,6 +7950,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
 
     var _loop = function _loop(i) {
       var source = i < 0 || _arguments.length <= i ? undefined : _arguments[i];
+      if (!isObject(source)) return "continue";
       Object.keys(source).forEach(function (prop) {
         var value = source[prop];
 
@@ -7960,7 +7961,9 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
     };
 
     for (var i = 1; i < arguments.length; i++) {
-      _loop(i);
+      var _ret = _loop(i);
+
+      if (_ret === "continue") continue;
     }
 
     return target;
