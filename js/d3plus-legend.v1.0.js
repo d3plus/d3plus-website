@@ -23,7 +23,7 @@ function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.g
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
 /*
-  d3plus-legend v1.0.2
+  d3plus-legend v1.0.3
   An easy to use javascript chart legend.
   Copyright (c) 2021 D3plus - https://d3plus.org
   @license MIT
@@ -8856,12 +8856,18 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
           var mod = next ? next / 100 : tick / 100;
           var pow = mod >= 1 || mod <= -1 ? Math.round(mod).toString().length - 1 : mod.toString().split(".")[1].replace(/([1-9])[1-9].*$/, "$1").length * -1;
           var ten = Math.pow(10, pow);
-          return prev === tick && i === 1 ? "".concat(format(d3Array.min([tick + ten, allValues.find(function (d) {
+          var prevValue = prev === tick && i === 1 ? format(d3Array.min([tick + ten, allValues.find(function (d) {
             return d > tick && d < next;
-          })])), " - ").concat(format(next)) : "".concat(format(tick), " - ").concat(format(d3Array.max([next - ten, allValues.reverse().find(function (d) {
+          })])) : format(tick);
+          var nextValue = tick && i === 1 ? format(next) : format(d3Array.max([next - ten, allValues.reverse().find(function (d) {
             return d > tick && d < next;
-          })])));
+          })]));
+          return _this5._bucketJoiner(prevValue, nextValue);
         }
+      };
+
+      _this5._bucketJoiner = function (a, b) {
+        return a !== b ? "".concat(a, " - ").concat(b) : "".concat(a);
       };
 
       _this5._centered = true;
@@ -8928,7 +8934,9 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
           parent: this._select
         });
 
-        var allValues = this._data.map(this._value).sort(function (a, b) {
+        var allValues = this._data.map(this._value).filter(function (d) {
+          return d !== null && typeof d === "number";
+        }).sort(function (a, b) {
           return a - b;
         });
 
@@ -8936,7 +8944,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
         var negative = domain[0] < this._midpoint;
         var positive = domain[1] > this._midpoint;
         var diverging = negative && positive;
-        var numBuckets = this._buckets instanceof Array ? this._buckets.length : this._buckets;
+        var numBuckets = d3Array.min([this._buckets instanceof Array ? this._buckets.length : this._buckets, d3plusCommon.unique(allValues).length]);
         var colors = this._color,
             labels,
             ticks;
@@ -8948,11 +8956,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
         }
 
         if (this._scale === "jenks") {
-          var data = this._data.map(this._value).filter(function (d) {
-            return d !== null && typeof d === "number";
-          });
-
-          var buckets = d3Array.min([colors ? colors.length : numBuckets, data.length]);
+          var buckets = d3Array.min([colors ? colors.length : numBuckets, numBuckets, allValues.length]);
           var jenks = [];
 
           if (this._buckets instanceof Array) {
@@ -8961,11 +8965,11 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
             if (diverging && this._centered) {
               var half = Math.floor(buckets / 2);
               var residual = buckets % 2;
-              var negatives = data.filter(function (d) {
+              var negatives = allValues.filter(function (d) {
                 return d < _this6._midpoint;
               });
               var negativesDeviation = d3Array.deviation(negatives);
-              var positives = data.concat(this._midpoint).filter(function (d) {
+              var positives = allValues.concat(this._midpoint).filter(function (d) {
                 return d >= _this6._midpoint;
               });
               var positivesDeviation = d3Array.deviation(positives);
@@ -8975,7 +8979,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
               var positiveJenks = ckmeans(positives, half + residual * isPositiveMax);
               jenks = negativeJenks.concat(positiveJenks);
             } else {
-              jenks = ckmeans(data, buckets);
+              jenks = ckmeans(allValues, buckets);
             }
 
             ticks = jenks.map(function (c) {
@@ -9025,8 +9029,8 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
             }
           }
 
-          if (data.length <= buckets) {
-            colors = colors.slice(buckets - data.length);
+          if (allValues.length <= buckets) {
+            colors = colors.slice(buckets - allValues.length);
           }
 
           colors = [colors[0]].concat(colors);
@@ -9410,6 +9414,18 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       key: "bucketFormat",
       value: function bucketFormat(_) {
         return arguments.length ? (this._bucketFormat = _, this) : this._bucketFormat;
+      }
+      /**
+          @memberof ColorScale
+          @desc A function that receives the minimum and maximum values of a bucket, and is expected to return the full label.
+          @param {Function} [*value*]
+          @chainable
+      */
+
+    }, {
+      key: "bucketJoiner",
+      value: function bucketJoiner(_) {
+        return arguments.length ? (this._bucketJoiner = _, this) : this._bucketJoiner;
       }
       /**
           @memberof ColorScale

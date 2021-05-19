@@ -41,7 +41,7 @@ function _arrayLikeToArray2(arr, len) { if (len == null || len > arr.length) len
 function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof2 = function _typeof2(obj) { return typeof obj; }; } else { _typeof2 = function _typeof2(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof2(obj); }
 
 /*
-  d3plus-legend v1.0.2
+  d3plus-legend v1.0.3
   An easy to use javascript chart legend.
   Copyright (c) 2021 D3plus - https://d3plus.org
   @license MIT
@@ -37015,12 +37015,18 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
           var _pow = mod >= 1 || mod <= -1 ? Math.round(mod).toString().length - 1 : mod.toString().split(".")[1].replace(/([1-9])[1-9].*$/, "$1").length * -1;
 
           var ten = Math.pow(10, _pow);
-          return prev === tick && i === 1 ? "".concat(format(min([tick + ten, allValues.find(function (d) {
+          var prevValue = prev === tick && i === 1 ? format(min([tick + ten, allValues.find(function (d) {
             return d > tick && d < next;
-          })])), " - ").concat(format(next)) : "".concat(format(tick), " - ").concat(format(max([next - ten, allValues.reverse().find(function (d) {
+          })])) : format(tick);
+          var nextValue = tick && i === 1 ? format(next) : format(max([next - ten, allValues.reverse().find(function (d) {
             return d > tick && d < next;
-          })])));
+          })]));
+          return _this11._bucketJoiner(prevValue, nextValue);
         }
+      };
+
+      _this11._bucketJoiner = function (a, b) {
+        return a !== b ? "".concat(a, " - ").concat(b) : "".concat(a);
       };
 
       _this11._centered = true;
@@ -37087,7 +37093,9 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
           parent: this._select
         });
 
-        var allValues = this._data.map(this._value).sort(function (a, b) {
+        var allValues = this._data.map(this._value).filter(function (d) {
+          return d !== null && typeof d === "number";
+        }).sort(function (a, b) {
           return a - b;
         });
 
@@ -37095,7 +37103,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
         var negative = domain[0] < this._midpoint;
         var positive = domain[1] > this._midpoint;
         var diverging = negative && positive;
-        var numBuckets = this._buckets instanceof Array ? this._buckets.length : this._buckets;
+        var numBuckets = min([this._buckets instanceof Array ? this._buckets.length : this._buckets, unique(allValues).length]);
         var colors = this._color,
             labels,
             ticks;
@@ -37107,11 +37115,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
         }
 
         if (this._scale === "jenks") {
-          var data = this._data.map(this._value).filter(function (d) {
-            return d !== null && typeof d === "number";
-          });
-
-          var buckets = min([colors ? colors.length : numBuckets, data.length]);
+          var buckets = min([colors ? colors.length : numBuckets, numBuckets, allValues.length]);
           var jenks = [];
 
           if (this._buckets instanceof Array) {
@@ -37120,11 +37124,11 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
             if (diverging && this._centered) {
               var half = Math.floor(buckets / 2);
               var residual = buckets % 2;
-              var negatives = data.filter(function (d) {
+              var negatives = allValues.filter(function (d) {
                 return d < _this12._midpoint;
               });
               var negativesDeviation = deviation(negatives);
-              var positives = data.concat(this._midpoint).filter(function (d) {
+              var positives = allValues.concat(this._midpoint).filter(function (d) {
                 return d >= _this12._midpoint;
               });
               var positivesDeviation = deviation(positives);
@@ -37134,7 +37138,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
               var positiveJenks = ckmeans(positives, half + residual * isPositiveMax);
               jenks = negativeJenks.concat(positiveJenks);
             } else {
-              jenks = ckmeans(data, buckets);
+              jenks = ckmeans(allValues, buckets);
             }
 
             ticks = jenks.map(function (c) {
@@ -37184,8 +37188,8 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
             }
           }
 
-          if (data.length <= buckets) {
-            colors = colors.slice(buckets - data.length);
+          if (allValues.length <= buckets) {
+            colors = colors.slice(buckets - allValues.length);
           }
 
           colors = [colors[0]].concat(colors);
@@ -37572,6 +37576,18 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
       key: "bucketFormat",
       value: function bucketFormat(_) {
         return arguments.length ? (this._bucketFormat = _, this) : this._bucketFormat;
+      }
+      /**
+          @memberof ColorScale
+          @desc A function that receives the minimum and maximum values of a bucket, and is expected to return the full label.
+          @param {Function} [*value*]
+          @chainable
+      */
+
+    }, {
+      key: "bucketJoiner",
+      value: function bucketJoiner(_) {
+        return arguments.length ? (this._bucketJoiner = _, this) : this._bucketJoiner;
       }
       /**
           @memberof ColorScale
