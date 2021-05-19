@@ -59,7 +59,7 @@ function _arrayLikeToArray2(arr, len) { if (len == null || len > arr.length) len
 function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof2 = function _typeof2(obj) { return typeof obj; }; } else { _typeof2 = function _typeof2(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof2(obj); }
 
 /*
-  d3plus-viz v1.0.6
+  d3plus-viz v1.0.7
   Abstract ES6 class that drives d3plus visualizations.
   Copyright (c) 2021 D3plus - https://d3plus.org
   @license MIT
@@ -45007,7 +45007,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
 
         var that = this; // based on the groupBy, determine the draw depth and current depth id
 
-        this._drawDepth = this._depth !== void 0 ? this._depth : this._groupBy.length - 1;
+        this._drawDepth = this._depth !== void 0 ? min([this._depth >= 0 ? this._depth : 0, this._groupBy.length - 1]) : this._groupBy.length - 1;
         this._id = this._groupBy[this._drawDepth];
 
         this._ids = function (d, i) {
@@ -45752,6 +45752,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
         var _this21 = this;
 
         if (!arguments.length) return this._groupBy;
+        this._groupByRaw = _;
         if (!(_ instanceof Array)) _ = [_];
         return this._groupBy = _.map(function (k) {
           if (typeof k === "function") return k;else {

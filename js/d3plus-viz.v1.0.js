@@ -41,7 +41,7 @@ function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _d
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
 /*
-  d3plus-viz v1.0.6
+  d3plus-viz v1.0.7
   Abstract ES6 class that drives d3plus visualizations.
   Copyright (c) 2021 D3plus - https://d3plus.org
   @license MIT
@@ -9432,7 +9432,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
 
         var that = this; // based on the groupBy, determine the draw depth and current depth id
 
-        this._drawDepth = this._depth !== void 0 ? this._depth : this._groupBy.length - 1;
+        this._drawDepth = this._depth !== void 0 ? d3Array.min([this._depth >= 0 ? this._depth : 0, this._groupBy.length - 1]) : this._groupBy.length - 1;
         this._id = this._groupBy[this._drawDepth];
 
         this._ids = function (d, i) {
@@ -10173,6 +10173,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
         var _this14 = this;
 
         if (!arguments.length) return this._groupBy;
+        this._groupByRaw = _;
         if (!(_ instanceof Array)) _ = [_];
         return this._groupBy = _.map(function (k) {
           if (typeof k === "function") return k;else {
