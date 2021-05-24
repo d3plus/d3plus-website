@@ -39,7 +39,7 @@ function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.g
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
 /*
-  d3plus-plot v1.0.6
+  d3plus-plot v1.0.7
   A reusable javascript x/y plot built on D3.
   Copyright (c) 2021 D3plus - https://d3plus.org
   @license MIT
@@ -9173,11 +9173,22 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
           title: false,
           tickSize: 0
         };
-        var defaultX2Config = x2Exists ? {} : defaultConfig;
-        var defaultY2Config = y2Exists ? {} : defaultConfig;
+        var defaultX2Config = x2Exists ? {
+          data: data.map(function (d) {
+            return d.x2;
+          })
+        } : defaultConfig;
+        var defaultY2Config = y2Exists ? {
+          data: data.map(function (d) {
+            return d.y2;
+          })
+        } : defaultConfig;
         var showX = this._discrete === "x" && this._width > this._discreteCutoff || this._width > this._xCutoff;
         var showY = this._discrete === "y" && this._height > this._discreteCutoff || this._height > this._yCutoff;
         var yC = {
+          data: data.map(function (d) {
+            return d.y;
+          }),
           locale: this._locale,
           scalePadding: _y2.padding ? _y2.padding() : 0
         };
@@ -9264,6 +9275,9 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
 
         var y2Width = y2Bounds.width ? y2Bounds.width + this._y2Test.padding() : undefined;
         var xC = {
+          data: data.map(function (d) {
+            return d.x;
+          }),
           locale: this._locale,
           scalePadding: _x2.padding ? _x2.padding() : 0
         };
