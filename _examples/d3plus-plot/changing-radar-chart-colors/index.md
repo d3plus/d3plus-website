@@ -1,9 +1,9 @@
 ---
 title: Changing Radar Chart Colors
-width: 0
-height: 0
-time: 1619465300796
-date: April 26, 2021
+width: 800
+height: 400
+time: 1621885544192
+date: May 24, 2021
 ---
 
 # Changing Radar Chart Colors
