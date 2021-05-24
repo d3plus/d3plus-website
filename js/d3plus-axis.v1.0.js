@@ -35,7 +35,7 @@ function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.g
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
 /*
-  d3plus-axis v1.0.0
+  d3plus-axis v1.0.1
   Beautiful javascript scales and axes.
   Copyright (c) 2021 D3plus - https://d3plus.org
   @license MIT
@@ -8066,10 +8066,42 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
   */
 
   /**
+   * Calculates ticks from a given scale (negative and/or positive)
+   * @param {scale} scale A d3-scale object
+   * @private
+   */
+
+  function calculateTicks(scale) {
+    var useData = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
+    var tickScale = scales.scaleSqrt().domain([10, 400]).range([10, 50]);
+    var negativeRange = scale.range();
+    var size = Math.abs(negativeRange[1] - negativeRange[0]);
+    var step = Math.floor(size / tickScale(size));
+
+    if (this._scale === "time" && this._data && this._data.length) {
+      var dataExtent = d3Array.extent(this._data);
+
+      var distance = this._data.reduce(function (n, d, i, arr) {
+        if (i) {
+          var dist = Math.abs(d - arr[i - 1]);
+          if (dist < n) n = dist;
+        }
+
+        return n;
+      }, Infinity);
+
+      var newStep = Math.round((dataExtent[1] - dataExtent[0]) / distance);
+      step = useData ? d3Array.min([step * 2, newStep]) : d3Array.min([step, newStep]);
+    }
+
+    return scale.ticks(step);
+  }
+  /**
       @class Axis
       @extends external:BaseClass
       @desc Creates an SVG scale based on an array of data.
   */
+
 
   var Axis = /*#__PURE__*/function (_d3plusCommon$BaseCla) {
     _inherits(Axis, _d3plusCommon$BaseCla);
@@ -8100,7 +8132,8 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       };
       _this._gridLog = false;
       _this._height = 400;
-      _this._labelOffset = true;
+      _this._labelOffset = false;
+      _this._labelRotation = false;
 
       _this.orient("bottom");
 
@@ -8113,7 +8146,6 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       _this._padding = 5;
       _this._paddingInner = 0.1;
       _this._paddingOuter = 0.1;
-      _this._rotateLabels = false;
       _this._scale = "linear";
       _this._scalePadding = 0.5;
       _this._shape = "Line";
@@ -8136,7 +8168,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
           padding: 0,
           textAnchor: function textAnchor() {
             var rtl = d3plusText.rtl();
-            return _this._orient === "left" ? rtl ? "start" : "end" : _this._orient === "right" ? rtl ? "end" : "start" : _this._rotateLabels ? _this._orient === "bottom" ? "end" : "start" : "middle";
+            return _this._orient === "left" ? rtl ? "start" : "end" : _this._orient === "right" ? rtl ? "end" : "start" : _this._labelRotation ? _this._orient === "bottom" ? "end" : "start" : "middle";
           },
           verticalAlign: function verticalAlign() {
             return _this._orient === "bottom" ? "top" : _this._orient === "top" ? "bottom" : "middle";
@@ -8151,8 +8183,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
           return d.tick ? 8 : 0;
         }
       };
-      _this._tickSize = 5;
-      _this._tickSpecifier = undefined;
+      _this._tickSize = 8;
       _this._tickSuffix = "normal";
       _this._tickUnit = 0;
       _this._timeLocale = undefined;
@@ -8231,6 +8262,20 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       }
       /**
           @memberof Axis
+          @desc Returns the scale's labels, taking into account negative and positive log scales.
+          @private
+      */
+
+    }, {
+      key: "_getLabels",
+      value: function _getLabels() {
+        var labels = [];
+        if (this._d3ScaleNegative) labels = labels.concat(calculateTicks.bind(this)(this._d3ScaleNegative, false));
+        if (this._d3Scale) labels = labels.concat(calculateTicks.bind(this)(this._d3Scale, false));
+        return labels;
+      }
+      /**
+          @memberof Axis
           @desc Returns the scale's ticks, taking into account negative and positive log scales.
           @private
       */
@@ -8238,24 +8283,9 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
     }, {
       key: "_getTicks",
       value: function _getTicks() {
-        var tickScale = scales.scaleSqrt().domain([10, 400]).range([10, 50]);
         var ticks = [];
-
-        if (this._d3ScaleNegative) {
-          var negativeRange = this._d3ScaleNegative.range();
-
-          var size = negativeRange[1] - negativeRange[0];
-          ticks = this._d3ScaleNegative.ticks(Math.floor(size / tickScale(size)));
-        }
-
-        if (this._d3Scale) {
-          var positiveRange = this._d3Scale.range();
-
-          var _size = positiveRange[1] - positiveRange[0];
-
-          ticks = ticks.concat(this._d3Scale.ticks(Math.floor(_size / tickScale(_size))));
-        }
-
+        if (this._d3ScaleNegative) ticks = ticks.concat(calculateTicks.bind(this)(this._d3ScaleNegative, true));
+        if (this._d3Scale) ticks = ticks.concat(calculateTicks.bind(this)(this._d3Scale, true));
         return ticks;
       }
       /**
@@ -8309,13 +8339,15 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
 
         var timeLocale = this._timeLocale || locale[this._locale] || locale["en-US"];
         d3TimeFormat.timeFormatDefaultLocale(timeLocale).format();
-        var formatDay = d3TimeFormat.timeFormat("%a %d"),
+        var formatDay = d3TimeFormat.timeFormat("%-d"),
             formatHour = d3TimeFormat.timeFormat("%I %p"),
             formatMillisecond = d3TimeFormat.timeFormat(".%L"),
             formatMinute = d3TimeFormat.timeFormat("%I:%M"),
             formatMonth = d3TimeFormat.timeFormat("%b"),
+            formatMonthDay = d3TimeFormat.timeFormat("%b %-d"),
+            formatMonthDayYear = d3TimeFormat.timeFormat("%b %-d, %Y"),
+            formatMonthYear = d3TimeFormat.timeFormat("%b %Y"),
             formatSecond = d3TimeFormat.timeFormat(":%S"),
-            formatWeek = d3TimeFormat.timeFormat("%b %d"),
             formatYear = d3TimeFormat.timeFormat("%Y");
         /**
          * Declares some commonly used variables.
@@ -8350,12 +8382,23 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
         };
         var labels, range, ticks;
         /**
+         * Calculates whether to show the parent level time label, such as
+         * "Jan 2020" in a monthly chart (where "Feb"-only would follow)
+         */
+
+        function neighborInInterval(d, comparitor, interval) {
+          return comparitor ? +interval.round(d) === +interval.round(d + Math.abs(comparitor - d)) : false;
+        }
+        /**
          * Constructs the tick formatter function.
          */
 
+
         var tickFormat = this._tickFormat ? this._tickFormat : function (d) {
           if (_this2._scale === "time") {
-            return (d3Time.timeSecond(d) < d ? formatMillisecond : d3Time.timeMinute(d) < d ? formatSecond : d3Time.timeHour(d) < d ? formatMinute : d3Time.timeDay(d) < d ? formatHour : d3Time.timeMonth(d) < d ? d3Time.timeWeek(d) < d ? formatDay : formatWeek : d3Time.timeYear(d) < d ? formatMonth : formatYear)(d);
+            var labelIndex = labels.indexOf(d);
+            var c = labels[labelIndex + 1] || labels[labelIndex - 1];
+            return (d3Time.timeSecond(d) < d ? formatMillisecond : d3Time.timeMinute(d) < d ? formatSecond : d3Time.timeHour(d) < d ? formatMinute : d3Time.timeDay(d) < d ? labelIndex === 0 ? formatMonthDayYear : formatHour : d3Time.timeMonth(d) < d ? labelIndex === 0 ? formatMonthDayYear : neighborInInterval(d, c, d3Time.timeDay) ? formatMonthDay : formatDay : d3Time.timeYear(d) < d ? labelIndex === 0 ? formatMonthYear : neighborInInterval(d, c, d3Time.timeMonth) ? formatMonthDay : formatMonth : neighborInInterval(d, c, d3Time.timeYear) ? formatMonthYear : formatYear)(d);
           } else if (["band", "ordinal", "point"].includes(_this2._scale)) {
             return d;
           }
@@ -8484,7 +8527,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
 
 
           ticks = (this._ticks ? this._scale === "time" ? this._ticks.map(date) : this._ticks : (this._d3Scale ? this._d3Scale.ticks : this._d3ScaleNegative.ticks) ? this._getTicks() : this._domain).slice();
-          labels = (this._labels ? this._scale === "time" ? this._labels.map(date) : this._labels : (this._d3Scale ? this._d3Scale.ticks : this._d3ScaleNegative.ticks) ? this._getTicks() : ticks).slice();
+          labels = (this._labels ? this._scale === "time" ? this._labels.map(date) : this._labels : (this._d3Scale ? this._d3Scale.ticks : this._d3ScaleNegative.ticks) ? this._getLabels() : ticks).slice();
 
           if (this._scale === "log") {
             var tens = labels.filter(function (t, i) {
@@ -8693,14 +8736,11 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
           var res = calculateLabelSize.bind(_this2)(datum);
           return Object.assign(res, datum);
         });
-        this._rotateLabels = horizontal && this._labelRotation === undefined ? textData.some(function (d) {
-          return d.truncated;
-        }) : this._labelRotation;
         var offsetEnabled = this._labelOffset && textData.some(function (d) {
           return d.truncated;
         });
 
-        if (this._rotateLabels) {
+        if (this._labelRotation) {
           textData = textData.map(function (datum) {
             datum.rotate = true;
             var res = calculateLabelSize.bind(_this2)(datum);
@@ -8762,7 +8802,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
             };
           });
           textData = textData.map(function (datum) {
-            datum.rotate = _this2._rotateLabels;
+            datum.rotate = _this2._labelRotation;
             datum.space = calculateSpace.bind(_this2)(datum, offsetEnabled ? 2 : 1);
             var res = calculateLabelSize.bind(_this2)(datum);
             return Object.assign(res, datum);
@@ -8773,7 +8813,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
         var labelHeight = d3Array.max(textData, function (t) {
           return t.height;
         }) || 0;
-        this._rotateLabels = horizontal && this._labelRotation === undefined ? textData.some(function (datum) {
+        this._labelRotation = horizontal && this._labelRotation === undefined ? textData.some(function (datum) {
           var i = datum.i,
               height = datum.height,
               position = datum.position,
@@ -8848,7 +8888,9 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
               height: horizontal ? labelHeight : space
             },
             rotate: data ? data.rotate : false,
-            size: labels.includes(d) ? size : 0,
+            size: labels.includes(d) ? size : _this2._data && _this2._data.find(function (t) {
+              return +t === d;
+            }) ? Math.ceil(size / 2) : 0,
             text: labels.includes(d) ? tickFormat(d) : false,
             tick: ticks.includes(d)
           }, _defineProperty(_tickConfig, x, xPos + (_this2._scale === "band" ? _this2._d3Scale.bandwidth() / 2 : 0)), _defineProperty(_tickConfig, y, yPos), _tickConfig);
@@ -8911,6 +8953,18 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       key: "barConfig",
       value: function barConfig(_) {
         return arguments.length ? (this._barConfig = Object.assign(this._barConfig, _), this) : this._barConfig;
+      }
+      /**
+          @memberof Axis
+          @desc An array of data points, which helps determine which ticks should be shown and which time resolution should be displayed.
+          @param {Array} [*value*]
+          @chainable
+      */
+
+    }, {
+      key: "data",
+      value: function data(_) {
+        return arguments.length ? (this._data = _, this) : this._data;
       }
       /**
           @memberof Axis
@@ -9011,7 +9065,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       /**
           @memberof Axis
           @desc If *value* is specified, sets whether offsets will be used to position some labels further away from the axis in order to allow space for the text.
-          @param {Boolean} [*value* = true]
+          @param {Boolean} [*value* = false]
           @chainable
        */
 
@@ -9023,7 +9077,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       /**
           @memberof Axis
           @desc If *value* is specified, sets whether whether horizontal axis labels are rotated -90 degrees.
-          @param {Boolean}
+          @param {Boolean} [*value* = false]
           @chainable
        */
 
@@ -9242,18 +9296,6 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       key: "tickSize",
       value: function tickSize(_) {
         return arguments.length ? (this._tickSize = _, this) : this._tickSize;
-      }
-      /**
-          @memberof Axis
-          @desc Sets the tick specifier for the [tickFormat](https://github.com/d3/d3-scale#continuous_tickFormat) function. If this method is called without any arguments, the default tick specifier is returned.
-          @param {String} [*value* = undefined]
-          @chainable
-      */
-
-    }, {
-      key: "tickSpecifier",
-      value: function tickSpecifier(_) {
-        return arguments.length ? (this._tickSpecifier = _, this) : this._tickSpecifier;
       }
       /**
           @memberof Axis
