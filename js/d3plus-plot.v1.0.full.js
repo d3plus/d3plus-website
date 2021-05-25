@@ -51,7 +51,7 @@ function _arrayLikeToArray2(arr, len) { if (len == null || len > arr.length) len
 function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof2 = function _typeof2(obj) { return typeof obj; }; } else { _typeof2 = function _typeof2(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof2(obj); }
 
 /*
-  d3plus-plot v1.0.7
+  d3plus-plot v1.0.8
   A reusable javascript x/y plot built on D3.
   Copyright (c) 2021 D3plus - https://d3plus.org
   @license MIT
@@ -49090,25 +49090,30 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
          * primarily occuring in simple BarChart visualizations where the both the x-axis ticks and
          * the Bar rectangles would be displaying the same text.
          */
-        // generates an Array of String labels using the _drawLabel function from Viz
+        // generates an Array of String labels using the current label function for Bar shapes
 
-        var dataLabels = this._filteredData.map(function (d, i) {
-          return _this13._drawLabel(d, i);
+        var barConfig = configPrep.bind(this)(this._shapeConfig, "shape", "Bar");
+        var barLabelFunction = barConfig.label !== undefined ? typeof barConfig.label === "function" ? barConfig.label : constant(barConfig.label) : this._drawLabel;
+
+        var barLabels = this._filteredData.map(function (d, i) {
+          return barLabelFunction(d, i);
+        }).filter(function (d) {
+          return typeof d === "number" || d;
         }).map(String); // sets an axis' ticks to [] if the axis scale is "Point" (discrete) and every tick String
-        // is also in the dataLabels Array
+        // is also in the barLabels Array
 
 
         if (x2Scale === "Point" && x2Ticks.every(function (t) {
-          return dataLabels.includes("".concat(t));
+          return barLabels.includes("".concat(t));
         })) x2Ticks = [];
         if (xScale === "Point" && xTicks.every(function (t) {
-          return dataLabels.includes("".concat(t));
+          return barLabels.includes("".concat(t));
         })) xTicks = [];
         if (y2Scale === "Point" && y2Ticks.every(function (t) {
-          return dataLabels.includes("".concat(t));
+          return barLabels.includes("".concat(t));
         })) y2Ticks = [];
         if (yScale === "Point" && yTicks.every(function (t) {
-          return dataLabels.includes("".concat(t));
+          return barLabels.includes("".concat(t));
         })) yTicks = [];
 
         if (showY) {
