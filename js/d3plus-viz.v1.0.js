@@ -41,7 +41,7 @@ function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _d
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
 /*
-  d3plus-viz v1.0.7
+  d3plus-viz v1.0.8
   Abstract ES6 class that drives d3plus visualizations.
   Copyright (c) 2021 D3plus - https://d3plus.org
   @license MIT
@@ -8560,7 +8560,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       text: text
     }] : []).locale(this._locale).select(group).width(this._width - (this._margin.left + this._margin.right + padding.left + padding.right)).config(this._titleConfig).render();
 
-    this._margin.top += text ? group.getBBox().height : 0;
+    this._margin.top += text ? group.getBBox().height + this._titleConfig.padding * 2 : 0;
   }
   /**
       @function _drawTotal
