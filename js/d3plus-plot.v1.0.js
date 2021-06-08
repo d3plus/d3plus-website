@@ -39,7 +39,7 @@ function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.g
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
 /*
-  d3plus-plot v1.0.8
+  d3plus-plot v1.0.9
   A reusable javascript x/y plot built on D3.
   Copyright (c) 2021 D3plus - https://d3plus.org
   @license MIT
@@ -9251,16 +9251,16 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
         // is also in the barLabels Array
 
 
-        if (x2Scale === "Point" && x2Ticks.every(function (t) {
+        if (x2Scale === "Point" && x2Ticks instanceof Array && x2Ticks.every(function (t) {
           return barLabels.includes("".concat(t));
         })) x2Ticks = [];
-        if (xScale === "Point" && xTicks.every(function (t) {
+        if (xScale === "Point" && xTicks instanceof Array && xTicks.every(function (t) {
           return barLabels.includes("".concat(t));
         })) xTicks = [];
-        if (y2Scale === "Point" && y2Ticks.every(function (t) {
+        if (y2Scale === "Point" && y2Ticks instanceof Array && y2Ticks.every(function (t) {
           return barLabels.includes("".concat(t));
         })) y2Ticks = [];
-        if (yScale === "Point" && yTicks.every(function (t) {
+        if (yScale === "Point" && yTicks instanceof Array && yTicks.every(function (t) {
           return barLabels.includes("".concat(t));
         })) yTicks = [];
 
