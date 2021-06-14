@@ -59,7 +59,7 @@ function _arrayLikeToArray2(arr, len) { if (len == null || len > arr.length) len
 function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof2 = function _typeof2(obj) { return typeof obj; }; } else { _typeof2 = function _typeof2(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof2(obj); }
 
 /*
-  d3plus-hierarchy v1.0.0
+  d3plus-hierarchy v1.0.1
   Nested, hierarchical, and cluster charts built on D3
   Copyright (c) 2021 D3plus - https://d3plus.org
   @license MIT
@@ -44202,7 +44202,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
       text: text
     }] : []).locale(this._locale).select(group).width(this._width - (this._margin.left + this._margin.right + padding.left + padding.right)).config(this._titleConfig).render();
 
-    this._margin.top += text ? group.getBBox().height : 0;
+    this._margin.top += text ? group.getBBox().height + this._titleConfig.padding * 2 : 0;
   }
   /**
       @function _drawTotal
@@ -48131,6 +48131,92 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
 
     return treemap;
   }
+
+  function treemapBinary(parent, x0, y0, x1, y1) {
+    var nodes = parent.children,
+        i,
+        n = nodes.length,
+        sum,
+        sums = new Array(n + 1);
+
+    for (sums[0] = sum = i = 0; i < n; ++i) {
+      sums[i + 1] = sum += nodes[i].value;
+    }
+
+    partition(0, n, parent.value, x0, y0, x1, y1);
+
+    function partition(i, j, value, x0, y0, x1, y1) {
+      if (i >= j - 1) {
+        var node = nodes[i];
+        node.x0 = x0, node.y0 = y0;
+        node.x1 = x1, node.y1 = y1;
+        return;
+      }
+
+      var valueOffset = sums[i],
+          valueTarget = value / 2 + valueOffset,
+          k = i + 1,
+          hi = j - 1;
+
+      while (k < hi) {
+        var mid = k + hi >>> 1;
+        if (sums[mid] < valueTarget) k = mid + 1;else hi = mid;
+      }
+
+      if (valueTarget - sums[k - 1] < sums[k] - valueTarget && i + 1 < k) --k;
+      var valueLeft = sums[k] - valueOffset,
+          valueRight = value - valueLeft;
+
+      if (x1 - x0 > y1 - y0) {
+        var xk = value ? (x0 * valueRight + x1 * valueLeft) / value : x1;
+        partition(i, k, valueLeft, x0, y0, xk, y1);
+        partition(k, j, valueRight, xk, y0, x1, y1);
+      } else {
+        var yk = value ? (y0 * valueRight + y1 * valueLeft) / value : y1;
+        partition(i, k, valueLeft, x0, y0, x1, yk);
+        partition(k, j, valueRight, x0, yk, x1, y1);
+      }
+    }
+  }
+
+  function treemapSliceDice(parent, x0, y0, x1, y1) {
+    (parent.depth & 1 ? treemapSlice : treemapDice)(parent, x0, y0, x1, y1);
+  }
+
+  var treemapResquarify = function custom(ratio) {
+    function resquarify(parent, x0, y0, x1, y1) {
+      if ((rows = parent._squarify) && rows.ratio === ratio) {
+        var rows,
+            row,
+            nodes,
+            i,
+            j = -1,
+            n,
+            m = rows.length,
+            value = parent.value;
+
+        while (++j < m) {
+          row = rows[j], nodes = row.children;
+
+          for (i = row.value = 0, n = nodes.length; i < n; ++i) {
+            row.value += nodes[i].value;
+          }
+
+          if (row.dice) treemapDice(row, x0, y0, x1, value ? y0 += (y1 - y0) * row.value / value : y1);else treemapSlice(row, x0, y0, value ? x0 += (x1 - x0) * row.value / value : x1, y1);
+          value -= row.value;
+        }
+      } else {
+        parent._squarify = rows = squarifyRatio(ratio, parent, x0, y0, x1, y1);
+        rows.ratio = ratio;
+      }
+    }
+
+    resquarify.ratio = function (x) {
+      return custom((x = +x) > 1 ? x : 1);
+    };
+
+    return resquarify;
+  }(phi);
   /**
       @external Viz
       @see https://github.com/d3plus/d3plus-viz#Viz
@@ -48372,6 +48458,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
       @summary Extends the base behavior of d3.nest to allow for multiple depth levels.
       @param {Array} *data* The data array to be nested.
       @param {Array} *keys* An array of key accessors that signify each nest level.
+      @private
   */
 
 
@@ -48630,12 +48717,20 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
 
     return Tree;
   }(Viz);
+
+  var tileMethods = {
+    treemapBinary: treemapBinary,
+    treemapDice: treemapDice,
+    treemapSlice: treemapSlice,
+    treemapSliceDice: treemapSliceDice,
+    treemapSquarify: treemapSquarify,
+    treemapResquarify: treemapResquarify
+  };
   /**
       @class Treemap
       @extends Viz
       @desc Uses the [d3 treemap layout](https://github.com/mbostock/d3/wiki/Treemap-Layout) to creates SVG rectangles based on an array of data. See [this example](https://d3plus.org/examples/d3plus-hierarchy/getting-started/) for help getting started using the treemap generator.
   */
-
 
   var Treemap = /*#__PURE__*/function (_Viz4) {
     "use strict";
@@ -48950,14 +49045,15 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
       }
       /**
           @memberof Treemap
-          @desc If *value* is specified, sets the [tiling method](https://github.com/d3/d3-hierarchy#treemap-tiling) to the specified function and returns the current class instance. If *value* is not specified, returns the current [tiling method](https://github.com/d3/d3-hierarchy#treemap-tiling).
-          @param {Function} [*value*]
+          @desc Sets the tiling method used when calcuating the size and position of the rectangles.
+      Can either be a string referring to a d3-hierarchy [tiling method](https://github.com/d3/d3-hierarchy#treemap-tiling), or a custom function in the same format.
+          @param {String|Function} [*value* = "squarify"]
       */
 
     }, {
       key: "tile",
       value: function tile(_) {
-        return arguments.length ? (this._tile = _, this) : this._tile;
+        return arguments.length ? (this._tile = typeof _ === "string" ? tileMethods["treemap".concat(_.charAt(0).toUpperCase()).concat(_.slice(1))] || treemapSquarify : _, this) : this._tile;
       }
     }]);
 

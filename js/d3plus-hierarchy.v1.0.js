@@ -39,7 +39,7 @@ function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.g
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
 /*
-  d3plus-hierarchy v1.0.0
+  d3plus-hierarchy v1.0.1
   Nested, hierarchical, and cluster charts built on D3
   Copyright (c) 2021 D3plus - https://d3plus.org
   @license MIT
@@ -8353,6 +8353,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       @summary Extends the base behavior of d3.nest to allow for multiple depth levels.
       @param {Array} *data* The data array to be nested.
       @param {Array} *keys* An array of key accessors that signify each nest level.
+      @private
   */
 
 
@@ -8609,12 +8610,20 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
 
     return Tree;
   }(d3plusViz.Viz);
+
+  var tileMethods = {
+    treemapBinary: d3Hierarchy.treemapBinary,
+    treemapDice: d3Hierarchy.treemapDice,
+    treemapSlice: d3Hierarchy.treemapSlice,
+    treemapSliceDice: d3Hierarchy.treemapSliceDice,
+    treemapSquarify: d3Hierarchy.treemapSquarify,
+    treemapResquarify: d3Hierarchy.treemapResquarify
+  };
   /**
       @class Treemap
       @extends Viz
       @desc Uses the [d3 treemap layout](https://github.com/mbostock/d3/wiki/Treemap-Layout) to creates SVG rectangles based on an array of data. See [this example](https://d3plus.org/examples/d3plus-hierarchy/getting-started/) for help getting started using the treemap generator.
   */
-
 
   var Treemap = /*#__PURE__*/function (_d3plusViz$Viz4) {
     _inherits(Treemap, _d3plusViz$Viz4);
@@ -8927,14 +8936,15 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       }
       /**
           @memberof Treemap
-          @desc If *value* is specified, sets the [tiling method](https://github.com/d3/d3-hierarchy#treemap-tiling) to the specified function and returns the current class instance. If *value* is not specified, returns the current [tiling method](https://github.com/d3/d3-hierarchy#treemap-tiling).
-          @param {Function} [*value*]
+          @desc Sets the tiling method used when calcuating the size and position of the rectangles.
+      Can either be a string referring to a d3-hierarchy [tiling method](https://github.com/d3/d3-hierarchy#treemap-tiling), or a custom function in the same format.
+          @param {String|Function} [*value* = "squarify"]
       */
 
     }, {
       key: "tile",
       value: function tile(_) {
-        return arguments.length ? (this._tile = _, this) : this._tile;
+        return arguments.length ? (this._tile = typeof _ === "string" ? tileMethods["treemap".concat(_.charAt(0).toUpperCase()).concat(_.slice(1))] || d3Hierarchy.treemapSquarify : _, this) : this._tile;
       }
     }]);
 
