@@ -25,7 +25,7 @@ function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.g
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
 /*
-  d3plus-network v1.0.0
+  d3plus-network v1.0.1
   Javascript network visualizations built upon d3 modules.
   Copyright (c) 2021 D3plus - https://d3plus.org
   @license MIT
@@ -7955,13 +7955,14 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       _this._linkSizeMin = 1;
       _this._linkSizeScale = "sqrt";
       _this._noDataMessage = false;
+      _this._nodeGroupBy = [d3plusCommon.accessor("id")];
       _this._nodes = [];
 
       _this._on["click.shape"] = function (d, i, x, event) {
         _this._tooltipClass.data([]).render();
 
         if (_this._hover && _this._drawDepth >= _this._groupBy.length - 1) {
-          var id = "".concat(_this._nodeGroupBy && _this._nodeGroupBy[_this._drawDepth](d, i) ? _this._nodeGroupBy[_this._drawDepth](d, i) : _this._id(d, i));
+          var id = "".concat(_this._id(d, i) || _this._nodeGroupBy[_this._drawDepth](d, i));
 
           if (_this._focus && _this._focus === id) {
             _this.active(false);
@@ -7988,7 +7989,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
             });
 
             _this.active(function (h, x) {
-              if (h.source && h.target) return h.source.id === id || h.target.id === id;else return filterIds.includes("".concat(_this._ids(h, x)[_this._drawDepth]));
+              if (h.source && h.target) return h.source.id === id || h.target.id === id;else return filterIds.includes("".concat(_this._id(h, x) || _this._nodeGroupBy[_this._drawDepth](h, x)));
             });
 
             _this._focus = id;
@@ -8142,7 +8143,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
         }, {});
 
         var nodes = this._nodes.reduce(function (obj, d, i) {
-          obj[_this2._nodeGroupBy ? _this2._nodeGroupBy[_this2._drawDepth](d, i) : d.id] = d;
+          obj[_this2._nodeGroupBy[_this2._drawDepth](d, i)] = d;
           return obj;
         }, {});
 
@@ -8454,7 +8455,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       /**
           @memberof Network
           @desc If *value* is specified, sets the node group accessor(s) to the specified string, function, or array of values and returns the current class instance. This method overrides the default .groupBy() function from being used with the data passed to .nodes(). If *value* is not specified, returns the current node group accessor.
-          @param {String|Function|Array} [*value* = undefined]
+          @param {String|Function|Array} [*value* = "id"]
           @chainable
       */
 
