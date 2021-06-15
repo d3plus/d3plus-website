@@ -29,7 +29,7 @@ function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len 
 function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof2 = function _typeof2(obj) { return typeof obj; }; } else { _typeof2 = function _typeof2(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof2(obj); }
 
 /*
-  d3plus-text v1.0.1
+  d3plus-text v1.0.2
   A smart SVG text box with line wrapping and automatic font size scaling.
   Copyright (c) 2021 D3plus - https://d3plus.org
   @license MIT
@@ -21714,8 +21714,9 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
               @private
           */
           function textContent(text) {
+            var tag = false;
             text[that._html ? "html" : "text"](function (t) {
-              return trimRight(t).replace(/&([^\;&]*)/g, function (str, a) {
+              var cleaned = trimRight(t).replace(/&([^\;&]*)/g, function (str, a) {
                 return a === "amp" ? str : "&amp;".concat(a);
               }) // replaces all non-HTML ampersands with escaped entity
               .replace(/<([^A-z^/]+)/g, function (str, a) {
@@ -21726,11 +21727,27 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
               }) // ands end tag to lines before mid-HTML break
               .replace(/^([^<^>]+)(<\/[^>]+>)/g, function (str, a, b) {
                 return "".concat(b.replace("</", "<")).concat(a).concat(b);
-              }) // ands start tag to lines after mid-HTML break
-              .replace(/<([A-z]+)[^>]*>([^<^>]+)<\/[^>]+>/g, function (str, a, b) {
-                var tag = that._html[a] ? "<tspan style=\"".concat(that._html[a], "\">") : "";
-                return "".concat(tag.length ? tag : "").concat(b).concat(tag.length ? "</tspan>" : "");
-              });
+              }); // ands start tag to lines after mid-HTML break
+
+              var tagRegex = new RegExp(/<([A-z]+)[^>]*>([^<^>]+)<\/[^>]+>/g);
+
+              if (cleaned.match(tagRegex)) {
+                cleaned = cleaned.replace(tagRegex, function (str, a, b) {
+                  tag = that._html[a] ? a : false;
+
+                  if (tag) {
+                    var style = that._html[tag];
+                    if (t.includes("</".concat(tag, ">"))) tag = false;
+                    return "<tspan style=\"".concat(style, "\">").concat(b, "</tspan>");
+                  }
+
+                  return b;
+                });
+              } else if (tag.length) {
+                cleaned = "<tspan style=\"".concat(that._html[tag], "\">").concat(cleaned, "</tspan>");
+              }
+
+              return cleaned;
             });
           }
           /**
