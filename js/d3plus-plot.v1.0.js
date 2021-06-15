@@ -39,7 +39,7 @@ function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.g
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
 /*
-  d3plus-plot v1.0.9
+  d3plus-plot v1.0.10
   A reusable javascript x/y plot built on D3.
   Copyright (c) 2021 D3plus - https://d3plus.org
   @license MIT
@@ -10411,7 +10411,11 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       var defaultLegend = _this8._legend;
 
       _this8._legend = function (config, arr) {
-        if (arr.length === _this8._filteredData.length) return false;
+        var legendIds = arr.map(_this8._groupBy[_this8._legendDepth].bind(_assertThisInitialized(_this8))).sort().join();
+
+        var barIds = _this8._filteredData.map(_this8._groupBy[_this8._legendDepth].bind(_assertThisInitialized(_this8))).sort().join();
+
+        if (legendIds === barIds) return false;
         return defaultLegend.bind(_assertThisInitialized(_this8))(config, arr);
       };
 

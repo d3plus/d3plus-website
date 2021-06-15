@@ -51,7 +51,7 @@ function _arrayLikeToArray2(arr, len) { if (len == null || len > arr.length) len
 function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof2 = function _typeof2(obj) { return typeof obj; }; } else { _typeof2 = function _typeof2(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof2(obj); }
 
 /*
-  d3plus-plot v1.0.9
+  d3plus-plot v1.0.10
   A reusable javascript x/y plot built on D3.
   Copyright (c) 2021 D3plus - https://d3plus.org
   @license MIT
@@ -50272,7 +50272,11 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
       var defaultLegend = _this15._legend;
 
       _this15._legend = function (config, arr) {
-        if (arr.length === _this15._filteredData.length) return false;
+        var legendIds = arr.map(_this15._groupBy[_this15._legendDepth].bind(_assertThisInitialized2(_this15))).sort().join();
+
+        var barIds = _this15._filteredData.map(_this15._groupBy[_this15._legendDepth].bind(_assertThisInitialized2(_this15))).sort().join();
+
+        if (legendIds === barIds) return false;
         return defaultLegend.bind(_assertThisInitialized2(_this15))(config, arr);
       };
 
