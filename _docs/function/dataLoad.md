@@ -5,7 +5,7 @@ kind: function
 
 <a name="dataLoad"></a>
 
-### d3plus.**dataLoad**(path, [formatter], [key], [callback]) [<>](https://github.com/d3plus/d3plus-viz/blob/master/src/data/load.js#L6)
+### d3plus.**dataLoad**(path, [formatter], [key], [callback]) [<>](https://github.com/d3plus/d3plus-viz/blob/master/src/data/load.js#L7)
 
 Loads data from a filepath or URL, converts it to a valid JSON object, and returns it to a callback function.
 
