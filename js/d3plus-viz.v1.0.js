@@ -41,7 +41,7 @@ function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _d
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
 /*
-  d3plus-viz v1.0.8
+  d3plus-viz v1.0.9
   Abstract ES6 class that drives d3plus visualizations.
   Copyright (c) 2021 D3plus - https://d3plus.org
   @license MIT
@@ -7909,8 +7909,8 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
 });
 
 (function (global, factory) {
-  (typeof exports === "undefined" ? "undefined" : _typeof(exports)) === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-request'), require('d3-array'), require('d3-brush'), require('d3-color'), require('d3-queue'), require('d3-selection'), require('d3-zoom'), require('lrucache'), require('d3plus-axis'), require('d3plus-color'), require('d3plus-common'), require('d3plus-format'), require('d3plus-legend'), require('d3plus-text'), require('d3plus-timeline'), require('d3plus-tooltip')) : typeof define === 'function' && define.amd ? define('d3plus-viz', ['exports', 'd3-request', 'd3-array', 'd3-brush', 'd3-color', 'd3-queue', 'd3-selection', 'd3-zoom', 'lrucache', 'd3plus-axis', 'd3plus-color', 'd3plus-common', 'd3plus-format', 'd3plus-legend', 'd3plus-text', 'd3plus-timeline', 'd3plus-tooltip'], factory) : (global = typeof globalThis !== 'undefined' ? globalThis : global || self, factory(global.d3plus = {}, global.d3Request, global.d3Array, global.d3Brush, global.d3Color, global.d3Queue, global.d3Selection, global.d3Zoom, global.lrucache, global.d3plusAxis, global.d3plusColor, global.d3plusCommon, global.d3plusFormat, global.d3plusLegend, global.d3plusText, global.d3plusTimeline, global.d3plusTooltip));
-})(this, function (exports, d3Request, d3Array, d3Brush, d3Color, d3Queue, d3Selection, d3Zoom, lrucache, d3plusAxis, d3plusColor, d3plusCommon, d3plusFormat, d3plusLegend, d3plusText, d3plusTimeline, d3plusTooltip) {
+  (typeof exports === "undefined" ? "undefined" : _typeof(exports)) === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-request'), require('d3plus-common'), require('d3-array'), require('d3-brush'), require('d3-color'), require('d3-queue'), require('d3-selection'), require('d3-zoom'), require('lrucache'), require('d3plus-axis'), require('d3plus-color'), require('d3plus-format'), require('d3plus-legend'), require('d3plus-text'), require('d3plus-timeline'), require('d3plus-tooltip')) : typeof define === 'function' && define.amd ? define('d3plus-viz', ['exports', 'd3-request', 'd3plus-common', 'd3-array', 'd3-brush', 'd3-color', 'd3-queue', 'd3-selection', 'd3-zoom', 'lrucache', 'd3plus-axis', 'd3plus-color', 'd3plus-format', 'd3plus-legend', 'd3plus-text', 'd3plus-timeline', 'd3plus-tooltip'], factory) : (global = typeof globalThis !== 'undefined' ? globalThis : global || self, factory(global.d3plus = {}, global.d3Request, global.d3plusCommon, global.d3Array, global.d3Brush, global.d3Color, global.d3Queue, global.d3Selection, global.d3Zoom, global.lrucache, global.d3plusAxis, global.d3plusColor, global.d3plusFormat, global.d3plusLegend, global.d3plusText, global.d3plusTimeline, global.d3plusTooltip));
+})(this, function (exports, d3Request, d3plusCommon, d3Array, d3Brush, d3Color, d3Queue, d3Selection, d3Zoom, lrucache, d3plusAxis, d3plusColor, d3plusFormat, d3plusLegend, d3plusText, d3plusTimeline, d3plusTooltip) {
   'use strict';
 
   function _interopDefaultLegacy(e) {
@@ -8079,12 +8079,12 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
           if (formatter) {
             var formatterResponse = formatter(loadedLength(loaded) === 1 ? loaded[0] : loaded);
 
-            if (key === "data" && !(formatterResponse instanceof Array)) {
-              data = formatterResponse.data;
+            if (key === "data" && d3plusCommon.isObject(formatterResponse)) {
+              data = formatterResponse.data || [];
               delete formatterResponse.data;
 
               _this.config(formatterResponse);
-            } else data = formatterResponse;
+            } else data = formatterResponse || [];
           } else if (key === "data") {
             data = concat(loaded, "data");
           }
@@ -8106,11 +8106,11 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       if (formatter) {
         var formatterResponse = formatter(loadedLength(loaded) === 1 ? loaded[0] : loaded);
 
-        if (key === "data" && !(formatterResponse instanceof Array)) {
-          data = formatterResponse.data;
+        if (key === "data" && d3plusCommon.isObject(formatterResponse)) {
+          data = formatterResponse.data || [];
           delete formatterResponse.data;
           this.config(formatterResponse);
-        } else data = formatterResponse;
+        } else data = formatterResponse || [];
       } else if (key === "data") {
         data = concat(loaded, "data");
       }
