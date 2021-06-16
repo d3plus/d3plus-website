@@ -2,8 +2,8 @@
 title: Simple Network Graph
 width: 800
 height: 400
-time: 1623796327008
-date: June 15, 2021
+time: 1623858703512
+date: June 16, 2021
 ---
 
 # Simple Network Graph
