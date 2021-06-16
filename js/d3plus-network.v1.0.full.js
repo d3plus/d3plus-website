@@ -47,7 +47,7 @@ function _arrayLikeToArray2(arr, len) { if (len == null || len > arr.length) len
 function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof2 = function _typeof2(obj) { return typeof obj; }; } else { _typeof2 = function _typeof2(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof2(obj); }
 
 /*
-  d3plus-network v1.0.1
+  d3plus-network v1.0.2
   Javascript network visualizations built upon d3 modules.
   Copyright (c) 2021 D3plus - https://d3plus.org
   @license MIT
@@ -50144,6 +50144,15 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
   */
 
   /**
+   * Fetches the unique ID for a data point, whether it's defined by data or nodes.
+   * @private
+   */
+
+
+  function getNodeId(d, i) {
+    return "".concat(this._id(d, i) || this._nodeGroupBy[min([this._drawDepth, this._nodeGroupBy.length - 1])](d, i));
+  }
+  /**
       @class Network
       @extends external:Viz
       @desc Creates a network visualization based on a defined set of nodes and edges. [Click here](http://d3plus.org/examples/d3plus-network/getting-started/) for help getting started using the Network class.
@@ -50180,7 +50189,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
         _this8._tooltipClass.data([]).render();
 
         if (_this8._hover && _this8._drawDepth >= _this8._groupBy.length - 1) {
-          var _id = "".concat(_this8._id(d, i) || _this8._nodeGroupBy[_this8._drawDepth](d, i));
+          var _id = getNodeId.bind(_assertThisInitialized2(_this8))(d, i);
 
           if (_this8._focus && _this8._focus === _id) {
             _this8.active(false);
@@ -50207,7 +50216,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
             });
 
             _this8.active(function (h, x) {
-              if (h.source && h.target) return h.source.id === _id || h.target.id === _id;else return filterIds.includes("".concat(_this8._id(h, x) || _this8._nodeGroupBy[_this8._drawDepth](h, x)));
+              if (h.source && h.target) return h.source.id === _id || h.target.id === _id;else return filterIds.includes(getNodeId.bind(_assertThisInitialized2(_this8))(h, x));
             });
 
             _this8._focus = _id;
@@ -50291,7 +50300,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
 
       _this8._on["mousemove.shape"] = function (d, i, x, event) {
         defaultMouseMove(d, i, x, event);
-        var id = "".concat(_this8._nodeGroupBy && _this8._nodeGroupBy[_this8._drawDepth](d, i) ? _this8._nodeGroupBy[_this8._drawDepth](d, i) : _this8._id(d, i)),
+        var id = getNodeId.bind(_assertThisInitialized2(_this8))(d, i),
             links = _this8._linkLookup[id] || [],
             node = _this8._nodeLookup[id];
         var filterIds = [id];
@@ -50361,7 +50370,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
         }, {});
 
         var nodes = this._nodes.reduce(function (obj, d, i) {
-          obj[_this9._nodeGroupBy[_this9._drawDepth](d, i)] = d;
+          obj[getNodeId.bind(_this9)(d, i)] = d;
           return obj;
         }, {});
 
