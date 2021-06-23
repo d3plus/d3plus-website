@@ -51,7 +51,7 @@ function _arrayLikeToArray2(arr, len) { if (len == null || len > arr.length) len
 function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof2 = function _typeof2(obj) { return typeof obj; }; } else { _typeof2 = function _typeof2(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof2(obj); }
 
 /*
-  d3plus-plot v1.0.10
+  d3plus-plot v1.0.11
   A reusable javascript x/y plot built on D3.
   Copyright (c) 2021 D3plus - https://d3plus.org
   @license MIT
@@ -48427,7 +48427,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
             fontMin: 6,
             fontResize: true,
             fontColor: function fontColor(d, i) {
-              return outside.bind(this)(d, i) ? this._backgroundConfig.fill === "transparent" ? defaults.dark : colorContrast(this._backgroundConfig.fill) : colorContrast(this._shapeConfig.fill(d, i));
+              return outside.bind(this)(d, i) ? this._backgroundConfig.fill === "transparent" ? defaults.dark : colorContrast(this._backgroundConfig.fill) : colorContrast(typeof this._shapeConfig.fill === "function" ? this._shapeConfig.fill(d, i) : this._shapeConfig.fill);
             },
             fontStroke: function fontStroke(d, i) {
               return outside.bind(this)(d, i) ? this._backgroundConfig.fill === "transparent" ? defaults.dark : colorContrast(this._backgroundConfig.fill) : "transparent";
