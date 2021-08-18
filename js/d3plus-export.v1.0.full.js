@@ -17,7 +17,7 @@ function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len 
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
 /*
-  d3plus-export v1.0.0
+  d3plus-export v1.0.1
   Export methods for transforming and downloading SVG.
   Copyright (c) 2021 D3plus - https://d3plus.org
   @license MIT
@@ -19041,17 +19041,32 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
 
 
   function svgPresets(selection) {
-    // sets "stroke-width" attribute to `0` if not defined
+    if (!selection || !selection.size()) return; // sets "stroke-width" attribute to `0` if not defined
+
     var strokeWidth = selection.attr("stroke-width");
     selection.attr("stroke-width", !strokeWidth ? 0 : strokeWidth); // if there is no stroke, set the stroke color to "transparent" (fixes weird text rendering)
 
-    if (!strokeWidth) selection.attr("stroke", "transparent"); // sets "fill-opacity" attribute to `0` if fill is "transparent" or "none"
+    if (!strokeWidth) selection.attr("stroke", "transparent"); // sets "fill" attribute to black if not defined
+
+    var fill = selection.attr("fill");
+    if (!fill && selection.node().tagName === "text") selection.attr("fill", "#000"); // sets "fill-opacity" attribute to `0` if fill is "transparent" or "none"
 
     var transparent = ["none", "transparent"].includes(selection.attr("fill"));
     var fillOpacity = selection.attr("fill-opacity");
     selection.attr("fill-opacity", transparent ? 0 : fillOpacity); // "aria-label" properties interfere with text labels ¯\_(ツ)_/¯
 
-    selection.attr("aria-label", null);
+    selection.attr("aria-label", null); // sets NaN positions to zero
+
+    var x = selection.attr("x");
+    if (x === "NaN") selection.attr("x", "0px");
+    var y = selection.attr("y");
+    if (y === "NaN") selection.attr("y", "0px"); // fixed relative URLs for SVG downloads
+
+    var url = selection.attr("xlink:href");
+
+    if (url && typeof window !== "undefined" && url.charAt(0) === "/") {
+      selection.attr("xlink:href", "".concat(window.location.origin).concat(url));
+    }
   }
   /**
       @function htmlPresets
@@ -19876,55 +19891,60 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
     var IE = new RegExp(/(MSIE|Trident\/|Edge\/)/i).test(navigator.userAgent);
 
     if (!(elem instanceof Array) && options.type === "svg") {
-      var outer = IE ? new XMLSerializer().serializeToString(elem) : elem.outerHTML;
+      var clone = elem.cloneNode(true);
+      select(clone).call(svgPresets);
+      select(clone).selectAll("*").each(function () {
+        select(this).call(svgPresets);
+      });
+      var outer = IE ? new XMLSerializer().serializeToString(clone) : clone.outerHTML;
       FileSaver.saveAs(new Blob([outer], {
         type: "application/svg+xml"
       }), "".concat(options.filename, ".svg"));
+    } else {
+      dom2canvas(elem, Object.assign({}, renderOptions, {
+        callback: function callback(canvas) {
+          if (renderOptions.callback) renderOptions.callback(canvas);
+
+          if (["jpg", "png"].includes(options.type)) {
+            canvas.toBlob(function (blob) {
+              return FileSaver.saveAs(blob, "".concat(options.filename, ".").concat(options.type));
+            });
+          } // else if (options.type === "pdf") {
+          //   const outputHeight = 11,
+          //         outputWidth = 8.5;
+          //   const aspect = canvas.width / canvas.height,
+          //         orientation = aspect > 1 ? "landscape" : "portrait";
+          //   const pdf = new JsPDF({
+          //     orientation,
+          //     unit: "in",
+          //     format: [outputWidth, outputHeight]
+          //   });
+          //   let h = orientation === "landscape" ? outputWidth : outputHeight,
+          //       left,
+          //       top,
+          //       w = orientation === "landscape" ? outputHeight : outputWidth;
+          //   const margin = 0.5;
+          //   if (aspect < w / h) {
+          //     h -= margin * 2;
+          //     const tempWidth = h * aspect;
+          //     top = margin;
+          //     left = (w - tempWidth) / 2;
+          //     w = tempWidth;
+          //   }
+          //   else {
+          //     w -= margin * 2;
+          //     const tempHeight = w / aspect;
+          //     left = margin;
+          //     top = (h - tempHeight) / 2;
+          //     h = tempHeight;
+          //   }
+          //   pdf.addImage(canvas, "canvas", left, top, w, h);
+          //   pdf.save(options.filename);
+          // }
+
+        }
+      }));
     }
-
-    dom2canvas(elem, Object.assign({}, renderOptions, {
-      callback: function callback(canvas) {
-        if (renderOptions.callback) renderOptions.callback(canvas);
-
-        if (["jpg", "png"].includes(options.type)) {
-          canvas.toBlob(function (blob) {
-            return FileSaver.saveAs(blob, "".concat(options.filename, ".").concat(options.type));
-          });
-        } // else if (options.type === "pdf") {
-        //   const outputHeight = 11,
-        //         outputWidth = 8.5;
-        //   const aspect = canvas.width / canvas.height,
-        //         orientation = aspect > 1 ? "landscape" : "portrait";
-        //   const pdf = new JsPDF({
-        //     orientation,
-        //     unit: "in",
-        //     format: [outputWidth, outputHeight]
-        //   });
-        //   let h = orientation === "landscape" ? outputWidth : outputHeight,
-        //       left,
-        //       top,
-        //       w = orientation === "landscape" ? outputHeight : outputWidth;
-        //   const margin = 0.5;
-        //   if (aspect < w / h) {
-        //     h -= margin * 2;
-        //     const tempWidth = h * aspect;
-        //     top = margin;
-        //     left = (w - tempWidth) / 2;
-        //     w = tempWidth;
-        //   }
-        //   else {
-        //     w -= margin * 2;
-        //     const tempHeight = w / aspect;
-        //     left = margin;
-        //     top = (h - tempHeight) / 2;
-        //     h = tempHeight;
-        //   }
-        //   pdf.addImage(canvas, "canvas", left, top, w, h);
-        //   pdf.save(options.filename);
-        // }
-
-      }
-    }));
   }
 
   exports.dom2canvas = dom2canvas;
