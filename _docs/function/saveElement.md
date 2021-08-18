@@ -5,7 +5,7 @@ kind: function
 
 <a name="saveElement"></a>
 
-### d3plus.**saveElement**(elem, [options], [renderOptions]) [<>](https://github.com/d3plus/d3plus-export/blob/master/src/saveElement.js#L12)
+### d3plus.**saveElement**(elem, [options], [renderOptions]) [<>](https://github.com/d3plus/d3plus-export/blob/master/src/saveElement.js#L14)
 
 Downloads an HTML Element as a bitmap PNG image.
 
