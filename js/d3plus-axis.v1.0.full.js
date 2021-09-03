@@ -45,7 +45,7 @@ function _arrayLikeToArray2(arr, len) { if (len == null || len > arr.length) len
 function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof2 = function _typeof2(obj) { return typeof obj; }; } else { _typeof2 = function _typeof2(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof2(obj); }
 
 /*
-  d3plus-axis v1.0.1
+  d3plus-axis v1.0.2
   Beautiful javascript scales and axes.
   Copyright (c) 2021 D3plus - https://d3plus.org
   @license MIT
@@ -25131,6 +25131,41 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
     .replace(/(\.[0]*[1-9]*)[0]*$/g, "$1") // removes any trailing zeros
     .replace(/\.[0]*$/g, ""); // removes any trailing decimal point
   }
+  /**
+      @function formatDate
+      @desc A default set of date formatters, which takes into account both the interval in between in each data point but also the start/end data points.
+      @param {Date} d The date string to be formatted.
+      @param {Array} dataArray The full array of ordered Date Objects.
+      @returns {String}
+  */
+
+
+  function formatDate(d, dataArray) {
+    var formatDay = timeFormat("%-d"),
+        formatHour = timeFormat("%I %p"),
+        formatMillisecond = timeFormat(".%L"),
+        formatMinute = timeFormat("%I:%M"),
+        formatMonth = timeFormat("%b"),
+        formatMonthDay = timeFormat("%b %-d"),
+        formatMonthDayYear = timeFormat("%b %-d, %Y"),
+        formatMonthYear = timeFormat("%b %Y"),
+        formatSecond = timeFormat(":%S"),
+        formatYear = timeFormat("%Y");
+    var labelIndex = dataArray.indexOf(d);
+    var c = dataArray[labelIndex + 1] || dataArray[labelIndex - 1];
+    return (second(d) < d ? formatMillisecond : minute(d) < d ? formatSecond : hour(d) < d ? formatMinute : day(d) < d ? labelIndex === 0 ? formatMonthDayYear : formatHour : month(d) < d ? labelIndex === 0 ? formatMonthDayYear : neighborInInterval(d, c, day) ? formatMonthDay : formatDay : year(d) < d ? labelIndex === 0 ? formatMonthYear : neighborInInterval(d, c, month) ? formatMonthDay : formatMonth : neighborInInterval(d, c, year) ? formatMonthYear : formatYear)(d);
+  }
+  /**
+      @function neighborInInterval
+      @desc Helps determine whether to show the parent level time label, such as "Jan 2020" in a monthly chart (where "Feb"-only would follow)
+      @returns {Boolean}
+      @private
+  */
+
+
+  function neighborInInterval(d, comparitor, interval) {
+    return comparitor ? +interval.round(d) === +interval.round(d + Math.abs(comparitor - d)) : false;
+  }
 
   function _classCallCheck$1(instance, Constructor) {
     if (!(instance instanceof Constructor)) {
@@ -35318,16 +35353,6 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
 
         var timeLocale = this._timeLocale || locale$2[this._locale] || locale$2["en-US"];
         defaultLocale(timeLocale).format();
-        var formatDay = timeFormat("%-d"),
-            formatHour = timeFormat("%I %p"),
-            formatMillisecond = timeFormat(".%L"),
-            formatMinute = timeFormat("%I:%M"),
-            formatMonth = timeFormat("%b"),
-            formatMonthDay = timeFormat("%b %-d"),
-            formatMonthDayYear = timeFormat("%b %-d, %Y"),
-            formatMonthYear = timeFormat("%b %Y"),
-            formatSecond = timeFormat(":%S"),
-            formatYear = timeFormat("%Y");
         /**
          * Declares some commonly used variables.
          */
@@ -35361,31 +35386,14 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
         };
         var labels, range, ticks;
         /**
-         * Calculates whether to show the parent level time label, such as
-         * "Jan 2020" in a monthly chart (where "Feb"-only would follow)
-         */
-
-        function neighborInInterval(d, comparitor, interval) {
-          return comparitor ? +interval.round(d) === +interval.round(d + Math.abs(comparitor - d)) : false;
-        }
-        /**
          * Constructs the tick formatter function.
          */
 
-
         var tickFormat = this._tickFormat ? this._tickFormat : function (d) {
-          if (_this8._scale === "time") {
-            var labelIndex = labels.indexOf(d);
-
-            var _c = labels[labelIndex + 1] || labels[labelIndex - 1];
-
-            return (second(d) < d ? formatMillisecond : minute(d) < d ? formatSecond : hour(d) < d ? formatMinute : day(d) < d ? labelIndex === 0 ? formatMonthDayYear : formatHour : month(d) < d ? labelIndex === 0 ? formatMonthDayYear : neighborInInterval(d, _c, day) ? formatMonthDay : formatDay : year(d) < d ? labelIndex === 0 ? formatMonthYear : neighborInInterval(d, _c, month) ? formatMonthDay : formatMonth : neighborInInterval(d, _c, year) ? formatMonthYear : formatYear)(d);
-          } else if (["band", "ordinal", "point"].includes(_this8._scale)) {
+          if (isNaN(d) || ["band", "ordinal", "point"].includes(_this8._scale)) {
             return d;
-          }
-
-          if (isNaN(d)) {
-            return d;
+          } else if (_this8._scale === "time") {
+            return formatDate(d, labels);
           } else if (_this8._scale === "linear" && _this8._tickSuffix === "smallest") {
             var _locale = _typeof2(_this8._locale) === "object" ? _this8._locale : formatLocale$2[_this8._locale];
 

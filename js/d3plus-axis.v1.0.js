@@ -35,7 +35,7 @@ function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.g
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
 /*
-  d3plus-axis v1.0.1
+  d3plus-axis v1.0.2
   Beautiful javascript scales and axes.
   Copyright (c) 2021 D3plus - https://d3plus.org
   @license MIT
@@ -7903,8 +7903,8 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
 });
 
 (function (global, factory) {
-  (typeof exports === "undefined" ? "undefined" : _typeof(exports)) === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-array'), require('d3-time'), require('d3-time-format'), require('d3-scale'), require('d3-selection'), require('d3-transition'), require('d3plus-common'), require('d3plus-color'), require('d3plus-format'), require('d3plus-shape'), require('d3plus-text')) : typeof define === 'function' && define.amd ? define('d3plus-axis', ['exports', 'd3-array', 'd3-time', 'd3-time-format', 'd3-scale', 'd3-selection', 'd3-transition', 'd3plus-common', 'd3plus-color', 'd3plus-format', 'd3plus-shape', 'd3plus-text'], factory) : (global = typeof globalThis !== 'undefined' ? globalThis : global || self, factory(global.d3plus = {}, global.d3Array, global.d3Time, global.d3TimeFormat, global.scales, global.d3Selection, global.d3Transition, global.d3plusCommon, global.d3plusColor, global.d3plusFormat, global.shapes, global.d3plusText));
-})(this, function (exports, d3Array, d3Time, d3TimeFormat, scales, d3Selection, d3Transition, d3plusCommon, d3plusColor, d3plusFormat, shapes, d3plusText) {
+  (typeof exports === "undefined" ? "undefined" : _typeof(exports)) === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-array'), require('d3-time-format'), require('d3-scale'), require('d3-selection'), require('d3-transition'), require('d3plus-common'), require('d3plus-color'), require('d3plus-format'), require('d3plus-shape'), require('d3plus-text')) : typeof define === 'function' && define.amd ? define('d3plus-axis', ['exports', 'd3-array', 'd3-time-format', 'd3-scale', 'd3-selection', 'd3-transition', 'd3plus-common', 'd3plus-color', 'd3plus-format', 'd3plus-shape', 'd3plus-text'], factory) : (global = typeof globalThis !== 'undefined' ? globalThis : global || self, factory(global.d3plus = {}, global.d3Array, global.d3TimeFormat, global.scales, global.d3Selection, global.d3Transition, global.d3plusCommon, global.d3plusColor, global.d3plusFormat, global.shapes, global.d3plusText));
+})(this, function (exports, d3Array, d3TimeFormat, scales, d3Selection, d3Transition, d3plusCommon, d3plusColor, d3plusFormat, shapes, d3plusText) {
   'use strict';
 
   function _interopNamespace(e) {
@@ -8339,16 +8339,6 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
 
         var timeLocale = this._timeLocale || locale[this._locale] || locale["en-US"];
         d3TimeFormat.timeFormatDefaultLocale(timeLocale).format();
-        var formatDay = d3TimeFormat.timeFormat("%-d"),
-            formatHour = d3TimeFormat.timeFormat("%I %p"),
-            formatMillisecond = d3TimeFormat.timeFormat(".%L"),
-            formatMinute = d3TimeFormat.timeFormat("%I:%M"),
-            formatMonth = d3TimeFormat.timeFormat("%b"),
-            formatMonthDay = d3TimeFormat.timeFormat("%b %-d"),
-            formatMonthDayYear = d3TimeFormat.timeFormat("%b %-d, %Y"),
-            formatMonthYear = d3TimeFormat.timeFormat("%b %Y"),
-            formatSecond = d3TimeFormat.timeFormat(":%S"),
-            formatYear = d3TimeFormat.timeFormat("%Y");
         /**
          * Declares some commonly used variables.
          */
@@ -8382,29 +8372,14 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
         };
         var labels, range, ticks;
         /**
-         * Calculates whether to show the parent level time label, such as
-         * "Jan 2020" in a monthly chart (where "Feb"-only would follow)
-         */
-
-        function neighborInInterval(d, comparitor, interval) {
-          return comparitor ? +interval.round(d) === +interval.round(d + Math.abs(comparitor - d)) : false;
-        }
-        /**
          * Constructs the tick formatter function.
          */
 
-
         var tickFormat = this._tickFormat ? this._tickFormat : function (d) {
-          if (_this2._scale === "time") {
-            var labelIndex = labels.indexOf(d);
-            var c = labels[labelIndex + 1] || labels[labelIndex - 1];
-            return (d3Time.timeSecond(d) < d ? formatMillisecond : d3Time.timeMinute(d) < d ? formatSecond : d3Time.timeHour(d) < d ? formatMinute : d3Time.timeDay(d) < d ? labelIndex === 0 ? formatMonthDayYear : formatHour : d3Time.timeMonth(d) < d ? labelIndex === 0 ? formatMonthDayYear : neighborInInterval(d, c, d3Time.timeDay) ? formatMonthDay : formatDay : d3Time.timeYear(d) < d ? labelIndex === 0 ? formatMonthYear : neighborInInterval(d, c, d3Time.timeMonth) ? formatMonthDay : formatMonth : neighborInInterval(d, c, d3Time.timeYear) ? formatMonthYear : formatYear)(d);
-          } else if (["band", "ordinal", "point"].includes(_this2._scale)) {
+          if (isNaN(d) || ["band", "ordinal", "point"].includes(_this2._scale)) {
             return d;
-          }
-
-          if (isNaN(d)) {
-            return d;
+          } else if (_this2._scale === "time") {
+            return d3plusFormat.formatDate(d, labels);
           } else if (_this2._scale === "linear" && _this2._tickSuffix === "smallest") {
             var _locale = _typeof(_this2._locale) === "object" ? _this2._locale : d3plusFormat.formatLocale[_this2._locale];
 
