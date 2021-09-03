@@ -2,8 +2,8 @@
 title: Bar Chart Tooltip Configuration
 width: 800
 height: 400
-time: 1624464075117
-date: June 23, 2021
+time: 1630700615581
+date: September 03, 2021
 ---
 
 # Bar Chart Tooltip Configuration
