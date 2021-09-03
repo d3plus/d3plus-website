@@ -8065,7 +8065,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       @function formatDate
       @desc A default set of date formatters, which takes into account both the interval in between in each data point but also the start/end data points.
       @param {Date} d The date string to be formatted.
-      @param {Array[Date]} dataArray The full array of ordered Date Objects.
+      @param {Array} dataArray The full array of ordered Date Objects.
       @returns {String}
   */
 
