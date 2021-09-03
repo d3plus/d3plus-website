@@ -1,7 +1,7 @@
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
 /*
-  d3plus-format v1.0.0
+  d3plus-format v1.0.1
   Shorthand formatters for common number types.
   Copyright (c) 2021 D3plus - https://d3plus.org
   @license MIT
@@ -7869,8 +7869,8 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
 });
 
 (function (global, factory) {
-  (typeof exports === "undefined" ? "undefined" : _typeof(exports)) === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-format')) : typeof define === 'function' && define.amd ? define('d3plus-format', ['exports', 'd3-format'], factory) : (global = typeof globalThis !== 'undefined' ? globalThis : global || self, factory(global.d3plus = {}, global.d3Format));
-})(this, function (exports, d3Format) {
+  (typeof exports === "undefined" ? "undefined" : _typeof(exports)) === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-format'), require('d3-time'), require('d3-time-format')) : typeof define === 'function' && define.amd ? define('d3plus-format', ['exports', 'd3-format', 'd3-time', 'd3-time-format'], factory) : (global = typeof globalThis !== 'undefined' ? globalThis : global || self, factory(global.d3plus = {}, global.d3Format, global.d3Time, global.d3TimeFormat));
+})(this, function (exports, d3Format, d3Time, d3TimeFormat) {
   'use strict';
   /**
       @namespace {Object} formatLocale
@@ -8061,9 +8061,45 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
     locale.format = format;
     return locale;
   };
+  /**
+      @function formatDate
+      @desc A default set of date formatters, which takes into account both the interval in between in each data point but also the start/end data points.
+      @param {Date} d The date string to be formatted.
+      @param {Array[Date]} dataArray The full array of ordered Date Objects.
+      @returns {String}
+  */
+
+
+  function formatDate(d, dataArray) {
+    var formatDay = d3TimeFormat.timeFormat("%-d"),
+        formatHour = d3TimeFormat.timeFormat("%I %p"),
+        formatMillisecond = d3TimeFormat.timeFormat(".%L"),
+        formatMinute = d3TimeFormat.timeFormat("%I:%M"),
+        formatMonth = d3TimeFormat.timeFormat("%b"),
+        formatMonthDay = d3TimeFormat.timeFormat("%b %-d"),
+        formatMonthDayYear = d3TimeFormat.timeFormat("%b %-d, %Y"),
+        formatMonthYear = d3TimeFormat.timeFormat("%b %Y"),
+        formatSecond = d3TimeFormat.timeFormat(":%S"),
+        formatYear = d3TimeFormat.timeFormat("%Y");
+    var labelIndex = dataArray.indexOf(d);
+    var c = dataArray[labelIndex + 1] || dataArray[labelIndex - 1];
+    return (d3Time.timeSecond(d) < d ? formatMillisecond : d3Time.timeMinute(d) < d ? formatSecond : d3Time.timeHour(d) < d ? formatMinute : d3Time.timeDay(d) < d ? labelIndex === 0 ? formatMonthDayYear : formatHour : d3Time.timeMonth(d) < d ? labelIndex === 0 ? formatMonthDayYear : neighborInInterval(d, c, d3Time.timeDay) ? formatMonthDay : formatDay : d3Time.timeYear(d) < d ? labelIndex === 0 ? formatMonthYear : neighborInInterval(d, c, d3Time.timeMonth) ? formatMonthDay : formatMonth : neighborInInterval(d, c, d3Time.timeYear) ? formatMonthYear : formatYear)(d);
+  }
+  /**
+      @function neighborInInterval
+      @desc Helps determine whether to show the parent level time label, such as "Jan 2020" in a monthly chart (where "Feb"-only would follow)
+      @returns {Boolean}
+      @private
+  */
+
+
+  function neighborInInterval(d, comparitor, interval) {
+    return comparitor ? +interval.round(d) === +interval.round(d + Math.abs(comparitor - d)) : false;
+  }
 
   exports.format = format;
   exports.formatAbbreviate = abbreviate;
+  exports.formatDate = formatDate;
   exports.formatDefaultLocale = formatDefaultLocale;
   exports.formatLocale = defaultLocale;
   Object.defineProperty(exports, '__esModule', {
