@@ -51,7 +51,7 @@ function _arrayLikeToArray2(arr, len) { if (len == null || len > arr.length) len
 function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof2 = function _typeof2(obj) { return typeof obj; }; } else { _typeof2 = function _typeof2(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof2(obj); }
 
 /*
-  d3plus-plot v1.0.11
+  d3plus-plot v1.0.12
   A reusable javascript x/y plot built on D3.
   Copyright (c) 2021 D3plus - https://d3plus.org
   @license MIT
@@ -22319,7 +22319,8 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
   /**
       @function unique
       @desc ES5 implementation to reduce an Array of values to unique instances.
-      @param {Array} objects The Array of objects to be filtered.
+      @param {Array} arr The Array of objects to be filtered.
+      @param {Function} [accessor] An optional accessor function used to extract data points from an Array of Objects.
       @example <caption>this</caption>
   unique(["apple", "banana", "apple"]);
       @example <caption>returns this</caption>
@@ -22328,8 +22329,12 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
 
 
   function unique(arr) {
-    return arr.filter(function (k, i, a) {
-      return a.indexOf(k) === i;
+    var accessor = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : function (d) {
+      return d;
+    };
+    var values = arr.map(accessor);
+    return arr.filter(function (d, i) {
+      return values.indexOf(accessor(d)) === i;
     });
   }
   /**
@@ -27942,6 +27947,41 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
     return "".concat(negative && val.charAt(0) !== "−" ? "−" : "").concat(val).replace(/\−/g, "-") // replace new d3 default minus sign (−) to hyphen-minus (-)
     .replace(/(\.[0]*[1-9]*)[0]*$/g, "$1") // removes any trailing zeros
     .replace(/\.[0]*$/g, ""); // removes any trailing decimal point
+  }
+  /**
+      @function formatDate
+      @desc A default set of date formatters, which takes into account both the interval in between in each data point but also the start/end data points.
+      @param {Date} d The date string to be formatted.
+      @param {Array} dataArray The full array of ordered Date Objects.
+      @returns {String}
+  */
+
+
+  function formatDate(d, dataArray) {
+    var formatDay = timeFormat("%-d"),
+        formatHour = timeFormat("%I %p"),
+        formatMillisecond = timeFormat(".%L"),
+        formatMinute = timeFormat("%I:%M"),
+        formatMonth = timeFormat("%b"),
+        formatMonthDay = timeFormat("%b %-d"),
+        formatMonthDayYear = timeFormat("%b %-d, %Y"),
+        formatMonthYear = timeFormat("%b %Y"),
+        formatSecond = timeFormat(":%S"),
+        formatYear = timeFormat("%Y");
+    var labelIndex = dataArray.indexOf(d);
+    var c = dataArray[labelIndex + 1] || dataArray[labelIndex - 1];
+    return (second$1(d) < d ? formatMillisecond : minute$1(d) < d ? formatSecond : hour$1(d) < d ? formatMinute : day$1(d) < d ? labelIndex === 0 ? formatMonthDayYear : formatHour : month$1(d) < d ? labelIndex === 0 ? formatMonthDayYear : neighborInInterval(d, c, day$1) ? formatMonthDay : formatDay : year$1(d) < d ? labelIndex === 0 ? formatMonthYear : neighborInInterval(d, c, month$1) ? formatMonthDay : formatMonth : neighborInInterval(d, c, year$1) ? formatMonthYear : formatYear)(d);
+  }
+  /**
+      @function neighborInInterval
+      @desc Helps determine whether to show the parent level time label, such as "Jan 2020" in a monthly chart (where "Feb"-only would follow)
+      @returns {Boolean}
+      @private
+  */
+
+
+  function neighborInInterval(d, comparitor, interval) {
+    return comparitor ? +interval.round(d) === +interval.round(d + Math.abs(comparitor - d)) : false;
   }
 
   function _classCallCheck$1(instance, Constructor) {
@@ -35755,16 +35795,6 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
 
         var timeLocale = this._timeLocale || locale$2[this._locale] || locale$2["en-US"];
         defaultLocale$1(timeLocale).format();
-        var formatDay = timeFormat("%-d"),
-            formatHour = timeFormat("%I %p"),
-            formatMillisecond = timeFormat(".%L"),
-            formatMinute = timeFormat("%I:%M"),
-            formatMonth = timeFormat("%b"),
-            formatMonthDay = timeFormat("%b %-d"),
-            formatMonthDayYear = timeFormat("%b %-d, %Y"),
-            formatMonthYear = timeFormat("%b %Y"),
-            formatSecond = timeFormat(":%S"),
-            formatYear = timeFormat("%Y");
         /**
          * Declares some commonly used variables.
          */
@@ -35798,29 +35828,14 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
         };
         var labels, range$1, ticks;
         /**
-         * Calculates whether to show the parent level time label, such as
-         * "Jan 2020" in a monthly chart (where "Feb"-only would follow)
-         */
-
-        function neighborInInterval(d, comparitor, interval) {
-          return comparitor ? +interval.round(d) === +interval.round(d + Math.abs(comparitor - d)) : false;
-        }
-        /**
          * Constructs the tick formatter function.
          */
 
-
         var tickFormat = this._tickFormat ? this._tickFormat : function (d) {
-          if (_this2._scale === "time") {
-            var labelIndex = labels.indexOf(d);
-            var c = labels[labelIndex + 1] || labels[labelIndex - 1];
-            return (second$1(d) < d ? formatMillisecond : minute$1(d) < d ? formatSecond : hour$1(d) < d ? formatMinute : day$1(d) < d ? labelIndex === 0 ? formatMonthDayYear : formatHour : month$1(d) < d ? labelIndex === 0 ? formatMonthDayYear : neighborInInterval(d, c, day$1) ? formatMonthDay : formatDay : year$1(d) < d ? labelIndex === 0 ? formatMonthYear : neighborInInterval(d, c, month$1) ? formatMonthDay : formatMonth : neighborInInterval(d, c, year$1) ? formatMonthYear : formatYear)(d);
-          } else if (["band", "ordinal", "point"].includes(_this2._scale)) {
+          if (isNaN(d) || ["band", "ordinal", "point"].includes(_this2._scale)) {
             return d;
-          }
-
-          if (isNaN(d)) {
-            return d;
+          } else if (_this2._scale === "time") {
+            return formatDate(d, labels);
           } else if (_this2._scale === "linear" && _this2._tickSuffix === "smallest") {
             var _locale = _typeof$d(_this2._locale) === "object" ? _this2._locale : formatLocale$2[_this2._locale];
 
@@ -37311,6 +37326,220 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
     return AxisTop;
   }(Axis);
   /**
+      @namespace {Object} formatLocale
+      @desc A set of default locale formatters used when assigning suffixes and currency in numbers.
+        *
+        * | Name | Default | Description |
+        * |---|---|---|
+        * | separator | "" | Separation between the number with the suffix. |
+        * | suffixes | [] | List of suffixes used to format numbers. |
+        * | grouping | [3] | The array of group sizes, |
+        * | delimiters | {thousands: ",", decimal: "."} | Decimal and group separators. |
+        * | currency | ["$", ""] | The currency prefix and suffix. |
+  */
+
+
+  var defaultLocale$2 = {
+    "en-GB": {
+      separator: "",
+      suffixes: ["y", "z", "a", "f", "p", "n", "µ", "m", "", "k", "M", "B", "T", "q", "Q", "Z", "Y"],
+      grouping: [3],
+      delimiters: {
+        thousands: ",",
+        decimal: "."
+      },
+      currency: ["£", ""]
+    },
+    "en-US": {
+      separator: "",
+      suffixes: ["y", "z", "a", "f", "p", "n", "µ", "m", "", "k", "M", "B", "T", "q", "Q", "Z", "Y"],
+      grouping: [3],
+      delimiters: {
+        thousands: ",",
+        decimal: "."
+      },
+      currency: ["$", ""]
+    },
+    "es-CL": {
+      separator: "",
+      suffixes: ["y", "z", "a", "f", "p", "n", "µ", "m", "", "k", "M", "MM", "B", "T", "Q", "Z", "Y"],
+      grouping: [3],
+      delimiters: {
+        thousands: ".",
+        decimal: ","
+      },
+      currency: ["$", ""]
+    },
+    "es-MX": {
+      separator: "",
+      suffixes: ["y", "z", "a", "f", "p", "n", "µ", "m", "", "k", "M", "MM", "B", "T", "Q", "Z", "Y"],
+      grouping: [3],
+      delimiters: {
+        thousands: ",",
+        decimal: "."
+      },
+      currency: ["$", ""]
+    },
+    "es-ES": {
+      separator: "",
+      suffixes: ["y", "z", "a", "f", "p", "n", "µ", "m", "", "k", "mm", "b", "t", "q", "Q", "Z", "Y"],
+      grouping: [3],
+      delimiters: {
+        thousands: ".",
+        decimal: ","
+      },
+      currency: ["€", ""]
+    },
+    "et-EE": {
+      separator: " ",
+      suffixes: ["y", "z", "a", "f", "p", "n", "µ", "m", "", "tuhat", "miljonit", "miljardit", "triljonit", "q", "Q", "Z", "Y"],
+      grouping: [3],
+      delimiters: {
+        thousands: " ",
+        decimal: ","
+      },
+      currency: ["", "eurot"]
+    },
+    "fr-FR": {
+      suffixes: ["y", "z", "a", "f", "p", "n", "µ", "m", "", "k", "m", "b", "t", "q", "Q", "Z", "Y"],
+      grouping: [3],
+      delimiters: {
+        thousands: " ",
+        decimal: ","
+      },
+      currency: ["€", ""]
+    }
+  };
+
+  function _typeof$i(obj) {
+    "@babel/helpers - typeof";
+
+    if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") {
+      _typeof$i = function _typeof(obj) {
+        return typeof obj;
+      };
+    } else {
+      _typeof$i = function _typeof(obj) {
+        return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
+      };
+    }
+
+    return _typeof$i(obj);
+  }
+
+  var round$1 = function round(x, n) {
+    return parseFloat(Math.round(x * Math.pow(10, n)) / Math.pow(10, n)).toFixed(n);
+  };
+  /**
+   * @private
+  */
+
+
+  function formatSuffix$1(str, precision, suffixes) {
+    var i = 0;
+    var value = parseFloat(str.replace("−", "-"), 10);
+
+    if (value) {
+      if (value < 0) value *= -1;
+      i = 1 + Math.floor(1e-12 + Math.log(value) / Math.LN10);
+      i = Math.max(-24, Math.min(24, Math.floor((i - 1) / 3) * 3));
+    }
+
+    var d = suffixes[8 + i / 3];
+    return {
+      number: round$1(d.scale(value), precision),
+      symbol: d.symbol
+    };
+  }
+  /**
+   * @private
+  */
+
+
+  function parseSuffixes$1(d, i) {
+    var k = Math.pow(10, Math.abs(8 - i) * 3);
+    return {
+      scale: i > 8 ? function (d) {
+        return d / k;
+      } : function (d) {
+        return d * k;
+      },
+      symbol: d
+    };
+  }
+  /**
+      @function formatAbbreviate
+      @desc Formats a number to an appropriate number of decimal places and rounding, adding suffixes if applicable (ie. `1200000` to `"1.2M"`).
+      @param {Number|String} n The number to be formatted.
+      @param {Object|String} locale The locale config to be used. If *value* is an object, the function will format the numbers according the object. The object must include `suffixes`, `delimiter` and `currency` properties.
+      @returns {String}
+  */
+
+
+  function formatAbbreviate$1(n) {
+    var locale = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : "en-US";
+    var precision = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : undefined;
+    if (isFinite(n)) n *= 1;else return "N/A";
+    var negative = n < 0;
+    var length = n.toString().split(".")[0].replace("-", "").length,
+        localeConfig = _typeof$i(locale) === "object" ? locale : defaultLocale$2[locale] || defaultLocale$2["en-US"],
+        suffixes = localeConfig.suffixes.map(parseSuffixes$1);
+    var decimal = localeConfig.delimiters.decimal || ".",
+        separator = localeConfig.separator || "",
+        thousands = localeConfig.delimiters.thousands || ",";
+    var d3plusFormatLocale = formatLocale({
+      currency: localeConfig.currency || ["$", ""],
+      decimal: decimal,
+      grouping: localeConfig.grouping || [3],
+      thousands: thousands
+    });
+    var val;
+    if (precision) val = d3plusFormatLocale.format(precision)(n);else if (n === 0) val = "0";else if (length >= 3) {
+      var f = formatSuffix$1(d3plusFormatLocale.format(".3r")(n), 2, suffixes);
+      var num = parseFloat(f.number).toString().replace(".", decimal);
+      var _char = f.symbol;
+      val = "".concat(num).concat(separator).concat(_char);
+    } else if (length === 3) val = d3plusFormatLocale.format(",f")(n);else if (n < 1 && n > -1) val = d3plusFormatLocale.format(".2g")(n);else val = d3plusFormatLocale.format(".3g")(n);
+    return "".concat(negative && val.charAt(0) !== "−" ? "−" : "").concat(val).replace(/\−/g, "-") // replace new d3 default minus sign (−) to hyphen-minus (-)
+    .replace(/(\.[0]*[1-9]*)[0]*$/g, "$1") // removes any trailing zeros
+    .replace(/\.[0]*$/g, ""); // removes any trailing decimal point
+  }
+  /**
+      @function formatDate
+      @desc A default set of date formatters, which takes into account both the interval in between in each data point but also the start/end data points.
+      @param {Date} d The date string to be formatted.
+      @param {Array} dataArray The full array of ordered Date Objects.
+      @returns {String}
+  */
+
+
+  function formatDate$1(d, dataArray) {
+    var formatDay = timeFormat("%-d"),
+        formatHour = timeFormat("%I %p"),
+        formatMillisecond = timeFormat(".%L"),
+        formatMinute = timeFormat("%I:%M"),
+        formatMonth = timeFormat("%b"),
+        formatMonthDay = timeFormat("%b %-d"),
+        formatMonthDayYear = timeFormat("%b %-d, %Y"),
+        formatMonthYear = timeFormat("%b %Y"),
+        formatSecond = timeFormat(":%S"),
+        formatYear = timeFormat("%Y");
+    var labelIndex = dataArray.indexOf(d);
+    var c = dataArray[labelIndex + 1] || dataArray[labelIndex - 1];
+    return (second$1(d) < d ? formatMillisecond : minute$1(d) < d ? formatSecond : hour$1(d) < d ? formatMinute : day$1(d) < d ? labelIndex === 0 ? formatMonthDayYear : formatHour : month$1(d) < d ? labelIndex === 0 ? formatMonthDayYear : neighborInInterval$1(d, c, day$1) ? formatMonthDay : formatDay : year$1(d) < d ? labelIndex === 0 ? formatMonthYear : neighborInInterval$1(d, c, month$1) ? formatMonthDay : formatMonth : neighborInInterval$1(d, c, year$1) ? formatMonthYear : formatYear)(d);
+  }
+  /**
+      @function neighborInInterval
+      @desc Helps determine whether to show the parent level time label, such as "Jan 2020" in a monthly chart (where "Feb"-only would follow)
+      @returns {Boolean}
+      @private
+  */
+
+
+  function neighborInInterval$1(d, comparitor, interval) {
+    return comparitor ? +interval.round(d) === +interval.round(d + Math.abs(comparitor - d)) : false;
+  }
+  /**
     @function dataConcat
     @desc Reduce and concat all the elements included in arrayOfArrays if they are arrays. If it is a JSON object try to concat the array under given key data. If the key doesn't exists in object item, a warning message is lauched to the console. You need to implement DataFormat callback to concat the arrays manually.
     @param {Array} arrayOfArray Array of elements
@@ -37337,20 +37566,20 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
     }, []);
   };
 
-  function _typeof$i(obj) {
+  function _typeof$j(obj) {
     "@babel/helpers - typeof";
 
     if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") {
-      _typeof$i = function _typeof(obj) {
+      _typeof$j = function _typeof(obj) {
         return typeof obj;
       };
     } else {
-      _typeof$i = function _typeof(obj) {
+      _typeof$j = function _typeof(obj) {
         return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
       };
     }
 
-    return _typeof$i(obj);
+    return _typeof$j(obj);
   }
   /**
     @function isData
@@ -37360,7 +37589,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
 
 
   var isData = function isData(dataItem) {
-    return typeof dataItem === "string" || _typeof$i(dataItem) === "object" && dataItem.url && dataItem.headers;
+    return typeof dataItem === "string" || _typeof$j(dataItem) === "object" && dataItem.url && dataItem.headers;
   };
 
   var noop$2 = {
@@ -37674,7 +37903,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
     return year < 0 ? "-" + pad$1(-year, 6) : year > 9999 ? "+" + pad$1(year, 6) : pad$1(year, 4);
   }
 
-  function formatDate(date) {
+  function formatDate$2(date) {
     var hours = date.getUTCHours(),
         minutes = date.getUTCMinutes(),
         seconds = date.getUTCSeconds(),
@@ -37789,7 +38018,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
     }
 
     function formatValue(value) {
-      return value == null ? "" : value instanceof Date ? formatDate(value) : reFormat.test(value += "") ? "\"" + value.replace(/"/g, "\"\"") + "\"" : value;
+      return value == null ? "" : value instanceof Date ? formatDate$2(value) : reFormat.test(value += "") ? "\"" + value.replace(/"/g, "\"\"") + "\"" : value;
     }
 
     return {
@@ -37848,20 +38077,20 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
     });
   };
 
-  function _typeof$j(obj) {
+  function _typeof$k(obj) {
     "@babel/helpers - typeof";
 
     if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") {
-      _typeof$j = function _typeof(obj) {
+      _typeof$k = function _typeof(obj) {
         return typeof obj;
       };
     } else {
-      _typeof$j = function _typeof(obj) {
+      _typeof$k = function _typeof(obj) {
         return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
       };
     }
 
-    return _typeof$j(obj);
+    return _typeof$k(obj);
   }
   /**
     @function dataLoad
@@ -37939,7 +38168,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
       var headers = {},
           url = dataItem;
 
-      if (_typeof$j(dataItem) === "object") {
+      if (_typeof$k(dataItem) === "object") {
         url = dataItem.url;
         headers = dataItem.headers;
       }
@@ -39847,20 +40076,20 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
     return clusters;
   }
 
-  function _typeof$k(obj) {
+  function _typeof$l(obj) {
     "@babel/helpers - typeof";
 
     if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") {
-      _typeof$k = function _typeof(obj) {
+      _typeof$l = function _typeof(obj) {
         return typeof obj;
       };
     } else {
-      _typeof$k = function _typeof(obj) {
+      _typeof$l = function _typeof(obj) {
         return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
       };
     }
 
-    return _typeof$k(obj);
+    return _typeof$l(obj);
   }
 
   function _classCallCheck$h(instance, Constructor) {
@@ -39929,7 +40158,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
   }
 
   function _possibleConstructorReturn$f(self, call) {
-    if (call && (_typeof$k(call) === "object" || typeof call === "function")) {
+    if (call && (_typeof$l(call) === "object" || typeof call === "function")) {
       return call;
     }
 
@@ -40611,20 +40840,20 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
     return Legend;
   }(BaseClass);
 
-  function _typeof$l(obj) {
+  function _typeof$m(obj) {
     "@babel/helpers - typeof";
 
     if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") {
-      _typeof$l = function _typeof(obj) {
+      _typeof$m = function _typeof(obj) {
         return typeof obj;
       };
     } else {
-      _typeof$l = function _typeof(obj) {
+      _typeof$m = function _typeof(obj) {
         return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
       };
     }
 
-    return _typeof$l(obj);
+    return _typeof$m(obj);
   }
 
   function _defineProperty$2(obj, key, value) {
@@ -40708,7 +40937,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
   }
 
   function _possibleConstructorReturn$g(self, call) {
-    if (call && (_typeof$l(call) === "object" || typeof call === "function")) {
+    if (call && (_typeof$m(call) === "object" || typeof call === "function")) {
       return call;
     }
 
@@ -40776,7 +41005,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
       _this._bucketAxis = false;
 
       _this._bucketFormat = function (tick, i, ticks, allValues) {
-        var format = _this._axisConfig.tickFormat ? _this._axisConfig.tickFormat : formatAbbreviate;
+        var format = _this._axisConfig.tickFormat ? _this._axisConfig.tickFormat : formatAbbreviate$1;
         var next = ticks[i + 1];
         var prev = i ? ticks[i - 1] : false;
         var last = i === ticks.length - 1;
@@ -41644,20 +41873,20 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
     return ColorScale;
   }(BaseClass);
 
-  function _typeof$m(obj) {
+  function _typeof$n(obj) {
     "@babel/helpers - typeof";
 
     if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") {
-      _typeof$m = function _typeof(obj) {
+      _typeof$n = function _typeof(obj) {
         return typeof obj;
       };
     } else {
-      _typeof$m = function _typeof(obj) {
+      _typeof$n = function _typeof(obj) {
         return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
       };
     }
 
-    return _typeof$m(obj);
+    return _typeof$n(obj);
   }
 
   function _classCallCheck$j(instance, Constructor) {
@@ -41756,7 +41985,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
   }
 
   function _possibleConstructorReturn$h(self, call) {
-    if (call && (_typeof$m(call) === "object" || typeof call === "function")) {
+    if (call && (_typeof$n(call) === "object" || typeof call === "function")) {
       return call;
     }
 
@@ -42701,7 +42930,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
 
   var max$3 = Math.max;
   var min$3 = Math.min;
-  var round$1 = Math.round; // of the `<html>` and `<body>` rect bounds if horizontally scrollable
+  var round$2 = Math.round; // of the `<html>` and `<body>` rect bounds if horizontally scrollable
 
   function getDocumentRect(element) {
     var _element$ownerDocumen;
@@ -43236,8 +43465,8 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
     var win = window;
     var dpr = win.devicePixelRatio || 1;
     return {
-      x: round$1(round$1(x * dpr) / dpr) || 0,
-      y: round$1(round$1(y * dpr) / dpr) || 0
+      x: round$2(round$2(x * dpr) / dpr) || 0,
+      y: round$2(round$2(y * dpr) / dpr) || 0
     };
   }
 
@@ -43958,20 +44187,20 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
     defaultModifiers: defaultModifiers
   }); // eslint-disable-next-line import/no-unused-modules
 
-  function _typeof$n(obj) {
+  function _typeof$o(obj) {
     "@babel/helpers - typeof";
 
     if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") {
-      _typeof$n = function _typeof(obj) {
+      _typeof$o = function _typeof(obj) {
         return typeof obj;
       };
     } else {
-      _typeof$n = function _typeof(obj) {
+      _typeof$o = function _typeof(obj) {
         return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
       };
     }
 
-    return _typeof$n(obj);
+    return _typeof$o(obj);
   }
 
   function _classCallCheck$k(instance, Constructor) {
@@ -44040,7 +44269,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
   }
 
   function _possibleConstructorReturn$i(self, call) {
-    if (call && (_typeof$n(call) === "object" || typeof call === "function")) {
+    if (call && (_typeof$o(call) === "object" || typeof call === "function")) {
       return call;
     }
 
@@ -45890,20 +46119,20 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
     if (Array.isArray(arr)) return arr;
   }
 
-  function _typeof$o(obj) {
+  function _typeof$p(obj) {
     "@babel/helpers - typeof";
 
     if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") {
-      _typeof$o = function _typeof(obj) {
+      _typeof$p = function _typeof(obj) {
         return typeof obj;
       };
     } else {
-      _typeof$o = function _typeof(obj) {
+      _typeof$p = function _typeof(obj) {
         return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
       };
     }
 
-    return _typeof$o(obj);
+    return _typeof$p(obj);
   }
 
   function _classCallCheck$m(instance, Constructor) {
@@ -45972,7 +46201,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
   }
 
   function _possibleConstructorReturn$j(self, call) {
-    if (call && (_typeof$o(call) === "object" || typeof call === "function")) {
+    if (call && (_typeof$p(call) === "object" || typeof call === "function")) {
       return call;
     }
 
@@ -46171,7 +46400,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
         "mousemove.legend": mousemoveLegend.bind(_assertThisInitialized$j(_this))
       };
       _this._queue = [];
-      _this._scrollContainer = (typeof window === "undefined" ? "undefined" : _typeof$o(window)) === undefined ? "" : window;
+      _this._scrollContainer = (typeof window === "undefined" ? "undefined" : _typeof$p(window)) === undefined ? "" : window;
       _this._shape = constant("Rect");
       _this._shapes = [];
       _this._shapeConfig = {
@@ -46259,7 +46488,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
       };
 
       _this._totalFormat = function (d) {
-        return "".concat(_this._translate("Total"), ": ").concat(formatAbbreviate(d, _this._locale));
+        return "".concat(_this._translate("Total"), ": ").concat(formatAbbreviate$1(d, _this._locale));
       };
 
       _this._totalPadding = defaultPadding;
@@ -46338,7 +46567,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
           }
 
           if (d._isAggregation) {
-            return "".concat(_this2._thresholdName(d, i), " < ").concat(formatAbbreviate(d._threshold * 100, _this2._locale), "%");
+            return "".concat(_this2._thresholdName(d, i), " < ").concat(formatAbbreviate$1(d._threshold * 100, _this2._locale), "%");
           }
 
           if (_this2._label) return "".concat(_this2._label(d, i));
@@ -48648,10 +48877,10 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
             transition = this._transition,
             width = this._width - this._margin.left - this._margin.right;
 
-        var x2Time = this._time && data[0].x2 === this._time(data[0].data, data[0].i),
-            xTime = this._time && data[0].x === this._time(data[0].data, data[0].i),
-            y2Time = this._time && data[0].y2 === this._time(data[0].data, data[0].i),
-            yTime = this._time && data[0].y === this._time(data[0].data, data[0].i);
+        var x2Time = this._x2Time = this._time && data[0].x2 === this._time(data[0].data, data[0].i),
+            xTime = this._xTime = this._time && data[0].x === this._time(data[0].data, data[0].i),
+            y2Time = this._y2Time = this._time && data[0].y2 === this._time(data[0].data, data[0].i),
+            yTime = this._yTime = this._time && data[0].y === this._time(data[0].data, data[0].i);
 
         for (var i = 0; i < data.length; i++) {
           var d = data[i];
@@ -48661,7 +48890,46 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
           if (y2Time) d.y2 = date$2(d.y2);
           d.discrete = d.shape === "Bar" ? "".concat(d[this._discrete], "_").concat(d.group) : "".concat(d[this._discrete]);
         }
+        /**
+         * @desc Returns all unique values for a given axis.
+         * @param {String} axis
+         * @returns {Array}
+         * @private
+         */
 
+
+        function getValues(axis) {
+          var _this14 = this;
+
+          var axisData = data.filter(function (d) {
+            return d[axis];
+          }).sort(function (a, b) {
+            return _this14["_".concat(axis, "Sort")] ? _this14["_".concat(axis, "Sort")](a.data, b.data) : a[axis] - b[axis];
+          }).map(function (d) {
+            return d[axis];
+          });
+
+          if (discrete !== axis.charAt(0) && this._confidence) {
+            if (this._confidence[0]) axisData = axisData.concat(data.map(function (d) {
+              return d.lci;
+            }));
+            if (this._confidence[1]) axisData = axisData.concat(data.map(function (d) {
+              return d.hci;
+            }));
+          }
+
+          return unique(axisData, function (d) {
+            return "".concat(d);
+          });
+        }
+
+        var xData = getValues.bind(this)("x");
+        var x2Data = getValues.bind(this)("x2");
+        var yData = getValues.bind(this)("y");
+        var y2Data = getValues.bind(this)("y2");
+        var hasBars = data.some(function (d) {
+          return d.shape === "Bar";
+        });
         var discreteKeys, domains, stackData, stackKeys;
 
         if (this._stacked) {
@@ -48749,9 +49017,8 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
             });
             return d.length ? d[0][opp] : 0;
           })(stackData);
-          domains = (_domains = {}, _defineProperty2(_domains, this._discrete, extent(data, function (d) {
-            return d[_this13._discrete];
-          })), _defineProperty2(_domains, opp, [min(stackData.map(function (g) {
+          var discreteData = this._discrete === "x" ? xData : yData;
+          domains = (_domains = {}, _defineProperty2(_domains, this._discrete, !hasBars && this["_".concat(this._discrete, "Time")] ? extent(discreteData) : discreteData), _defineProperty2(_domains, opp, [min(stackData.map(function (g) {
             return min(g.map(function (p) {
               return p[0];
             }));
@@ -48773,155 +49040,44 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
             });
           }
 
-          var xData = _discrete === "x" ? data.map(function (d) {
-            return d.x;
-          }) : data.map(function (d) {
-            return d.x;
-          }).concat(this._confidence && this._confidence[0] ? data.map(function (d) {
-            return d.lci;
-          }) : []).concat(this._confidence && this._confidence[1] ? data.map(function (d) {
-            return d.hci;
-          }) : []);
-          var x2Data = _discrete === "x" ? data.map(function (d) {
-            return d.x2;
-          }) : data.map(function (d) {
-            return d.x2;
-          }).concat(this._confidence && this._confidence[0] ? data.map(function (d) {
-            return d.lci;
-          }) : []).concat(this._confidence && this._confidence[1] ? data.map(function (d) {
-            return d.hci;
-          }) : []);
-          var yData = _discrete === "y" ? data.map(function (d) {
-            return d.y;
-          }) : data.map(function (d) {
-            return d.y;
-          }).concat(this._confidence && this._confidence[0] ? data.map(function (d) {
-            return d.lci;
-          }) : []).concat(this._confidence && this._confidence[1] ? data.map(function (d) {
-            return d.hci;
-          }) : []);
-          var y2Data = _discrete === "y" ? data.map(function (d) {
-            return d.y2;
-          }) : data.map(function (d) {
-            return d.y2;
-          }).concat(this._confidence && this._confidence[0] ? data.map(function (d) {
-            return d.lci;
-          }) : []).concat(this._confidence && this._confidence[1] ? data.map(function (d) {
-            return d.hci;
-          }) : []);
           domains = {
-            x: this._xSort ? Array.from(new Set(data.filter(function (d) {
-              return d.x;
-            }).sort(function (a, b) {
-              return _this13._xSort(a.data, b.data);
-            }).map(function (d) {
-              return d.x;
-            }))) : extent(xData, function (d) {
-              return d;
-            }),
-            x2: this._x2Sort ? Array.from(new Set(data.filter(function (d) {
-              return d.x2;
-            }).sort(function (a, b) {
-              return _this13._x2Sort(a.data, b.data);
-            }).map(function (d) {
-              return d.x2;
-            }))) : extent(x2Data, function (d) {
-              return d;
-            }),
-            y: this._ySort ? Array.from(new Set(data.filter(function (d) {
-              return d.y;
-            }).sort(function (a, b) {
-              return _this13._ySort(a.data, b.data);
-            }).map(function (d) {
-              return d.y;
-            }))) : extent(yData, function (d) {
-              return d;
-            }),
-            y2: this._y2Sort ? Array.from(new Set(data.filter(function (d) {
-              return d.y2;
-            }).sort(function (a, b) {
-              return _this13._y2Sort(a.data, b.data);
-            }).map(function (d) {
-              return d.y2;
-            }))) : extent(y2Data, function (d) {
-              return d;
-            })
+            x: (hasBars || !xTime) && this._discrete === "x" || this._xSort ? xData : extent(xData),
+            x2: (hasBars || !x2Time) && this._discrete === "x" || this._x2Sort ? x2Data : extent(x2Data),
+            y: (hasBars || !yTime) && this._discrete === "y" || this._ySort ? yData : extent(yData),
+            y2: (hasBars || !y2Time) && this._discrete === "y" || this._y2Sort ? y2Data : extent(y2Data)
           };
         }
+        /**
+         * Determins default scale type and domain for a given axis.
+         * @param {String} axis
+         * @private
+         */
 
-        var xDomain = this._xDomain ? this._xDomain.slice() : domains.x,
-            xScale = this._xSort ? "Point" : "Linear";
-        if (xDomain[0] === void 0) xDomain[0] = domains.x[0];
-        if (xDomain[1] === void 0) xDomain[1] = domains.x[1];
 
-        if (xTime) {
-          xDomain = xDomain.map(date$2);
-          xScale = "Time";
-        } else if (this._discrete === "x") {
-          if (!this._xDomain) xDomain = Array.from(new Set(data.filter(function (d) {
-            return ["number", "string"].includes(_typeof2(d.x));
-          }).sort(function (a, b) {
-            return _this13._xSort ? _this13._xSort(a.data, b.data) : a.x - b.x;
-          }).map(function (d) {
-            return d.x;
-          })));
-          xScale = "Point";
+        function domainScaleSetup(axis) {
+          var domain = this["_".concat(axis, "Domain")] ? this["_".concat(axis, "Domain")].slice() : domains[axis],
+              domain2 = this["_".concat(axis, "2Domain")] ? this["_".concat(axis, "2Domain")].slice() : domains["".concat(axis, "2")];
+          if (domain && domain[0] === void 0) domain[0] = domains[axis][0];
+          if (domain && domain[1] === void 0) domain[1] = domains[axis][1];
+          if (domain2 && domain2[0] === void 0) domain2[0] = domains["".concat(axis, "2")][0];
+          if (domain2 && domain2[1] === void 0) domain2[1] = domains["".concat(axis, "2")][1];
+          var scale = !hasBars && this["_".concat(axis, "Time")] ? "Time" : this._discrete === axis || this["_".concat(axis, "Sort")] ? "Point" : "Linear";
+          return [domain, scale, domain2, scale];
         }
 
-        var x2Domain = this._x2Domain ? this._x2Domain.slice() : domains.x2,
-            x2Scale = this._x2Sort ? "Point" : "Linear";
-        if (x2Domain && x2Domain[0] === void 0) x2Domain[0] = domains.x2[0];
-        if (x2Domain && x2Domain[1] === void 0) x2Domain[1] = domains.x2[1];
+        var _domainScaleSetup$bin = domainScaleSetup.bind(this)("x"),
+            _domainScaleSetup$bin2 = _slicedToArray2(_domainScaleSetup$bin, 4),
+            xAutoDomain = _domainScaleSetup$bin2[0],
+            xScale = _domainScaleSetup$bin2[1],
+            x2AutoDomain = _domainScaleSetup$bin2[2],
+            x2Scale = _domainScaleSetup$bin2[3];
 
-        if (x2Time) {
-          x2Domain = x2Domain.map(date$2);
-          x2Scale = "Time";
-        } else if (this._discrete === "x") {
-          if (!this._x2Domain) x2Domain = Array.from(new Set(data.filter(function (d) {
-            return ["number", "string"].includes(_typeof2(d.x2));
-          }).sort(function (a, b) {
-            return _this13._x2Sort ? _this13._x2Sort(a.data, b.data) : a.x2 - b.x2;
-          }).map(function (d) {
-            return d.x2;
-          })));
-          x2Scale = "Point";
-        }
-
-        var yDomain = this._yDomain ? this._yDomain.slice() : domains.y,
-            yScale = this._ySort ? "Point" : "Linear";
-        if (yDomain[0] === void 0) yDomain[0] = domains.y[0];
-        if (yDomain[1] === void 0) yDomain[1] = domains.y[1];
-        var y2Domain = this._y2Domain ? this._y2Domain.slice() : domains.y2,
-            y2Scale = this._y2Sort ? "Point" : "Linear";
-        if (y2Domain && y2Domain[0] === void 0) y2Domain[0] = domains.y2[0];
-        if (y2Domain && y2Domain[1] === void 0) y2Domain[1] = domains.y2[1];
-
-        if (yTime) {
-          yDomain = yDomain.map(date$2);
-          yScale = "Time";
-        } else if (this._discrete === "y") {
-          if (!this._yDomain) yDomain = Array.from(new Set(data.filter(function (d) {
-            return ["number", "string"].includes(_typeof2(d.y));
-          }).sort(function (a, b) {
-            return _this13._ySort ? _this13._ySort(a.data, b.data) : a.y - b.y;
-          }).map(function (d) {
-            return d.y;
-          })));
-          yScale = "Point";
-          if (!this._y2Domain) y2Domain = Array.from(new Set(data.filter(function (d) {
-            return ["number", "string"].includes(_typeof2(d.y2));
-          }).sort(function (a, b) {
-            return _this13._y2Sort ? _this13._y2Sort(a.data, b.data) : a.y2 - b.y2;
-          }).map(function (d) {
-            return d.y2;
-          })));
-          y2Scale = "Point";
-        }
-
-        if (y2Time) {
-          y2Domain = y2Domain.map(date$2);
-          y2Scale = "Time";
-        }
+        var _domainScaleSetup$bin3 = domainScaleSetup.bind(this)("y"),
+            _domainScaleSetup$bin4 = _slicedToArray2(_domainScaleSetup$bin3, 4),
+            yAutoDomain = _domainScaleSetup$bin4[0],
+            yScale = _domainScaleSetup$bin4[1],
+            y2AutoDomain = _domainScaleSetup$bin4[2],
+            y2Scale = _domainScaleSetup$bin4[3];
 
         var autoScale = function autoScale(axis, fallback) {
           var userScale = _this13["_".concat(axis, "Config")].scale;
@@ -48942,10 +49098,10 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
         var xConfigScale = this._xConfigScale = autoScale("x", xScale).toLowerCase();
         var x2ConfigScale = this._x2ConfigScale = autoScale("x2", x2Scale).toLowerCase();
         domains = {
-          x: xDomain,
-          x2: x2Domain || xDomain,
-          y: yDomain,
-          y2: y2Domain || yDomain
+          x: xAutoDomain,
+          x2: x2AutoDomain || xAutoDomain,
+          y: yAutoDomain,
+          y2: y2AutoDomain || yAutoDomain
         };
         Object.keys(domains).forEach(function (axis) {
           if (_this13["_".concat(axis, "ConfigScale")] === "log" && domains[axis].includes(0)) {
@@ -49012,10 +49168,13 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
           });
         }
 
-        xDomain = _x3.domain();
-        x2Domain = x2.domain();
-        yDomain = _y2.domain();
-        y2Domain = y2.domain();
+        var xDomain = _x3.domain();
+
+        var x2Domain = x2.domain();
+
+        var yDomain = _y2.domain();
+
+        var y2Domain = y2.domain();
         var defaultConfig = {
           barConfig: {
             "stroke-width": 0
@@ -49026,23 +49185,20 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
           tickSize: 0
         };
         var defaultX2Config = x2Exists ? {
-          data: data.map(function (d) {
-            return d.x2;
-          })
+          data: x2Data
         } : defaultConfig;
         var defaultY2Config = y2Exists ? {
-          data: data.map(function (d) {
-            return d.y2;
-          })
+          data: y2Data
         } : defaultConfig;
         var showX = this._discrete === "x" && this._width > this._discreteCutoff || this._width > this._xCutoff;
         var showY = this._discrete === "y" && this._height > this._discreteCutoff || this._height > this._yCutoff;
         var yC = {
-          data: data.map(function (d) {
-            return d.y;
-          }),
+          data: yData,
           locale: this._locale,
-          scalePadding: _y2.padding ? _y2.padding() : 0
+          scalePadding: _y2.padding ? _y2.padding() : 0,
+          tickFormat: yTime ? function (d) {
+            return formatDate$1(+d, yData.map(Number));
+          } : RESET
         };
 
         if (!showX) {
@@ -49081,10 +49237,10 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
           },
           parent: this._select
         });
-        var x2Ticks = this._discrete === "x" && !x2Time ? domains.x2 : undefined,
-            xTicks = !showY ? extent(domains.x) : this._discrete === "x" && !xTime ? domains.x : undefined,
-            y2Ticks = this._discrete === "y" && !y2Time ? domains.y2 : undefined,
-            yTicks = !showX ? extent(domains.y) : this._discrete === "y" && !yTime ? domains.y : undefined;
+        var x2Ticks = this._discrete === "x" ? domains.x2 : undefined,
+            xTicks = !showY ? extent(domains.x) : this._discrete === "x" ? domains.x : undefined,
+            y2Ticks = this._discrete === "y" ? domains.y2 : undefined,
+            yTicks = !showX ? extent(domains.y) : this._discrete === "y" ? domains.y : undefined;
         /**
          * Hides an axis' ticks and labels if they all exist as labels for the data to be displayed,
          * primarily occuring in simple BarChart visualizations where the both the x-axis ticks and
@@ -49132,11 +49288,12 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
 
         var y2Width = y2Bounds.width ? y2Bounds.width + this._y2Test.padding() : undefined;
         var xC = {
-          data: data.map(function (d) {
-            return d.x;
-          }),
+          data: xData,
           locale: this._locale,
-          scalePadding: _x3.padding ? _x3.padding() : 0
+          scalePadding: _x3.padding ? _x3.padding() : 0,
+          tickFormat: xTime ? function (d) {
+            return formatDate$1(+d, xData.map(Number));
+          } : RESET
         };
 
         if (!showY) {
@@ -50221,18 +50378,18 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
         @private
     */
     function AreaPlot() {
-      var _this14;
+      var _this15;
 
       _classCallCheck2(this, AreaPlot);
 
-      _this14 = _super4.call(this);
-      _this14._baseline = 0;
-      _this14._discrete = "x";
-      _this14._shape = constant("Area");
+      _this15 = _super4.call(this);
+      _this15._baseline = 0;
+      _this15._discrete = "x";
+      _this15._shape = constant("Area");
 
-      _this14.x("x");
+      _this15.x("x");
 
-      return _this14;
+      return _this15;
     }
 
     return AreaPlot;
@@ -50262,29 +50419,29 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
         @private
     */
     function BarChart() {
-      var _this15;
+      var _this16;
 
       _classCallCheck2(this, BarChart);
 
-      _this15 = _super5.call(this);
-      _this15._baseline = 0;
-      _this15._discrete = "x";
-      var defaultLegend = _this15._legend;
+      _this16 = _super5.call(this);
+      _this16._baseline = 0;
+      _this16._discrete = "x";
+      var defaultLegend = _this16._legend;
 
-      _this15._legend = function (config, arr) {
-        var legendIds = arr.map(_this15._groupBy[_this15._legendDepth].bind(_assertThisInitialized2(_this15))).sort().join();
+      _this16._legend = function (config, arr) {
+        var legendIds = arr.map(_this16._groupBy[_this16._legendDepth].bind(_assertThisInitialized2(_this16))).sort().join();
 
-        var barIds = _this15._filteredData.map(_this15._groupBy[_this15._legendDepth].bind(_assertThisInitialized2(_this15))).sort().join();
+        var barIds = _this16._filteredData.map(_this16._groupBy[_this16._legendDepth].bind(_assertThisInitialized2(_this16))).sort().join();
 
         if (legendIds === barIds) return false;
-        return defaultLegend.bind(_assertThisInitialized2(_this15))(config, arr);
+        return defaultLegend.bind(_assertThisInitialized2(_this16))(config, arr);
       };
 
-      _this15._shape = constant("Bar");
+      _this16._shape = constant("Bar");
 
-      _this15.x("x");
+      _this16.x("x");
 
-      return _this15;
+      return _this16;
     }
 
     return BarChart;
@@ -50313,17 +50470,17 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
         @private
     */
     function BoxWhisker() {
-      var _this16;
+      var _this17;
 
       _classCallCheck2(this, BoxWhisker);
 
-      _this16 = _super6.call(this);
-      _this16._discrete = "x";
-      _this16._shape = constant("Box");
+      _this17 = _super6.call(this);
+      _this17._discrete = "x";
+      _this17._shape = constant("Box");
 
-      _this16.x("x");
+      _this17.x("x");
 
-      _this16._tooltipConfig = assign(_this16._tooltipConfig, {
+      _this17._tooltipConfig = assign(_this17._tooltipConfig, {
         title: function title(d, i) {
           if (!d) return "";
 
@@ -50332,14 +50489,14 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
             i = d.i;
           }
 
-          if (_this16._label) return _this16._label(d, i);
+          if (_this17._label) return _this17._label(d, i);
 
-          var l = _this16._ids(d, i).slice(0, _this16._drawDepth);
+          var l = _this17._ids(d, i).slice(0, _this17._drawDepth);
 
           return l[l.length - 1];
         }
       });
-      return _this16;
+      return _this17;
     }
 
     return BoxWhisker;
@@ -50390,23 +50547,23 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
         @private
     */
     function BumpChart() {
-      var _this17;
+      var _this18;
 
       _classCallCheck2(this, BumpChart);
 
-      _this17 = _super7.call(this);
-      _this17._discrete = "x";
-      _this17._shape = constant("Line");
+      _this18 = _super7.call(this);
+      _this18._discrete = "x";
+      _this18._shape = constant("Line");
 
-      _this17.x("x");
+      _this18.x("x");
 
-      _this17.y2(function (d) {
-        return _this17._y(d);
+      _this18.y2(function (d) {
+        return _this18._y(d);
       });
 
-      _this17.yConfig({
+      _this18.yConfig({
         tickFormat: function tickFormat(val) {
-          var data = _this17._formattedData;
+          var data = _this18._formattedData;
           var xMin = data[0].x instanceof Date ? data[0].x.getTime() : data[0].x;
           var startData = data.filter(function (d) {
             return (d.x instanceof Date ? d.x.getTime() : d.x) === xMin;
@@ -50414,13 +50571,13 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
           var d = startData.find(function (d) {
             return d.y === val;
           });
-          return d ? _this17._drawLabel(d, d.i) : "";
+          return d ? _this18._drawLabel(d, d.i) : "";
         }
       });
 
-      _this17.y2Config({
+      _this18.y2Config({
         tickFormat: function tickFormat(val) {
-          var data = _this17._formattedData;
+          var data = _this18._formattedData;
           var xMax = data[data.length - 1].x instanceof Date ? data[data.length - 1].x.getTime() : data[data.length - 1].x;
           var endData = data.filter(function (d) {
             return (d.x instanceof Date ? d.x.getTime() : d.x) === xMax;
@@ -50428,19 +50585,19 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
           var d = endData.find(function (d) {
             return d.y === val;
           });
-          return d ? _this17._drawLabel(d, d.i) : "";
+          return d ? _this18._drawLabel(d, d.i) : "";
         }
       });
 
-      _this17.ySort(function (a, b) {
-        return _this17._y(b) - _this17._y(a);
+      _this18.ySort(function (a, b) {
+        return _this18._y(b) - _this18._y(a);
       });
 
-      _this17.y2Sort(function (a, b) {
-        return _this17._y(b) - _this17._y(a);
+      _this18.y2Sort(function (a, b) {
+        return _this18._y(b) - _this18._y(a);
       });
 
-      return _this17;
+      return _this18;
     }
 
     return BumpChart;
@@ -50469,17 +50626,17 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
         @private
     */
     function LinePlot() {
-      var _this18;
+      var _this19;
 
       _classCallCheck2(this, LinePlot);
 
-      _this18 = _super8.call(this);
-      _this18._discrete = "x";
-      _this18._shape = constant("Line");
+      _this19 = _super8.call(this);
+      _this19._discrete = "x";
+      _this19._shape = constant("Line");
 
-      _this18.x("x");
+      _this19.x("x");
 
-      return _this18;
+      return _this19;
     }
 
     return LinePlot;
@@ -50510,12 +50667,12 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
         @private
     */
     function Radar() {
-      var _this19;
+      var _this20;
 
       _classCallCheck2(this, Radar);
 
-      _this19 = _super9.call(this);
-      _this19._axisConfig = {
+      _this20 = _super9.call(this);
+      _this20._axisConfig = {
         shapeConfig: {
           fill: constant("none"),
           labelConfig: {
@@ -50530,13 +50687,13 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
           strokeWidth: constant(1)
         }
       };
-      _this19._discrete = "metric";
-      _this19._levels = 6;
-      _this19._metric = accessor("metric");
-      _this19._outerPadding = 100;
-      _this19._shape = constant("Path");
-      _this19._value = accessor("value");
-      return _this19;
+      _this20._discrete = "metric";
+      _this20._levels = 6;
+      _this20._metric = accessor("metric");
+      _this20._outerPadding = 100;
+      _this20._shape = constant("Path");
+      _this20._value = accessor("value");
+      return _this20;
     }
     /**
         Extends the draw behavior of the abstract Viz class.
@@ -50547,7 +50704,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
     _createClass2(Radar, [{
       key: "_draw",
       value: function _draw(callback) {
-        var _this20 = this;
+        var _this21 = this;
 
         _get2(_getPrototypeOf2(Radar.prototype), "_draw", this).call(this, callback);
 
@@ -50562,14 +50719,14 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
         var maxValue = max(nestedGroupData.map(function (h) {
           return h.values.map(function (d) {
             return sum(d.values, function (x, i) {
-              return _this20._value(x, i);
+              return _this21._value(x, i);
             });
           });
         }).flat());
         var circularAxis = Array.from(Array(this._levels).keys()).map(function (d) {
           return {
             id: d,
-            r: radius * ((d + 1) / _this20._levels)
+            r: radius * ((d + 1) / _this21._levels)
           };
         });
         var circleConfig = configPrep.bind(this)(this._axisConfig.shapeConfig, "shape", "Circle");
@@ -50585,8 +50742,8 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
         }).node()).config(circleConfig).render();
         var totalAxis = nestedAxisData.length;
         var polarAxis = nestedAxisData.map(function (d, i) {
-          var width = _this20._outerPadding;
-          var fontSize = _this20._shapeConfig.labelConfig.fontSize && _this20._shapeConfig.labelConfig.fontSize(d, i) || 11;
+          var width = _this21._outerPadding;
+          var fontSize = _this21._shapeConfig.labelConfig.fontSize && _this21._shapeConfig.labelConfig.fontSize(d, i) || 11;
           var lineHeight = fontSize * 1.4;
           var height = lineHeight * 2;
           var padding = 10,
@@ -50610,7 +50767,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
           };
           return {
             __d3plus__: true,
-            data: objectMerge(d.values, _this20._aggs),
+            data: objectMerge(d.values, _this21._aggs),
             i: i,
             id: d.key,
             angle: angle,
@@ -50656,7 +50813,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
         var groupData = nestedGroupData.map(function (h) {
           var q = h.values.map(function (d, i) {
             var value = sum(d.values, function (x, i) {
-              return _this20._value(x, i);
+              return _this21._value(x, i);
             });
             var r = value / maxValue * radius,
                 radians = tau$2 / totalAxis * i;
@@ -50670,15 +50827,15 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
           }).join(" "), " L ").concat(q[0].x, " ").concat(q[0].y);
           return {
             arr: h.values.map(function (d) {
-              return objectMerge(d.values, _this20._aggs);
+              return objectMerge(d.values, _this21._aggs);
             }),
             id: h.key,
             points: q,
             d: d,
             __d3plus__: true,
             data: objectMerge(h.values.map(function (d) {
-              return objectMerge(d.values, _this20._aggs);
-            }), _this20._aggs)
+              return objectMerge(d.values, _this21._aggs);
+            }), _this21._aggs)
           };
         });
         var pathConfig = configPrep.bind(this)(this._shapeConfig, "shape", "Path");
@@ -50695,7 +50852,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
             var y = d.points.map(function (p) {
               return p.y + height / 2;
             });
-            var cursor = pointer(e, _this20._select.node());
+            var cursor = pointer(e, _this21._select.node());
             var xDist = x.map(function (p) {
               return Math.abs(p - cursor[0]);
             });
@@ -50706,7 +50863,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
               return d + yDist[i];
             });
 
-            _this20._on[event].bind(_this20)(d.arr[dists.indexOf(min(dists))], i, s, e);
+            _this21._on[event].bind(_this21)(d.arr[dists.indexOf(min(dists))], i, s, e);
           };
         };
 
@@ -50806,13 +50963,13 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
         @private
     */
     function StackedArea() {
-      var _this21;
+      var _this22;
 
       _classCallCheck2(this, StackedArea);
 
-      _this21 = _super10.call(this);
-      _this21._stacked = true;
-      return _this21;
+      _this22 = _super10.call(this);
+      _this22._stacked = true;
+      return _this22;
     }
 
     return StackedArea;

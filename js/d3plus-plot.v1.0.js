@@ -39,7 +39,7 @@ function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.g
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
 /*
-  d3plus-plot v1.0.11
+  d3plus-plot v1.0.12
   A reusable javascript x/y plot built on D3.
   Copyright (c) 2021 D3plus - https://d3plus.org
   @license MIT
@@ -7907,8 +7907,8 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
 });
 
 (function (global, factory) {
-  (typeof exports === "undefined" ? "undefined" : _typeof(exports)) === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3plus-common'), require('d3-array'), require('d3-collection'), require('d3-scale'), require('d3-shape'), require('d3plus-axis'), require('d3plus-color'), require('d3plus-shape'), require('d3plus-text'), require('d3plus-viz'), require('d3-selection')) : typeof define === 'function' && define.amd ? define('d3plus-plot', ['exports', 'd3plus-common', 'd3-array', 'd3-collection', 'd3-scale', 'd3-shape', 'd3plus-axis', 'd3plus-color', 'd3plus-shape', 'd3plus-text', 'd3plus-viz', 'd3-selection'], factory) : (global = typeof globalThis !== 'undefined' ? globalThis : global || self, factory(global.d3plus = {}, global.d3plusCommon, global.d3Array, global.d3Collection, global.scales, global.d3Shape, global.d3plusAxis, global.d3plusColor, global.shapes, global.d3plusText, global.d3plusViz, global.d3Selection));
-})(this, function (exports, d3plusCommon, d3Array, d3Collection, scales, d3Shape, d3plusAxis, d3plusColor, shapes, d3plusText, d3plusViz, d3Selection) {
+  (typeof exports === "undefined" ? "undefined" : _typeof(exports)) === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3plus-common'), require('d3-array'), require('d3-collection'), require('d3-scale'), require('d3-shape'), require('d3plus-axis'), require('d3plus-color'), require('d3plus-format'), require('d3plus-shape'), require('d3plus-text'), require('d3plus-viz'), require('d3-selection')) : typeof define === 'function' && define.amd ? define('d3plus-plot', ['exports', 'd3plus-common', 'd3-array', 'd3-collection', 'd3-scale', 'd3-shape', 'd3plus-axis', 'd3plus-color', 'd3plus-format', 'd3plus-shape', 'd3plus-text', 'd3plus-viz', 'd3-selection'], factory) : (global = typeof globalThis !== 'undefined' ? globalThis : global || self, factory(global.d3plus = {}, global.d3plusCommon, global.d3Array, global.d3Collection, global.scales, global.d3Shape, global.d3plusAxis, global.d3plusColor, global.d3plusFormat, global.shapes, global.d3plusText, global.d3plusViz, global.d3Selection));
+})(this, function (exports, d3plusCommon, d3Array, d3Collection, scales, d3Shape, d3plusAxis, d3plusColor, d3plusFormat, shapes, d3plusText, d3plusViz, d3Selection) {
   'use strict';
 
   function _interopNamespace(e) {
@@ -8797,10 +8797,10 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
             transition = this._transition,
             width = this._width - this._margin.left - this._margin.right;
 
-        var x2Time = this._time && data[0].x2 === this._time(data[0].data, data[0].i),
-            xTime = this._time && data[0].x === this._time(data[0].data, data[0].i),
-            y2Time = this._time && data[0].y2 === this._time(data[0].data, data[0].i),
-            yTime = this._time && data[0].y === this._time(data[0].data, data[0].i);
+        var x2Time = this._x2Time = this._time && data[0].x2 === this._time(data[0].data, data[0].i),
+            xTime = this._xTime = this._time && data[0].x === this._time(data[0].data, data[0].i),
+            y2Time = this._y2Time = this._time && data[0].y2 === this._time(data[0].data, data[0].i),
+            yTime = this._yTime = this._time && data[0].y === this._time(data[0].data, data[0].i);
 
         for (var i = 0; i < data.length; i++) {
           var d = data[i];
@@ -8810,7 +8810,46 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
           if (y2Time) d.y2 = d3plusAxis.date(d.y2);
           d.discrete = d.shape === "Bar" ? "".concat(d[this._discrete], "_").concat(d.group) : "".concat(d[this._discrete]);
         }
+        /**
+         * @desc Returns all unique values for a given axis.
+         * @param {String} axis
+         * @returns {Array}
+         * @private
+         */
 
+
+        function getValues(axis) {
+          var _this7 = this;
+
+          var axisData = data.filter(function (d) {
+            return d[axis];
+          }).sort(function (a, b) {
+            return _this7["_".concat(axis, "Sort")] ? _this7["_".concat(axis, "Sort")](a.data, b.data) : a[axis] - b[axis];
+          }).map(function (d) {
+            return d[axis];
+          });
+
+          if (discrete !== axis.charAt(0) && this._confidence) {
+            if (this._confidence[0]) axisData = axisData.concat(data.map(function (d) {
+              return d.lci;
+            }));
+            if (this._confidence[1]) axisData = axisData.concat(data.map(function (d) {
+              return d.hci;
+            }));
+          }
+
+          return d3plusCommon.unique(axisData, function (d) {
+            return "".concat(d);
+          });
+        }
+
+        var xData = getValues.bind(this)("x");
+        var x2Data = getValues.bind(this)("x2");
+        var yData = getValues.bind(this)("y");
+        var y2Data = getValues.bind(this)("y2");
+        var hasBars = data.some(function (d) {
+          return d.shape === "Bar";
+        });
         var discreteKeys, domains, stackData, stackKeys;
 
         if (this._stacked) {
@@ -8897,9 +8936,8 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
             });
             return d.length ? d[0][opp] : 0;
           })(stackData);
-          domains = (_domains = {}, _defineProperty(_domains, this._discrete, d3Array.extent(data, function (d) {
-            return d[_this6._discrete];
-          })), _defineProperty(_domains, opp, [d3Array.min(stackData.map(function (g) {
+          var discreteData = this._discrete === "x" ? xData : yData;
+          domains = (_domains = {}, _defineProperty(_domains, this._discrete, !hasBars && this["_".concat(this._discrete, "Time")] ? d3Array.extent(discreteData) : discreteData), _defineProperty(_domains, opp, [d3Array.min(stackData.map(function (g) {
             return d3Array.min(g.map(function (p) {
               return p[0];
             }));
@@ -8921,155 +8959,44 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
             });
           }
 
-          var xData = _discrete === "x" ? data.map(function (d) {
-            return d.x;
-          }) : data.map(function (d) {
-            return d.x;
-          }).concat(this._confidence && this._confidence[0] ? data.map(function (d) {
-            return d.lci;
-          }) : []).concat(this._confidence && this._confidence[1] ? data.map(function (d) {
-            return d.hci;
-          }) : []);
-          var x2Data = _discrete === "x" ? data.map(function (d) {
-            return d.x2;
-          }) : data.map(function (d) {
-            return d.x2;
-          }).concat(this._confidence && this._confidence[0] ? data.map(function (d) {
-            return d.lci;
-          }) : []).concat(this._confidence && this._confidence[1] ? data.map(function (d) {
-            return d.hci;
-          }) : []);
-          var yData = _discrete === "y" ? data.map(function (d) {
-            return d.y;
-          }) : data.map(function (d) {
-            return d.y;
-          }).concat(this._confidence && this._confidence[0] ? data.map(function (d) {
-            return d.lci;
-          }) : []).concat(this._confidence && this._confidence[1] ? data.map(function (d) {
-            return d.hci;
-          }) : []);
-          var y2Data = _discrete === "y" ? data.map(function (d) {
-            return d.y2;
-          }) : data.map(function (d) {
-            return d.y2;
-          }).concat(this._confidence && this._confidence[0] ? data.map(function (d) {
-            return d.lci;
-          }) : []).concat(this._confidence && this._confidence[1] ? data.map(function (d) {
-            return d.hci;
-          }) : []);
           domains = {
-            x: this._xSort ? Array.from(new Set(data.filter(function (d) {
-              return d.x;
-            }).sort(function (a, b) {
-              return _this6._xSort(a.data, b.data);
-            }).map(function (d) {
-              return d.x;
-            }))) : d3Array.extent(xData, function (d) {
-              return d;
-            }),
-            x2: this._x2Sort ? Array.from(new Set(data.filter(function (d) {
-              return d.x2;
-            }).sort(function (a, b) {
-              return _this6._x2Sort(a.data, b.data);
-            }).map(function (d) {
-              return d.x2;
-            }))) : d3Array.extent(x2Data, function (d) {
-              return d;
-            }),
-            y: this._ySort ? Array.from(new Set(data.filter(function (d) {
-              return d.y;
-            }).sort(function (a, b) {
-              return _this6._ySort(a.data, b.data);
-            }).map(function (d) {
-              return d.y;
-            }))) : d3Array.extent(yData, function (d) {
-              return d;
-            }),
-            y2: this._y2Sort ? Array.from(new Set(data.filter(function (d) {
-              return d.y2;
-            }).sort(function (a, b) {
-              return _this6._y2Sort(a.data, b.data);
-            }).map(function (d) {
-              return d.y2;
-            }))) : d3Array.extent(y2Data, function (d) {
-              return d;
-            })
+            x: (hasBars || !xTime) && this._discrete === "x" || this._xSort ? xData : d3Array.extent(xData),
+            x2: (hasBars || !x2Time) && this._discrete === "x" || this._x2Sort ? x2Data : d3Array.extent(x2Data),
+            y: (hasBars || !yTime) && this._discrete === "y" || this._ySort ? yData : d3Array.extent(yData),
+            y2: (hasBars || !y2Time) && this._discrete === "y" || this._y2Sort ? y2Data : d3Array.extent(y2Data)
           };
         }
+        /**
+         * Determins default scale type and domain for a given axis.
+         * @param {String} axis
+         * @private
+         */
 
-        var xDomain = this._xDomain ? this._xDomain.slice() : domains.x,
-            xScale = this._xSort ? "Point" : "Linear";
-        if (xDomain[0] === void 0) xDomain[0] = domains.x[0];
-        if (xDomain[1] === void 0) xDomain[1] = domains.x[1];
 
-        if (xTime) {
-          xDomain = xDomain.map(d3plusAxis.date);
-          xScale = "Time";
-        } else if (this._discrete === "x") {
-          if (!this._xDomain) xDomain = Array.from(new Set(data.filter(function (d) {
-            return ["number", "string"].includes(_typeof(d.x));
-          }).sort(function (a, b) {
-            return _this6._xSort ? _this6._xSort(a.data, b.data) : a.x - b.x;
-          }).map(function (d) {
-            return d.x;
-          })));
-          xScale = "Point";
+        function domainScaleSetup(axis) {
+          var domain = this["_".concat(axis, "Domain")] ? this["_".concat(axis, "Domain")].slice() : domains[axis],
+              domain2 = this["_".concat(axis, "2Domain")] ? this["_".concat(axis, "2Domain")].slice() : domains["".concat(axis, "2")];
+          if (domain && domain[0] === void 0) domain[0] = domains[axis][0];
+          if (domain && domain[1] === void 0) domain[1] = domains[axis][1];
+          if (domain2 && domain2[0] === void 0) domain2[0] = domains["".concat(axis, "2")][0];
+          if (domain2 && domain2[1] === void 0) domain2[1] = domains["".concat(axis, "2")][1];
+          var scale = !hasBars && this["_".concat(axis, "Time")] ? "Time" : this._discrete === axis || this["_".concat(axis, "Sort")] ? "Point" : "Linear";
+          return [domain, scale, domain2, scale];
         }
 
-        var x2Domain = this._x2Domain ? this._x2Domain.slice() : domains.x2,
-            x2Scale = this._x2Sort ? "Point" : "Linear";
-        if (x2Domain && x2Domain[0] === void 0) x2Domain[0] = domains.x2[0];
-        if (x2Domain && x2Domain[1] === void 0) x2Domain[1] = domains.x2[1];
+        var _domainScaleSetup$bin = domainScaleSetup.bind(this)("x"),
+            _domainScaleSetup$bin2 = _slicedToArray(_domainScaleSetup$bin, 4),
+            xAutoDomain = _domainScaleSetup$bin2[0],
+            xScale = _domainScaleSetup$bin2[1],
+            x2AutoDomain = _domainScaleSetup$bin2[2],
+            x2Scale = _domainScaleSetup$bin2[3];
 
-        if (x2Time) {
-          x2Domain = x2Domain.map(d3plusAxis.date);
-          x2Scale = "Time";
-        } else if (this._discrete === "x") {
-          if (!this._x2Domain) x2Domain = Array.from(new Set(data.filter(function (d) {
-            return ["number", "string"].includes(_typeof(d.x2));
-          }).sort(function (a, b) {
-            return _this6._x2Sort ? _this6._x2Sort(a.data, b.data) : a.x2 - b.x2;
-          }).map(function (d) {
-            return d.x2;
-          })));
-          x2Scale = "Point";
-        }
-
-        var yDomain = this._yDomain ? this._yDomain.slice() : domains.y,
-            yScale = this._ySort ? "Point" : "Linear";
-        if (yDomain[0] === void 0) yDomain[0] = domains.y[0];
-        if (yDomain[1] === void 0) yDomain[1] = domains.y[1];
-        var y2Domain = this._y2Domain ? this._y2Domain.slice() : domains.y2,
-            y2Scale = this._y2Sort ? "Point" : "Linear";
-        if (y2Domain && y2Domain[0] === void 0) y2Domain[0] = domains.y2[0];
-        if (y2Domain && y2Domain[1] === void 0) y2Domain[1] = domains.y2[1];
-
-        if (yTime) {
-          yDomain = yDomain.map(d3plusAxis.date);
-          yScale = "Time";
-        } else if (this._discrete === "y") {
-          if (!this._yDomain) yDomain = Array.from(new Set(data.filter(function (d) {
-            return ["number", "string"].includes(_typeof(d.y));
-          }).sort(function (a, b) {
-            return _this6._ySort ? _this6._ySort(a.data, b.data) : a.y - b.y;
-          }).map(function (d) {
-            return d.y;
-          })));
-          yScale = "Point";
-          if (!this._y2Domain) y2Domain = Array.from(new Set(data.filter(function (d) {
-            return ["number", "string"].includes(_typeof(d.y2));
-          }).sort(function (a, b) {
-            return _this6._y2Sort ? _this6._y2Sort(a.data, b.data) : a.y2 - b.y2;
-          }).map(function (d) {
-            return d.y2;
-          })));
-          y2Scale = "Point";
-        }
-
-        if (y2Time) {
-          y2Domain = y2Domain.map(d3plusAxis.date);
-          y2Scale = "Time";
-        }
+        var _domainScaleSetup$bin3 = domainScaleSetup.bind(this)("y"),
+            _domainScaleSetup$bin4 = _slicedToArray(_domainScaleSetup$bin3, 4),
+            yAutoDomain = _domainScaleSetup$bin4[0],
+            yScale = _domainScaleSetup$bin4[1],
+            y2AutoDomain = _domainScaleSetup$bin4[2],
+            y2Scale = _domainScaleSetup$bin4[3];
 
         var autoScale = function autoScale(axis, fallback) {
           var userScale = _this6["_".concat(axis, "Config")].scale;
@@ -9090,10 +9017,10 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
         var xConfigScale = this._xConfigScale = autoScale("x", xScale).toLowerCase();
         var x2ConfigScale = this._x2ConfigScale = autoScale("x2", x2Scale).toLowerCase();
         domains = {
-          x: xDomain,
-          x2: x2Domain || xDomain,
-          y: yDomain,
-          y2: y2Domain || yDomain
+          x: xAutoDomain,
+          x2: x2AutoDomain || xAutoDomain,
+          y: yAutoDomain,
+          y2: y2AutoDomain || yAutoDomain
         };
         Object.keys(domains).forEach(function (axis) {
           if (_this6["_".concat(axis, "ConfigScale")] === "log" && domains[axis].includes(0)) {
@@ -9160,10 +9087,13 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
           });
         }
 
-        xDomain = _x2.domain();
-        x2Domain = x2.domain();
-        yDomain = _y2.domain();
-        y2Domain = y2.domain();
+        var xDomain = _x2.domain();
+
+        var x2Domain = x2.domain();
+
+        var yDomain = _y2.domain();
+
+        var y2Domain = y2.domain();
         var defaultConfig = {
           barConfig: {
             "stroke-width": 0
@@ -9174,23 +9104,20 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
           tickSize: 0
         };
         var defaultX2Config = x2Exists ? {
-          data: data.map(function (d) {
-            return d.x2;
-          })
+          data: x2Data
         } : defaultConfig;
         var defaultY2Config = y2Exists ? {
-          data: data.map(function (d) {
-            return d.y2;
-          })
+          data: y2Data
         } : defaultConfig;
         var showX = this._discrete === "x" && this._width > this._discreteCutoff || this._width > this._xCutoff;
         var showY = this._discrete === "y" && this._height > this._discreteCutoff || this._height > this._yCutoff;
         var yC = {
-          data: data.map(function (d) {
-            return d.y;
-          }),
+          data: yData,
           locale: this._locale,
-          scalePadding: _y2.padding ? _y2.padding() : 0
+          scalePadding: _y2.padding ? _y2.padding() : 0,
+          tickFormat: yTime ? function (d) {
+            return d3plusFormat.formatDate(+d, yData.map(Number));
+          } : d3plusCommon.RESET
         };
 
         if (!showX) {
@@ -9229,10 +9156,10 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
           },
           parent: this._select
         });
-        var x2Ticks = this._discrete === "x" && !x2Time ? domains.x2 : undefined,
-            xTicks = !showY ? d3Array.extent(domains.x) : this._discrete === "x" && !xTime ? domains.x : undefined,
-            y2Ticks = this._discrete === "y" && !y2Time ? domains.y2 : undefined,
-            yTicks = !showX ? d3Array.extent(domains.y) : this._discrete === "y" && !yTime ? domains.y : undefined;
+        var x2Ticks = this._discrete === "x" ? domains.x2 : undefined,
+            xTicks = !showY ? d3Array.extent(domains.x) : this._discrete === "x" ? domains.x : undefined,
+            y2Ticks = this._discrete === "y" ? domains.y2 : undefined,
+            yTicks = !showX ? d3Array.extent(domains.y) : this._discrete === "y" ? domains.y : undefined;
         /**
          * Hides an axis' ticks and labels if they all exist as labels for the data to be displayed,
          * primarily occuring in simple BarChart visualizations where the both the x-axis ticks and
@@ -9280,11 +9207,12 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
 
         var y2Width = y2Bounds.width ? y2Bounds.width + this._y2Test.padding() : undefined;
         var xC = {
-          data: data.map(function (d) {
-            return d.x;
-          }),
+          data: xData,
           locale: this._locale,
-          scalePadding: _x2.padding ? _x2.padding() : 0
+          scalePadding: _x2.padding ? _x2.padding() : 0,
+          tickFormat: xTime ? function (d) {
+            return d3plusFormat.formatDate(+d, xData.map(Number));
+          } : d3plusCommon.RESET
         };
 
         if (!showY) {
@@ -10362,18 +10290,18 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
         @private
     */
     function AreaPlot() {
-      var _this7;
+      var _this8;
 
       _classCallCheck(this, AreaPlot);
 
-      _this7 = _super2.call(this);
-      _this7._baseline = 0;
-      _this7._discrete = "x";
-      _this7._shape = d3plusCommon.constant("Area");
+      _this8 = _super2.call(this);
+      _this8._baseline = 0;
+      _this8._discrete = "x";
+      _this8._shape = d3plusCommon.constant("Area");
 
-      _this7.x("x");
+      _this8.x("x");
 
-      return _this7;
+      return _this8;
     }
 
     return AreaPlot;
@@ -10401,29 +10329,29 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
         @private
     */
     function BarChart() {
-      var _this8;
+      var _this9;
 
       _classCallCheck(this, BarChart);
 
-      _this8 = _super3.call(this);
-      _this8._baseline = 0;
-      _this8._discrete = "x";
-      var defaultLegend = _this8._legend;
+      _this9 = _super3.call(this);
+      _this9._baseline = 0;
+      _this9._discrete = "x";
+      var defaultLegend = _this9._legend;
 
-      _this8._legend = function (config, arr) {
-        var legendIds = arr.map(_this8._groupBy[_this8._legendDepth].bind(_assertThisInitialized(_this8))).sort().join();
+      _this9._legend = function (config, arr) {
+        var legendIds = arr.map(_this9._groupBy[_this9._legendDepth].bind(_assertThisInitialized(_this9))).sort().join();
 
-        var barIds = _this8._filteredData.map(_this8._groupBy[_this8._legendDepth].bind(_assertThisInitialized(_this8))).sort().join();
+        var barIds = _this9._filteredData.map(_this9._groupBy[_this9._legendDepth].bind(_assertThisInitialized(_this9))).sort().join();
 
         if (legendIds === barIds) return false;
-        return defaultLegend.bind(_assertThisInitialized(_this8))(config, arr);
+        return defaultLegend.bind(_assertThisInitialized(_this9))(config, arr);
       };
 
-      _this8._shape = d3plusCommon.constant("Bar");
+      _this9._shape = d3plusCommon.constant("Bar");
 
-      _this8.x("x");
+      _this9.x("x");
 
-      return _this8;
+      return _this9;
     }
 
     return BarChart;
@@ -10450,17 +10378,17 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
         @private
     */
     function BoxWhisker() {
-      var _this9;
+      var _this10;
 
       _classCallCheck(this, BoxWhisker);
 
-      _this9 = _super4.call(this);
-      _this9._discrete = "x";
-      _this9._shape = d3plusCommon.constant("Box");
+      _this10 = _super4.call(this);
+      _this10._discrete = "x";
+      _this10._shape = d3plusCommon.constant("Box");
 
-      _this9.x("x");
+      _this10.x("x");
 
-      _this9._tooltipConfig = d3plusCommon.assign(_this9._tooltipConfig, {
+      _this10._tooltipConfig = d3plusCommon.assign(_this10._tooltipConfig, {
         title: function title(d, i) {
           if (!d) return "";
 
@@ -10469,14 +10397,14 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
             i = d.i;
           }
 
-          if (_this9._label) return _this9._label(d, i);
+          if (_this10._label) return _this10._label(d, i);
 
-          var l = _this9._ids(d, i).slice(0, _this9._drawDepth);
+          var l = _this10._ids(d, i).slice(0, _this10._drawDepth);
 
           return l[l.length - 1];
         }
       });
-      return _this9;
+      return _this10;
     }
 
     return BoxWhisker;
@@ -10525,23 +10453,23 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
         @private
     */
     function BumpChart() {
-      var _this10;
+      var _this11;
 
       _classCallCheck(this, BumpChart);
 
-      _this10 = _super5.call(this);
-      _this10._discrete = "x";
-      _this10._shape = d3plusCommon.constant("Line");
+      _this11 = _super5.call(this);
+      _this11._discrete = "x";
+      _this11._shape = d3plusCommon.constant("Line");
 
-      _this10.x("x");
+      _this11.x("x");
 
-      _this10.y2(function (d) {
-        return _this10._y(d);
+      _this11.y2(function (d) {
+        return _this11._y(d);
       });
 
-      _this10.yConfig({
+      _this11.yConfig({
         tickFormat: function tickFormat(val) {
-          var data = _this10._formattedData;
+          var data = _this11._formattedData;
           var xMin = data[0].x instanceof Date ? data[0].x.getTime() : data[0].x;
           var startData = data.filter(function (d) {
             return (d.x instanceof Date ? d.x.getTime() : d.x) === xMin;
@@ -10549,13 +10477,13 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
           var d = startData.find(function (d) {
             return d.y === val;
           });
-          return d ? _this10._drawLabel(d, d.i) : "";
+          return d ? _this11._drawLabel(d, d.i) : "";
         }
       });
 
-      _this10.y2Config({
+      _this11.y2Config({
         tickFormat: function tickFormat(val) {
-          var data = _this10._formattedData;
+          var data = _this11._formattedData;
           var xMax = data[data.length - 1].x instanceof Date ? data[data.length - 1].x.getTime() : data[data.length - 1].x;
           var endData = data.filter(function (d) {
             return (d.x instanceof Date ? d.x.getTime() : d.x) === xMax;
@@ -10563,19 +10491,19 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
           var d = endData.find(function (d) {
             return d.y === val;
           });
-          return d ? _this10._drawLabel(d, d.i) : "";
+          return d ? _this11._drawLabel(d, d.i) : "";
         }
       });
 
-      _this10.ySort(function (a, b) {
-        return _this10._y(b) - _this10._y(a);
+      _this11.ySort(function (a, b) {
+        return _this11._y(b) - _this11._y(a);
       });
 
-      _this10.y2Sort(function (a, b) {
-        return _this10._y(b) - _this10._y(a);
+      _this11.y2Sort(function (a, b) {
+        return _this11._y(b) - _this11._y(a);
       });
 
-      return _this10;
+      return _this11;
     }
 
     return BumpChart;
@@ -10602,17 +10530,17 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
         @private
     */
     function LinePlot() {
-      var _this11;
+      var _this12;
 
       _classCallCheck(this, LinePlot);
 
-      _this11 = _super6.call(this);
-      _this11._discrete = "x";
-      _this11._shape = d3plusCommon.constant("Line");
+      _this12 = _super6.call(this);
+      _this12._discrete = "x";
+      _this12._shape = d3plusCommon.constant("Line");
 
-      _this11.x("x");
+      _this12.x("x");
 
-      return _this11;
+      return _this12;
     }
 
     return LinePlot;
@@ -10641,12 +10569,12 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
         @private
     */
     function Radar() {
-      var _this12;
+      var _this13;
 
       _classCallCheck(this, Radar);
 
-      _this12 = _super7.call(this);
-      _this12._axisConfig = {
+      _this13 = _super7.call(this);
+      _this13._axisConfig = {
         shapeConfig: {
           fill: d3plusCommon.constant("none"),
           labelConfig: {
@@ -10661,13 +10589,13 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
           strokeWidth: d3plusCommon.constant(1)
         }
       };
-      _this12._discrete = "metric";
-      _this12._levels = 6;
-      _this12._metric = d3plusCommon.accessor("metric");
-      _this12._outerPadding = 100;
-      _this12._shape = d3plusCommon.constant("Path");
-      _this12._value = d3plusCommon.accessor("value");
-      return _this12;
+      _this13._discrete = "metric";
+      _this13._levels = 6;
+      _this13._metric = d3plusCommon.accessor("metric");
+      _this13._outerPadding = 100;
+      _this13._shape = d3plusCommon.constant("Path");
+      _this13._value = d3plusCommon.accessor("value");
+      return _this13;
     }
     /**
         Extends the draw behavior of the abstract Viz class.
@@ -10678,7 +10606,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
     _createClass(Radar, [{
       key: "_draw",
       value: function _draw(callback) {
-        var _this13 = this;
+        var _this14 = this;
 
         _get(_getPrototypeOf(Radar.prototype), "_draw", this).call(this, callback);
 
@@ -10693,14 +10621,14 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
         var maxValue = d3Array.max(nestedGroupData.map(function (h) {
           return h.values.map(function (d) {
             return d3Array.sum(d.values, function (x, i) {
-              return _this13._value(x, i);
+              return _this14._value(x, i);
             });
           });
         }).flat());
         var circularAxis = Array.from(Array(this._levels).keys()).map(function (d) {
           return {
             id: d,
-            r: radius * ((d + 1) / _this13._levels)
+            r: radius * ((d + 1) / _this14._levels)
           };
         });
         var circleConfig = d3plusCommon.configPrep.bind(this)(this._axisConfig.shapeConfig, "shape", "Circle");
@@ -10716,8 +10644,8 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
         }).node()).config(circleConfig).render();
         var totalAxis = nestedAxisData.length;
         var polarAxis = nestedAxisData.map(function (d, i) {
-          var width = _this13._outerPadding;
-          var fontSize = _this13._shapeConfig.labelConfig.fontSize && _this13._shapeConfig.labelConfig.fontSize(d, i) || 11;
+          var width = _this14._outerPadding;
+          var fontSize = _this14._shapeConfig.labelConfig.fontSize && _this14._shapeConfig.labelConfig.fontSize(d, i) || 11;
           var lineHeight = fontSize * 1.4;
           var height = lineHeight * 2;
           var padding = 10,
@@ -10741,7 +10669,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
           };
           return {
             __d3plus__: true,
-            data: d3plusCommon.merge(d.values, _this13._aggs),
+            data: d3plusCommon.merge(d.values, _this14._aggs),
             i: i,
             id: d.key,
             angle: angle,
@@ -10787,7 +10715,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
         var groupData = nestedGroupData.map(function (h) {
           var q = h.values.map(function (d, i) {
             var value = d3Array.sum(d.values, function (x, i) {
-              return _this13._value(x, i);
+              return _this14._value(x, i);
             });
             var r = value / maxValue * radius,
                 radians = tau / totalAxis * i;
@@ -10801,15 +10729,15 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
           }).join(" "), " L ").concat(q[0].x, " ").concat(q[0].y);
           return {
             arr: h.values.map(function (d) {
-              return d3plusCommon.merge(d.values, _this13._aggs);
+              return d3plusCommon.merge(d.values, _this14._aggs);
             }),
             id: h.key,
             points: q,
             d: d,
             __d3plus__: true,
             data: d3plusCommon.merge(h.values.map(function (d) {
-              return d3plusCommon.merge(d.values, _this13._aggs);
-            }), _this13._aggs)
+              return d3plusCommon.merge(d.values, _this14._aggs);
+            }), _this14._aggs)
           };
         });
         var pathConfig = d3plusCommon.configPrep.bind(this)(this._shapeConfig, "shape", "Path");
@@ -10826,7 +10754,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
             var y = d.points.map(function (p) {
               return p.y + height / 2;
             });
-            var cursor = d3Selection.pointer(e, _this13._select.node());
+            var cursor = d3Selection.pointer(e, _this14._select.node());
             var xDist = x.map(function (p) {
               return Math.abs(p - cursor[0]);
             });
@@ -10837,7 +10765,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
               return d + yDist[i];
             });
 
-            _this13._on[event].bind(_this13)(d.arr[dists.indexOf(d3Array.min(dists))], i, s, e);
+            _this14._on[event].bind(_this14)(d.arr[dists.indexOf(d3Array.min(dists))], i, s, e);
           };
         };
 
@@ -10935,13 +10863,13 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
         @private
     */
     function StackedArea() {
-      var _this14;
+      var _this15;
 
       _classCallCheck(this, StackedArea);
 
-      _this14 = _super8.call(this);
-      _this14._stacked = true;
-      return _this14;
+      _this15 = _super8.call(this);
+      _this15._stacked = true;
+      return _this15;
     }
 
     return StackedArea;
