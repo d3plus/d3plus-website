@@ -15,7 +15,7 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
 /*
-  d3plus-common v1.0.4
+  d3plus-common v1.0.5
   Common functions and methods used across D3plus modules.
   Copyright (c) 2021 D3plus - https://d3plus.org
   @license MIT
@@ -21093,7 +21093,8 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
   /**
       @function unique
       @desc ES5 implementation to reduce an Array of values to unique instances.
-      @param {Array} objects The Array of objects to be filtered.
+      @param {Array} arr The Array of objects to be filtered.
+      @param {Function} [accessor] An optional accessor function used to extract data points from an Array of Objects.
       @example <caption>this</caption>
   unique(["apple", "banana", "apple"]);
       @example <caption>returns this</caption>
@@ -21102,8 +21103,12 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
 
 
   function unique(arr) {
-    return arr.filter(function (k, i, a) {
-      return a.indexOf(k) === i;
+    var accessor = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : function (d) {
+      return d;
+    };
+    var values = arr.map(accessor);
+    return arr.filter(function (d, i) {
+      return values.indexOf(accessor(d)) === i;
     });
   }
   /**
