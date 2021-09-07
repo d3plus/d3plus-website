@@ -1,7 +1,7 @@
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
 /*
-  d3plus-format v1.0.1
+  d3plus-format v1.0.2
   Shorthand formatters for common number types.
   Copyright (c) 2021 D3plus - https://d3plus.org
   @license MIT

@@ -1,7 +1,7 @@
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
 /*
-  d3plus-format v1.0.1
+  d3plus-format v1.0.2
   Shorthand formatters for common number types.
   Copyright (c) 2021 D3plus - https://d3plus.org
   @license MIT
@@ -8459,11 +8459,11 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
     return interval;
   }
 
-  var durationSecond = 1e3;
-  var durationMinute = 6e4;
-  var durationHour = 36e5;
-  var durationDay = 864e5;
-  var durationWeek = 6048e5;
+  var durationSecond = 1000;
+  var durationMinute = durationSecond * 60;
+  var durationHour = durationMinute * 60;
+  var durationDay = durationHour * 24;
+  var durationWeek = durationDay * 7;
   var second = newInterval(function (date) {
     date.setTime(date - date.getMilliseconds());
   }, function (date, step) {
