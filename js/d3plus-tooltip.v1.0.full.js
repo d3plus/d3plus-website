@@ -29,7 +29,7 @@ function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len 
 function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof2 = function _typeof2(obj) { return typeof obj; }; } else { _typeof2 = function _typeof2(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof2(obj); }
 
 /*
-  d3plus-tooltip v1.0.0
+  d3plus-tooltip v1.0.1
   A javascript-only tooltip.
   Copyright (c) 2021 D3plus - https://d3plus.org
   @license MIT
@@ -21106,7 +21106,12 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
         tableEnter.append("thead").attr("class", "d3plus-tooltip-thead");
         var tableHead = update.select(".d3plus-tooltip-thead");
         stylize(tableHead, this._theadStyle);
-        var th = tableHead.selectAll("th").data(this._thead);
+        var theadTr = tableHead.selectAll("tr").data([0]);
+        var theadTrEnter = theadTr.enter().append("tr");
+        theadTr.exit().remove();
+        var theadTrUpdate = theadTr.merge(theadTrEnter);
+        stylize(theadTrUpdate, this._trStyle);
+        var th = theadTrUpdate.selectAll("th").data(this._thead);
         th.enter().append("th").merge(th).html(cellContent);
         th.exit().remove();
         tableEnter.append("tbody").attr("class", "d3plus-tooltip-tbody");
