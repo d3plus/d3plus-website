@@ -35,7 +35,7 @@ function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.g
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
 /*
-  d3plus-axis v1.0.3
+  d3plus-axis v1.0.4
   Beautiful javascript scales and axes.
   Copyright (c) 2021 D3plus - https://d3plus.org
   @license MIT
@@ -8065,11 +8065,15 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       @see https://github.com/d3plus/d3plus-common#BaseClass
   */
 
+  var floorPow = function floorPow(d) {
+    return Math.pow(10, Math.floor(Math.log10(d)));
+  };
   /**
    * Calculates ticks from a given scale (negative and/or positive)
    * @param {scale} scale A d3-scale object
    * @private
    */
+
 
   function calculateTicks(scale) {
     var useData = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
@@ -8124,6 +8128,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
         "stroke": "#999",
         "stroke-width": 1
       };
+      _this._data = [];
       _this._domain = [0, 10];
       _this._duration = 600;
       _this._gridConfig = {
@@ -8216,7 +8221,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
             position = ["top", "left"].includes(this._orient) ? this._outerBounds[y] + this._outerBounds[height] - offset : this._outerBounds[y] + offset;
         var x1mod = this._scale === "band" ? this._d3Scale.step() - this._d3Scale.bandwidth() : this._scale === "point" ? this._d3Scale.step() * this._d3Scale.padding() : 0;
         var x2mod = this._scale === "band" ? this._d3Scale.step() : this._scale === "point" ? this._d3Scale.step() * this._d3Scale.padding() : 0;
-        var sortedDomain = (this._d3Scale ? this._d3Scale.domain() : []).concat(this._d3ScaleNegative ? this._d3ScaleNegative.domain() : []);
+        var sortedDomain = (this._d3ScaleNegative ? this._d3ScaleNegative.domain() : []).concat(this._d3Scale ? this._d3Scale.domain() : []);
         bar.call(d3plusCommon.attrize, this._barConfig).attr("".concat(x, "1"), this._getPosition(sortedDomain[0]) - x1mod).attr("".concat(x, "2"), this._getPosition(sortedDomain[sortedDomain.length - 1]) + x2mod).attr("".concat(y, "1"), position).attr("".concat(y, "2"), position);
       }
       /**
@@ -8244,7 +8249,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
     }, {
       key: "_getPosition",
       value: function _getPosition(d) {
-        return d < 0 && this._d3ScaleNegative ? this._d3ScaleNegative(d) : d === 0 ? this._d3Scale.range()[0] : this._d3Scale(d);
+        return this._scale === "log" && d === 0 ? (this._d3Scale || this._d3ScaleNegative).range()[this._d3Scale ? 0 : 1] : d < 0 ? this._d3ScaleNegative(d) : this._d3Scale(d);
       }
       /**
           @memberof Axis
@@ -8471,13 +8476,13 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
             var _domain = this._d3Scale.domain();
 
             if (_domain[0] === 0) {
-              var smallestNumber = d3Array.min([d3Array.min(this._data), Math.abs(_domain[_domain.length - 1])]);
-              _domain[0] = smallestNumber === 0 ? 1e-6 : smallestNumber <= 1 ? Math.pow(10, Math.floor(Math.log10(smallestNumber))) : 1;
-              if (_domain[_domain.length - 1] < 0) _domain[0] *= -1;
+              var smallestNumber = d3Array.min([d3Array.min(this._data), Math.abs(_domain[1])]);
+              _domain[0] = smallestNumber === 0 || smallestNumber === 1 ? 1e-6 : smallestNumber <= 1 ? floorPow(smallestNumber) : 1;
+              if (_domain[1] < 0) _domain[0] *= -1;
             } else if (_domain[_domain.length - 1] === 0) {
               var _smallestNumber = d3Array.min([d3Array.min(this._data), Math.abs(_domain[0])]);
 
-              _domain[_domain.length - 1] = _smallestNumber === 0 ? 1e-6 : _smallestNumber <= 1 ? Math.pow(10, Math.floor(Math.log10(_smallestNumber))) : 1;
+              _domain[_domain.length - 1] = _smallestNumber === 0 || _smallestNumber === 1 ? 1e-6 : _smallestNumber <= 1 ? floorPow(_smallestNumber) : 1;
               if (_domain[0] < 0) _domain[_domain.length - 1] *= -1;
             }
 
@@ -8490,12 +8495,23 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
               this._d3Scale.domain(_domain).range(_range);
             } else {
               var percentScale = scales.scaleLog().domain([1, _domain[_domain[1] > 0 ? 1 : 0]]).range([0, 1]);
-              var leftPercentage = percentScale(Math.abs(_domain[_domain[1] < 0 ? 1 : 0]));
+              var leftPercentage = percentScale(Math.abs(_domain[_domain[0] < 0 ? 1 : 0]));
               var zero = leftPercentage / (leftPercentage + 1) * (_range[1] - _range[0]);
+              var smallestPositive = d3Array.min([d3Array.min(this._data.filter(function (d) {
+                return d >= 0;
+              })), _domain[1]]);
+              var smallestNegative = d3Array.max([d3Array.max(this._data.filter(function (d) {
+                return d <= -0;
+              })), _domain[0]]);
+              var smallestPosPow = smallestPositive === 0 ? 1e-6 : smallestPositive <= 1 ? floorPow(smallestPositive) : 1;
+              var smallestNegPow = smallestNegative === 0 ? -1e-6 : smallestNegative >= -1 ? -floorPow(Math.abs(smallestNegative)) : -1;
+
+              var _smallestNumber2 = d3Array.min([smallestPosPow, -smallestNegPow]);
+
               if (_domain[0] > 0) zero = _range[1] - _range[0] - zero;
               this._d3ScaleNegative = this._d3Scale.copy();
-              (_domain[0] < 0 ? this._d3Scale : this._d3ScaleNegative).domain([Math.sign(_domain[1]), _domain[1]]).range([_range[0] + zero, _range[1]]);
-              (_domain[0] < 0 ? this._d3ScaleNegative : this._d3Scale).domain([_domain[0], Math.sign(_domain[0])]).range([_range[0], _range[0] + zero]);
+              (_domain[0] < 0 ? this._d3Scale : this._d3ScaleNegative).domain([_smallestNumber2, _domain[1]]).range([_range[0] + zero, _range[1]]);
+              (_domain[0] < 0 ? this._d3ScaleNegative : this._d3Scale).domain([_domain[0], -_smallestNumber2]).range([_range[0], _range[0] + zero]);
             }
           }
           /**
@@ -8866,7 +8882,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
               height: horizontal ? labelHeight : space
             },
             rotate: data ? data.rotate : false,
-            size: labels.includes(d) ? size : _this2._data && _this2._data.find(function (t) {
+            size: labels.includes(d) ? size : _this2._data.find(function (t) {
               return +t === d;
             }) ? Math.ceil(size / 2) : 0,
             text: labels.includes(d) ? tickFormat(d) : false,
