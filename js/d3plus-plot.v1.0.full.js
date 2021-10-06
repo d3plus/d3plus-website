@@ -51,7 +51,7 @@ function _arrayLikeToArray2(arr, len) { if (len == null || len > arr.length) len
 function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof2 = function _typeof2(obj) { return typeof obj; }; } else { _typeof2 = function _typeof2(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof2(obj); }
 
 /*
-  d3plus-plot v1.0.13
+  d3plus-plot v1.0.14
   A reusable javascript x/y plot built on D3.
   Copyright (c) 2021 D3plus - https://d3plus.org
   @license MIT
@@ -35518,6 +35518,10 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
     };
     return _getPrototypeOf$a(o);
   }
+
+  var floorPow = function floorPow(d) {
+    return Math.pow(10, Math.floor(Math.log10(d)));
+  };
   /**
    * Calculates ticks from a given scale (negative and/or positive)
    * @param {scale} scale A d3-scale object
@@ -35579,6 +35583,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
         "stroke": "#999",
         "stroke-width": 1
       };
+      _this._data = [];
       _this._domain = [0, 10];
       _this._duration = 600;
       _this._gridConfig = {
@@ -35671,7 +35676,9 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
             position = ["top", "left"].includes(this._orient) ? this._outerBounds[y] + this._outerBounds[height] - offset : this._outerBounds[y] + offset;
         var x1mod = this._scale === "band" ? this._d3Scale.step() - this._d3Scale.bandwidth() : this._scale === "point" ? this._d3Scale.step() * this._d3Scale.padding() : 0;
         var x2mod = this._scale === "band" ? this._d3Scale.step() : this._scale === "point" ? this._d3Scale.step() * this._d3Scale.padding() : 0;
-        var sortedDomain = (this._d3Scale ? this._d3Scale.domain() : []).concat(this._d3ScaleNegative ? this._d3ScaleNegative.domain() : []);
+        var sortedDomain = (this._d3ScaleNegative ? this._d3ScaleNegative.domain() : []).concat(this._d3Scale ? this._d3Scale.domain() : []).sort(function (a, b) {
+          return a - b;
+        });
         bar.call(attrize, this._barConfig).attr("".concat(x, "1"), this._getPosition(sortedDomain[0]) - x1mod).attr("".concat(x, "2"), this._getPosition(sortedDomain[sortedDomain.length - 1]) + x2mod).attr("".concat(y, "1"), position).attr("".concat(y, "2"), position);
       }
       /**
@@ -35699,7 +35706,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
     }, {
       key: "_getPosition",
       value: function _getPosition(d) {
-        return d < 0 && this._d3ScaleNegative ? this._d3ScaleNegative(d) : this._d3Scale(d);
+        return this._scale === "log" && d === 0 ? (this._d3Scale || this._d3ScaleNegative).range()[this._d3Scale ? 0 : 1] : d < 0 ? this._d3ScaleNegative(d) : this._d3Scale(d);
       }
       /**
           @memberof Axis
@@ -35927,10 +35934,13 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
             var _domain = this._d3Scale.domain();
 
             if (_domain[0] === 0) {
-              _domain[0] = Math.abs(_domain[_domain.length - 1]) <= 1 ? 1e-6 : 1;
-              if (_domain[_domain.length - 1] < 0) _domain[0] *= -1;
+              var smallestNumber = min([min(this._data), Math.abs(_domain[1])]);
+              _domain[0] = smallestNumber === 0 || smallestNumber === 1 ? 1e-6 : smallestNumber <= 1 ? floorPow(smallestNumber) : 1;
+              if (_domain[1] < 0) _domain[0] *= -1;
             } else if (_domain[_domain.length - 1] === 0) {
-              _domain[_domain.length - 1] = Math.abs(_domain[0]) <= 1 ? 1e-6 : 1;
+              var _smallestNumber = min([min(this._data), Math.abs(_domain[0])]);
+
+              _domain[_domain.length - 1] = _smallestNumber === 0 || _smallestNumber === 1 ? 1e-6 : _smallestNumber <= 1 ? floorPow(_smallestNumber) : 1;
               if (_domain[0] < 0) _domain[_domain.length - 1] *= -1;
             }
 
@@ -35942,13 +35952,23 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
             } else if (_domain[0] > 0 && _domain[_domain.length - 1] > 0) {
               this._d3Scale.domain(_domain).range(_range);
             } else {
-              var percentScale = log().domain([1, _domain[_domain[1] > 0 ? 1 : 0]]).range([0, 1]);
-              var leftPercentage = percentScale(Math.abs(_domain[_domain[1] < 0 ? 1 : 0]));
-              var zero = leftPercentage / (leftPercentage + 1) * (_range[1] - _range[0]);
-              if (_domain[0] > 0) zero = _range[1] - _range[0] - zero;
+              var percentScale = linear$1().domain(_domain).range([0, 1]);
+              var leftPercentage = percentScale(0);
+              var zero = leftPercentage * (_range[1] - _range[0]);
+              var smallestPositive = min([min(this._data.filter(function (d) {
+                return d >= 0;
+              })), Math.abs(_domain[1])]);
+              var smallestNegative = min([min(this._data.filter(function (d) {
+                return d <= -0;
+              })), Math.abs(_domain[0])]);
+              var smallestPosPow = smallestPositive === 0 ? 1e-6 : smallestPositive <= 1 ? floorPow(smallestPositive) : 1;
+              var smallestNegPow = smallestNegative === 0 ? -1e-6 : smallestNegative <= 1 ? floorPow(smallestNegative) : 1;
+
+              var _smallestNumber2 = min([smallestPosPow, smallestNegPow]);
+
               this._d3ScaleNegative = this._d3Scale.copy();
-              (_domain[0] < 0 ? this._d3Scale : this._d3ScaleNegative).domain([Math.sign(_domain[1]), _domain[1]]).range([_range[0] + zero, _range[1]]);
-              (_domain[0] < 0 ? this._d3ScaleNegative : this._d3Scale).domain([_domain[0], Math.sign(_domain[0])]).range([_range[0], _range[0] + zero]);
+              (_domain[0] < 0 ? this._d3Scale : this._d3ScaleNegative).domain([_domain[0] < 0 ? _smallestNumber2 : -_smallestNumber2, _domain[1]]).range([_range[0] + zero, _range[1]]);
+              (_domain[0] < 0 ? this._d3ScaleNegative : this._d3Scale).domain([_domain[0], _domain[0] < 0 ? -_smallestNumber2 : _smallestNumber2]).range([_range[0], _range[0] + zero]);
             }
           }
           /**
@@ -36320,7 +36340,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
               height: horizontal ? labelHeight : space
             },
             rotate: data ? data.rotate : false,
-            size: labels.includes(d) ? size : _this2._data && _this2._data.find(function (t) {
+            size: labels.includes(d) ? size : _this2._data.find(function (t) {
               return +t === d;
             }) ? Math.ceil(size / 2) : 0,
             text: labels.includes(d) ? tickFormat(d) : false,
@@ -37326,220 +37346,6 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
     return AxisTop;
   }(Axis);
   /**
-      @namespace {Object} formatLocale
-      @desc A set of default locale formatters used when assigning suffixes and currency in numbers.
-        *
-        * | Name | Default | Description |
-        * |---|---|---|
-        * | separator | "" | Separation between the number with the suffix. |
-        * | suffixes | [] | List of suffixes used to format numbers. |
-        * | grouping | [3] | The array of group sizes, |
-        * | delimiters | {thousands: ",", decimal: "."} | Decimal and group separators. |
-        * | currency | ["$", ""] | The currency prefix and suffix. |
-  */
-
-
-  var defaultLocale$2 = {
-    "en-GB": {
-      separator: "",
-      suffixes: ["y", "z", "a", "f", "p", "n", "µ", "m", "", "k", "M", "B", "T", "q", "Q", "Z", "Y"],
-      grouping: [3],
-      delimiters: {
-        thousands: ",",
-        decimal: "."
-      },
-      currency: ["£", ""]
-    },
-    "en-US": {
-      separator: "",
-      suffixes: ["y", "z", "a", "f", "p", "n", "µ", "m", "", "k", "M", "B", "T", "q", "Q", "Z", "Y"],
-      grouping: [3],
-      delimiters: {
-        thousands: ",",
-        decimal: "."
-      },
-      currency: ["$", ""]
-    },
-    "es-CL": {
-      separator: "",
-      suffixes: ["y", "z", "a", "f", "p", "n", "µ", "m", "", "k", "M", "MM", "B", "T", "Q", "Z", "Y"],
-      grouping: [3],
-      delimiters: {
-        thousands: ".",
-        decimal: ","
-      },
-      currency: ["$", ""]
-    },
-    "es-MX": {
-      separator: "",
-      suffixes: ["y", "z", "a", "f", "p", "n", "µ", "m", "", "k", "M", "MM", "B", "T", "Q", "Z", "Y"],
-      grouping: [3],
-      delimiters: {
-        thousands: ",",
-        decimal: "."
-      },
-      currency: ["$", ""]
-    },
-    "es-ES": {
-      separator: "",
-      suffixes: ["y", "z", "a", "f", "p", "n", "µ", "m", "", "k", "mm", "b", "t", "q", "Q", "Z", "Y"],
-      grouping: [3],
-      delimiters: {
-        thousands: ".",
-        decimal: ","
-      },
-      currency: ["€", ""]
-    },
-    "et-EE": {
-      separator: " ",
-      suffixes: ["y", "z", "a", "f", "p", "n", "µ", "m", "", "tuhat", "miljonit", "miljardit", "triljonit", "q", "Q", "Z", "Y"],
-      grouping: [3],
-      delimiters: {
-        thousands: " ",
-        decimal: ","
-      },
-      currency: ["", "eurot"]
-    },
-    "fr-FR": {
-      suffixes: ["y", "z", "a", "f", "p", "n", "µ", "m", "", "k", "m", "b", "t", "q", "Q", "Z", "Y"],
-      grouping: [3],
-      delimiters: {
-        thousands: " ",
-        decimal: ","
-      },
-      currency: ["€", ""]
-    }
-  };
-
-  function _typeof$i(obj) {
-    "@babel/helpers - typeof";
-
-    if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") {
-      _typeof$i = function _typeof(obj) {
-        return typeof obj;
-      };
-    } else {
-      _typeof$i = function _typeof(obj) {
-        return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
-      };
-    }
-
-    return _typeof$i(obj);
-  }
-
-  var round$1 = function round(x, n) {
-    return parseFloat(Math.round(x * Math.pow(10, n)) / Math.pow(10, n)).toFixed(n);
-  };
-  /**
-   * @private
-  */
-
-
-  function formatSuffix$1(str, precision, suffixes) {
-    var i = 0;
-    var value = parseFloat(str.replace("−", "-"), 10);
-
-    if (value) {
-      if (value < 0) value *= -1;
-      i = 1 + Math.floor(1e-12 + Math.log(value) / Math.LN10);
-      i = Math.max(-24, Math.min(24, Math.floor((i - 1) / 3) * 3));
-    }
-
-    var d = suffixes[8 + i / 3];
-    return {
-      number: round$1(d.scale(value), precision),
-      symbol: d.symbol
-    };
-  }
-  /**
-   * @private
-  */
-
-
-  function parseSuffixes$1(d, i) {
-    var k = Math.pow(10, Math.abs(8 - i) * 3);
-    return {
-      scale: i > 8 ? function (d) {
-        return d / k;
-      } : function (d) {
-        return d * k;
-      },
-      symbol: d
-    };
-  }
-  /**
-      @function formatAbbreviate
-      @desc Formats a number to an appropriate number of decimal places and rounding, adding suffixes if applicable (ie. `1200000` to `"1.2M"`).
-      @param {Number|String} n The number to be formatted.
-      @param {Object|String} locale The locale config to be used. If *value* is an object, the function will format the numbers according the object. The object must include `suffixes`, `delimiter` and `currency` properties.
-      @returns {String}
-  */
-
-
-  function formatAbbreviate$1(n) {
-    var locale = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : "en-US";
-    var precision = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : undefined;
-    if (isFinite(n)) n *= 1;else return "N/A";
-    var negative = n < 0;
-    var length = n.toString().split(".")[0].replace("-", "").length,
-        localeConfig = _typeof$i(locale) === "object" ? locale : defaultLocale$2[locale] || defaultLocale$2["en-US"],
-        suffixes = localeConfig.suffixes.map(parseSuffixes$1);
-    var decimal = localeConfig.delimiters.decimal || ".",
-        separator = localeConfig.separator || "",
-        thousands = localeConfig.delimiters.thousands || ",";
-    var d3plusFormatLocale = formatLocale({
-      currency: localeConfig.currency || ["$", ""],
-      decimal: decimal,
-      grouping: localeConfig.grouping || [3],
-      thousands: thousands
-    });
-    var val;
-    if (precision) val = d3plusFormatLocale.format(precision)(n);else if (n === 0) val = "0";else if (length >= 3) {
-      var f = formatSuffix$1(d3plusFormatLocale.format(".3r")(n), 2, suffixes);
-      var num = parseFloat(f.number).toString().replace(".", decimal);
-      var _char = f.symbol;
-      val = "".concat(num).concat(separator).concat(_char);
-    } else if (length === 3) val = d3plusFormatLocale.format(",f")(n);else if (n < 1 && n > -1) val = d3plusFormatLocale.format(".2g")(n);else val = d3plusFormatLocale.format(".3g")(n);
-    return "".concat(negative && val.charAt(0) !== "−" ? "−" : "").concat(val).replace(/\−/g, "-") // replace new d3 default minus sign (−) to hyphen-minus (-)
-    .replace(/(\.[0]*[1-9]*)[0]*$/g, "$1") // removes any trailing zeros
-    .replace(/\.[0]*$/g, ""); // removes any trailing decimal point
-  }
-  /**
-      @function formatDate
-      @desc A default set of date formatters, which takes into account both the interval in between in each data point but also the start/end data points.
-      @param {Date} d The date string to be formatted.
-      @param {Array} dataArray The full array of ordered Date Objects.
-      @returns {String}
-  */
-
-
-  function formatDate$1(d, dataArray) {
-    var formatDay = timeFormat("%-d"),
-        formatHour = timeFormat("%I %p"),
-        formatMillisecond = timeFormat(".%L"),
-        formatMinute = timeFormat("%I:%M"),
-        formatMonth = timeFormat("%b"),
-        formatMonthDay = timeFormat("%b %-d"),
-        formatMonthDayYear = timeFormat("%b %-d, %Y"),
-        formatMonthYear = timeFormat("%b %Y"),
-        formatSecond = timeFormat(":%S"),
-        formatYear = timeFormat("%Y");
-    var labelIndex = dataArray.indexOf(d);
-    var c = dataArray[labelIndex + 1] || dataArray[labelIndex - 1];
-    return (second$1(d) < d ? formatMillisecond : minute$1(d) < d ? formatSecond : hour$1(d) < d ? formatMinute : day$1(d) < d ? labelIndex === 0 ? formatMonthDayYear : formatHour : month$1(d) < d ? labelIndex === 0 ? formatMonthDayYear : neighborInInterval$1(d, c, day$1) ? formatMonthDay : formatDay : year$1(d) < d ? labelIndex === 0 ? formatMonthYear : neighborInInterval$1(d, c, month$1) ? formatMonthDay : formatMonth : neighborInInterval$1(d, c, year$1) ? formatMonthYear : formatYear)(d);
-  }
-  /**
-      @function neighborInInterval
-      @desc Helps determine whether to show the parent level time label, such as "Jan 2020" in a monthly chart (where "Feb"-only would follow)
-      @returns {Boolean}
-      @private
-  */
-
-
-  function neighborInInterval$1(d, comparitor, interval) {
-    return comparitor ? +interval.round(d) === +interval.round(d + Math.abs(comparitor - d)) : false;
-  }
-  /**
     @function dataConcat
     @desc Reduce and concat all the elements included in arrayOfArrays if they are arrays. If it is a JSON object try to concat the array under given key data. If the key doesn't exists in object item, a warning message is lauched to the console. You need to implement DataFormat callback to concat the arrays manually.
     @param {Array} arrayOfArray Array of elements
@@ -37566,20 +37372,20 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
     }, []);
   };
 
-  function _typeof$j(obj) {
+  function _typeof$i(obj) {
     "@babel/helpers - typeof";
 
     if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") {
-      _typeof$j = function _typeof(obj) {
+      _typeof$i = function _typeof(obj) {
         return typeof obj;
       };
     } else {
-      _typeof$j = function _typeof(obj) {
+      _typeof$i = function _typeof(obj) {
         return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
       };
     }
 
-    return _typeof$j(obj);
+    return _typeof$i(obj);
   }
   /**
     @function isData
@@ -37589,7 +37395,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
 
 
   var isData = function isData(dataItem) {
-    return typeof dataItem === "string" || _typeof$j(dataItem) === "object" && dataItem.url && dataItem.headers;
+    return typeof dataItem === "string" || _typeof$i(dataItem) === "object" && dataItem.url && dataItem.headers;
   };
 
   var noop$2 = {
@@ -37903,7 +37709,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
     return year < 0 ? "-" + pad$1(-year, 6) : year > 9999 ? "+" + pad$1(year, 6) : pad$1(year, 4);
   }
 
-  function formatDate$2(date) {
+  function formatDate$1(date) {
     var hours = date.getUTCHours(),
         minutes = date.getUTCMinutes(),
         seconds = date.getUTCSeconds(),
@@ -38018,7 +37824,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
     }
 
     function formatValue(value) {
-      return value == null ? "" : value instanceof Date ? formatDate$2(value) : reFormat.test(value += "") ? "\"" + value.replace(/"/g, "\"\"") + "\"" : value;
+      return value == null ? "" : value instanceof Date ? formatDate$1(value) : reFormat.test(value += "") ? "\"" + value.replace(/"/g, "\"\"") + "\"" : value;
     }
 
     return {
@@ -38077,20 +37883,20 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
     });
   };
 
-  function _typeof$k(obj) {
+  function _typeof$j(obj) {
     "@babel/helpers - typeof";
 
     if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") {
-      _typeof$k = function _typeof(obj) {
+      _typeof$j = function _typeof(obj) {
         return typeof obj;
       };
     } else {
-      _typeof$k = function _typeof(obj) {
+      _typeof$j = function _typeof(obj) {
         return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
       };
     }
 
-    return _typeof$k(obj);
+    return _typeof$j(obj);
   }
   /**
     @function dataLoad
@@ -38168,7 +37974,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
       var headers = {},
           url = dataItem;
 
-      if (_typeof$k(dataItem) === "object") {
+      if (_typeof$j(dataItem) === "object") {
         url = dataItem.url;
         headers = dataItem.headers;
       }
@@ -40076,20 +39882,20 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
     return clusters;
   }
 
-  function _typeof$l(obj) {
+  function _typeof$k(obj) {
     "@babel/helpers - typeof";
 
     if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") {
-      _typeof$l = function _typeof(obj) {
+      _typeof$k = function _typeof(obj) {
         return typeof obj;
       };
     } else {
-      _typeof$l = function _typeof(obj) {
+      _typeof$k = function _typeof(obj) {
         return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
       };
     }
 
-    return _typeof$l(obj);
+    return _typeof$k(obj);
   }
 
   function _classCallCheck$h(instance, Constructor) {
@@ -40158,7 +39964,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
   }
 
   function _possibleConstructorReturn$f(self, call) {
-    if (call && (_typeof$l(call) === "object" || typeof call === "function")) {
+    if (call && (_typeof$k(call) === "object" || typeof call === "function")) {
       return call;
     }
 
@@ -40840,20 +40646,20 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
     return Legend;
   }(BaseClass);
 
-  function _typeof$m(obj) {
+  function _typeof$l(obj) {
     "@babel/helpers - typeof";
 
     if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") {
-      _typeof$m = function _typeof(obj) {
+      _typeof$l = function _typeof(obj) {
         return typeof obj;
       };
     } else {
-      _typeof$m = function _typeof(obj) {
+      _typeof$l = function _typeof(obj) {
         return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
       };
     }
 
-    return _typeof$m(obj);
+    return _typeof$l(obj);
   }
 
   function _defineProperty$2(obj, key, value) {
@@ -40937,7 +40743,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
   }
 
   function _possibleConstructorReturn$g(self, call) {
-    if (call && (_typeof$m(call) === "object" || typeof call === "function")) {
+    if (call && (_typeof$l(call) === "object" || typeof call === "function")) {
       return call;
     }
 
@@ -41005,7 +40811,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
       _this._bucketAxis = false;
 
       _this._bucketFormat = function (tick, i, ticks, allValues) {
-        var format = _this._axisConfig.tickFormat ? _this._axisConfig.tickFormat : formatAbbreviate$1;
+        var format = _this._axisConfig.tickFormat ? _this._axisConfig.tickFormat : formatAbbreviate;
         var next = ticks[i + 1];
         var prev = i ? ticks[i - 1] : false;
         var last = i === ticks.length - 1;
@@ -41873,20 +41679,20 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
     return ColorScale;
   }(BaseClass);
 
-  function _typeof$n(obj) {
+  function _typeof$m(obj) {
     "@babel/helpers - typeof";
 
     if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") {
-      _typeof$n = function _typeof(obj) {
+      _typeof$m = function _typeof(obj) {
         return typeof obj;
       };
     } else {
-      _typeof$n = function _typeof(obj) {
+      _typeof$m = function _typeof(obj) {
         return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
       };
     }
 
-    return _typeof$n(obj);
+    return _typeof$m(obj);
   }
 
   function _classCallCheck$j(instance, Constructor) {
@@ -41985,7 +41791,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
   }
 
   function _possibleConstructorReturn$h(self, call) {
-    if (call && (_typeof$n(call) === "object" || typeof call === "function")) {
+    if (call && (_typeof$m(call) === "object" || typeof call === "function")) {
       return call;
     }
 
@@ -42930,7 +42736,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
 
   var max$3 = Math.max;
   var min$3 = Math.min;
-  var round$2 = Math.round; // of the `<html>` and `<body>` rect bounds if horizontally scrollable
+  var round$1 = Math.round; // of the `<html>` and `<body>` rect bounds if horizontally scrollable
 
   function getDocumentRect(element) {
     var _element$ownerDocumen;
@@ -43465,8 +43271,8 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
     var win = window;
     var dpr = win.devicePixelRatio || 1;
     return {
-      x: round$2(round$2(x * dpr) / dpr) || 0,
-      y: round$2(round$2(y * dpr) / dpr) || 0
+      x: round$1(round$1(x * dpr) / dpr) || 0,
+      y: round$1(round$1(y * dpr) / dpr) || 0
     };
   }
 
@@ -44187,20 +43993,20 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
     defaultModifiers: defaultModifiers
   }); // eslint-disable-next-line import/no-unused-modules
 
-  function _typeof$o(obj) {
+  function _typeof$n(obj) {
     "@babel/helpers - typeof";
 
     if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") {
-      _typeof$o = function _typeof(obj) {
+      _typeof$n = function _typeof(obj) {
         return typeof obj;
       };
     } else {
-      _typeof$o = function _typeof(obj) {
+      _typeof$n = function _typeof(obj) {
         return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
       };
     }
 
-    return _typeof$o(obj);
+    return _typeof$n(obj);
   }
 
   function _classCallCheck$k(instance, Constructor) {
@@ -44269,7 +44075,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
   }
 
   function _possibleConstructorReturn$i(self, call) {
-    if (call && (_typeof$o(call) === "object" || typeof call === "function")) {
+    if (call && (_typeof$n(call) === "object" || typeof call === "function")) {
       return call;
     }
 
@@ -46119,20 +45925,20 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
     if (Array.isArray(arr)) return arr;
   }
 
-  function _typeof$p(obj) {
+  function _typeof$o(obj) {
     "@babel/helpers - typeof";
 
     if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") {
-      _typeof$p = function _typeof(obj) {
+      _typeof$o = function _typeof(obj) {
         return typeof obj;
       };
     } else {
-      _typeof$p = function _typeof(obj) {
+      _typeof$o = function _typeof(obj) {
         return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
       };
     }
 
-    return _typeof$p(obj);
+    return _typeof$o(obj);
   }
 
   function _classCallCheck$m(instance, Constructor) {
@@ -46201,7 +46007,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
   }
 
   function _possibleConstructorReturn$j(self, call) {
-    if (call && (_typeof$p(call) === "object" || typeof call === "function")) {
+    if (call && (_typeof$o(call) === "object" || typeof call === "function")) {
       return call;
     }
 
@@ -46400,7 +46206,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
         "mousemove.legend": mousemoveLegend.bind(_assertThisInitialized$j(_this))
       };
       _this._queue = [];
-      _this._scrollContainer = (typeof window === "undefined" ? "undefined" : _typeof$p(window)) === undefined ? "" : window;
+      _this._scrollContainer = (typeof window === "undefined" ? "undefined" : _typeof$o(window)) === undefined ? "" : window;
       _this._shape = constant("Rect");
       _this._shapes = [];
       _this._shapeConfig = {
@@ -46488,7 +46294,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
       };
 
       _this._totalFormat = function (d) {
-        return "".concat(_this._translate("Total"), ": ").concat(formatAbbreviate$1(d, _this._locale));
+        return "".concat(_this._translate("Total"), ": ").concat(formatAbbreviate(d, _this._locale));
       };
 
       _this._totalPadding = defaultPadding;
@@ -46567,7 +46373,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
           }
 
           if (d._isAggregation) {
-            return "".concat(_this2._thresholdName(d, i), " < ").concat(formatAbbreviate$1(d._threshold * 100, _this2._locale), "%");
+            return "".concat(_this2._thresholdName(d, i), " < ").concat(formatAbbreviate(d._threshold * 100, _this2._locale), "%");
           }
 
           if (_this2._label) return "".concat(_this2._label(d, i));
@@ -49197,7 +49003,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
           locale: this._locale,
           scalePadding: _y2.padding ? _y2.padding() : 0,
           tickFormat: yTime ? function (d) {
-            return formatDate$1(+d, yData.map(Number));
+            return formatDate(+d, yData.map(Number));
           } : RESET
         };
 
@@ -49292,7 +49098,7 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
           locale: this._locale,
           scalePadding: _x3.padding ? _x3.padding() : 0,
           tickFormat: xTime ? function (d) {
-            return formatDate$1(+d, xData.map(Number));
+            return formatDate(+d, xData.map(Number));
           } : RESET
         };
 
