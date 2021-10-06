@@ -35,7 +35,7 @@ function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.g
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
 /*
-  d3plus-axis v1.0.2
+  d3plus-axis v1.0.3
   Beautiful javascript scales and axes.
   Copyright (c) 2021 D3plus - https://d3plus.org
   @license MIT
@@ -8244,7 +8244,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
     }, {
       key: "_getPosition",
       value: function _getPosition(d) {
-        return d < 0 && this._d3ScaleNegative ? this._d3ScaleNegative(d) : this._d3Scale(d);
+        return d < 0 && this._d3ScaleNegative ? this._d3ScaleNegative(d) : d === 0 ? this._d3Scale.range()[0] : this._d3Scale(d);
       }
       /**
           @memberof Axis
@@ -8471,10 +8471,13 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
             var _domain = this._d3Scale.domain();
 
             if (_domain[0] === 0) {
-              _domain[0] = Math.abs(_domain[_domain.length - 1]) <= 1 ? 1e-6 : 1;
+              var smallestNumber = d3Array.min([d3Array.min(this._data), Math.abs(_domain[_domain.length - 1])]);
+              _domain[0] = smallestNumber === 0 ? 1e-6 : smallestNumber <= 1 ? Math.pow(10, Math.floor(Math.log10(smallestNumber))) : 1;
               if (_domain[_domain.length - 1] < 0) _domain[0] *= -1;
             } else if (_domain[_domain.length - 1] === 0) {
-              _domain[_domain.length - 1] = Math.abs(_domain[0]) <= 1 ? 1e-6 : 1;
+              var _smallestNumber = d3Array.min([d3Array.min(this._data), Math.abs(_domain[0])]);
+
+              _domain[_domain.length - 1] = _smallestNumber === 0 ? 1e-6 : _smallestNumber <= 1 ? Math.pow(10, Math.floor(Math.log10(_smallestNumber))) : 1;
               if (_domain[0] < 0) _domain[_domain.length - 1] *= -1;
             }
 
