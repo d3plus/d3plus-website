@@ -2,8 +2,8 @@
 title: Adding Vertex Markers to Line Plots
 width: 800
 height: 400
-time: 1630701008295
-date: September 03, 2021
+time: 1633557185176
+date: October 06, 2021
 ---
 
 # Adding Vertex Markers to Line Plots

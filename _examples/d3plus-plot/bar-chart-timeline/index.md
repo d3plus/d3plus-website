@@ -2,8 +2,8 @@
 title: Bar Chart Timeline
 width: 800
 height: 400
-time: 1630701008295
-date: September 03, 2021
+time: 1633557185176
+date: October 06, 2021
 ---
 
 # Bar Chart Timeline
