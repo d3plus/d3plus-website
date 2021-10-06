@@ -45,7 +45,7 @@ function _arrayLikeToArray2(arr, len) { if (len == null || len > arr.length) len
 function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof2 = function _typeof2(obj) { return typeof obj; }; } else { _typeof2 = function _typeof2(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof2(obj); }
 
 /*
-  d3plus-axis v1.0.4
+  d3plus-axis v1.0.5
   Beautiful javascript scales and axes.
   Copyright (c) 2021 D3plus - https://d3plus.org
   @license MIT
@@ -35235,7 +35235,9 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
             position = ["top", "left"].includes(this._orient) ? this._outerBounds[y] + this._outerBounds[height] - offset : this._outerBounds[y] + offset;
         var x1mod = this._scale === "band" ? this._d3Scale.step() - this._d3Scale.bandwidth() : this._scale === "point" ? this._d3Scale.step() * this._d3Scale.padding() : 0;
         var x2mod = this._scale === "band" ? this._d3Scale.step() : this._scale === "point" ? this._d3Scale.step() * this._d3Scale.padding() : 0;
-        var sortedDomain = (this._d3ScaleNegative ? this._d3ScaleNegative.domain() : []).concat(this._d3Scale ? this._d3Scale.domain() : []);
+        var sortedDomain = (this._d3ScaleNegative ? this._d3ScaleNegative.domain() : []).concat(this._d3Scale ? this._d3Scale.domain() : []).sort(function (a, b) {
+          return a - b;
+        });
         bar.call(attrize, this._barConfig).attr("".concat(x, "1"), this._getPosition(sortedDomain[0]) - x1mod).attr("".concat(x, "2"), this._getPosition(sortedDomain[sortedDomain.length - 1]) + x2mod).attr("".concat(y, "1"), position).attr("".concat(y, "2"), position);
       }
       /**
@@ -35511,26 +35513,25 @@ function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "funct
             } else if (_domain[0] > 0 && _domain[_domain.length - 1] > 0) {
               this._d3Scale.domain(_domain).range(_range);
             } else {
-              var percentScale = log().domain([1, _domain[_domain[1] > 0 ? 1 : 0]]).range([0, 1]);
-              var leftPercentage = percentScale(Math.abs(_domain[_domain[0] < 0 ? 1 : 0]));
+              var percentScale = linear$1().domain(_domain).range([0, 1]);
+              var leftPercentage = percentScale(0);
 
-              var _zero = leftPercentage / (leftPercentage + 1) * (_range[1] - _range[0]);
+              var _zero = leftPercentage * (_range[1] - _range[0]);
 
               var smallestPositive = min([min(this._data.filter(function (d) {
                 return d >= 0;
-              })), _domain[1]]);
-              var smallestNegative = max([max(this._data.filter(function (d) {
+              })), Math.abs(_domain[1])]);
+              var smallestNegative = min([min(this._data.filter(function (d) {
                 return d <= -0;
-              })), _domain[0]]);
+              })), Math.abs(_domain[0])]);
               var smallestPosPow = smallestPositive === 0 ? 1e-6 : smallestPositive <= 1 ? floorPow(smallestPositive) : 1;
-              var smallestNegPow = smallestNegative === 0 ? -1e-6 : smallestNegative >= -1 ? -floorPow(Math.abs(smallestNegative)) : -1;
+              var smallestNegPow = smallestNegative === 0 ? -1e-6 : smallestNegative <= 1 ? floorPow(smallestNegative) : 1;
 
-              var _smallestNumber2 = min([smallestPosPow, -smallestNegPow]);
+              var _smallestNumber2 = min([smallestPosPow, smallestNegPow]);
 
-              if (_domain[0] > 0) _zero = _range[1] - _range[0] - _zero;
               this._d3ScaleNegative = this._d3Scale.copy();
-              (_domain[0] < 0 ? this._d3Scale : this._d3ScaleNegative).domain([_smallestNumber2, _domain[1]]).range([_range[0] + _zero, _range[1]]);
-              (_domain[0] < 0 ? this._d3ScaleNegative : this._d3Scale).domain([_domain[0], -_smallestNumber2]).range([_range[0], _range[0] + _zero]);
+              (_domain[0] < 0 ? this._d3Scale : this._d3ScaleNegative).domain([_domain[0] < 0 ? _smallestNumber2 : -_smallestNumber2, _domain[1]]).range([_range[0] + _zero, _range[1]]);
+              (_domain[0] < 0 ? this._d3ScaleNegative : this._d3Scale).domain([_domain[0], _domain[0] < 0 ? -_smallestNumber2 : _smallestNumber2]).range([_range[0], _range[0] + _zero]);
             }
           }
           /**
