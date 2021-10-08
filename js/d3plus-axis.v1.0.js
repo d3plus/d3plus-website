@@ -35,7 +35,7 @@ function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.g
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
 /*
-  d3plus-axis v1.0.5
+  d3plus-axis v1.0.6
   Beautiful javascript scales and axes.
   Copyright (c) 2021 D3plus - https://d3plus.org
   @license MIT
@@ -8251,7 +8251,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
     }, {
       key: "_getPosition",
       value: function _getPosition(d) {
-        return this._scale === "log" && d === 0 ? (this._d3Scale || this._d3ScaleNegative).range()[this._d3Scale ? 0 : 1] : d < 0 ? this._d3ScaleNegative(d) : this._d3Scale(d);
+        return this._scale === "log" && d === 0 ? (this._d3Scale || this._d3ScaleNegative).range()[this._d3Scale ? 0 : 1] : (this._scale === "log" && d < 0 ? this._d3ScaleNegative : this._d3Scale)(d);
       }
       /**
           @memberof Axis
