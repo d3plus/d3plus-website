@@ -41,7 +41,7 @@ function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _d
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
 /*
-  d3plus-viz v1.0.9
+  d3plus-viz v1.0.10
   Abstract ES6 class that drives d3plus visualizations.
   Copyright (c) 2021 D3plus - https://d3plus.org
   @license MIT
@@ -8665,7 +8665,9 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
   */
 
 
-  function clickShape(d, i) {
+  function clickShape(d, i, x, event) {
+    event.stopPropagation();
+
     this._select.style("cursor", "auto");
 
     if (this._drawDepth < this._groupBy.length - 1) {
@@ -8874,10 +8876,8 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
    */
 
 
-  function touchstartBody(d, i, x, event) {
-    event.preventDefault();
-    event.stopPropagation();
-    if (!d) this._tooltipClass.data([]).render();
+  function touchstartBody() {
+    this._tooltipClass.data([]).render();
   }
 
   var brushing = false;
