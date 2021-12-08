@@ -41,7 +41,7 @@ function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _d
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
 /*
-  d3plus-viz v1.0.10
+  d3plus-viz v1.0.11
   Abstract ES6 class that drives d3plus visualizations.
   Copyright (c) 2021 D3plus - https://d3plus.org
   @license MIT
@@ -8512,7 +8512,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
         return +a - +b;
       })).width(this._width - (this._margin.left + this._margin.right + padding.left + padding.right));
 
-      if (timeline.selection() === undefined) {
+      if (!this._timelineSelection) {
         this._timelineSelection = d3Array.extent(data, this._time).map(d3plusAxis.date);
         timeline.selection(this._timelineSelection);
       }
@@ -10572,7 +10572,11 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
             }
           }
 
-          this._timeFilter = false;
+          if (this._data.length && !this._data.find(this._timeFilter)) {
+            this._timeFilter = false;
+            this._timelineSelection = false;
+          }
+
           return this;
         } else return this._time;
       }
