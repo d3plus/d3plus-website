@@ -23,9 +23,9 @@ function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.g
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
 /*
-  d3plus-legend v1.0.3
+  d3plus-legend v1.0.4
   An easy to use javascript chart legend.
-  Copyright (c) 2021 D3plus - https://d3plus.org
+  Copyright (c) 2022 D3plus - https://d3plus.org
   @license MIT
 */
 (function (factory) {
@@ -8975,8 +8975,8 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
               var positivesDeviation = d3Array.deviation(positives);
               var isNegativeMax = negativesDeviation > positivesDeviation ? 1 : 0;
               var isPositiveMax = positivesDeviation > negativesDeviation ? 1 : 0;
-              var negativeJenks = ckmeans(negatives, half + residual * isNegativeMax);
-              var positiveJenks = ckmeans(positives, half + residual * isPositiveMax);
+              var negativeJenks = ckmeans(negatives, d3Array.min([half + residual * isNegativeMax, negatives.length]));
+              var positiveJenks = ckmeans(positives, d3Array.min([half + residual * isPositiveMax, positives.length]));
               jenks = negativeJenks.concat(positiveJenks);
             } else {
               jenks = ckmeans(allValues, buckets);
@@ -8988,10 +8988,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
           }
 
           var tickSet = new Set(ticks);
-
-          if (ticks.length !== tickSet.size) {
-            labels = Array.from(tickSet);
-          }
+          if (ticks.length !== tickSet.size) labels = Array.from(tickSet);
 
           if (!colors) {
             if (diverging) {
@@ -9029,10 +9026,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
             }
           }
 
-          if (allValues.length <= buckets) {
-            colors = colors.slice(buckets - allValues.length);
-          }
-
+          if (ticks.length <= buckets) colors = colors.slice(-ticks.length);
           colors = [colors[0]].concat(colors);
           this._colorScale = d3Scale.scaleThreshold().domain(ticks).range(colors);
         } else {
